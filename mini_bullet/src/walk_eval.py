@@ -2,9 +2,9 @@
 
 import numpy as np
 
-from plen_ros_helpers.td3 import ReplayBuffer, TD3Agent
+from mini_bullet.td3 import ReplayBuffer, TD3Agent, evaluate_policy
 
-from plen_bullet import plen_env
+from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
 
 import gym
 import torch
@@ -16,10 +16,13 @@ import time
 def main():
     """ The main() function. """
 
+    print("STARTING MINITAUR TD3")
+
     # TRAINING PARAMETERS
-    env_name = "PlenWalkEnv-v1"
+    # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 4e6
+    file_name = "mini_td3_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
@@ -32,7 +35,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = gym.make(env_name, render=True)
+    env = MinitaurBulletEnv(render=True)
 
     # Set seeds
     env.seed(seed)
@@ -40,18 +43,19 @@ def main():
     np.random.seed(seed)
 
     state_dim = env.observation_space.shape[0]
+    print("STATE DIM: {}".format(state_dim))
     action_dim = env.action_space.shape[0]
+    print("ACTION DIM: {}".format(action_dim))
     max_action = float(env.action_space.high[0])
 
     print("RECORDED MAX ACTION: {}".format(max_action))
 
     policy = TD3Agent(state_dim, action_dim, max_action)
-    # Optionally load existing policy, replace 9999 with num
-    policy_num = 3229999  # 629999 current best policy
-    if os.path.exists(models_path + "/" + "plen_walk_gazebo_" +
+    policy_num = 19999
+    if os.path.exists(models_path + "/" + file_name +
                       str(policy_num) + "_critic"):
         print("Loading Existing Policy")
-        policy.load(models_path + "/" + "plen_walk_gazebo_" + str(policy_num))
+        policy.load(models_path + "/" + file_name + str(policy_num))
 
     replay_buffer = ReplayBuffer()
     # Optionally load existing policy, replace 9999 with num
@@ -71,11 +75,9 @@ def main():
     episode_timesteps = 0
     episode_num = 0
 
-    print("STARTED PLEN_TD3 RL SCRIPT")
+    print("STARTED MINITAUR TEST SCRIPT")
 
     for t in range(int(max_timesteps)):
-
-        time.sleep(1. / 20.)
 
         episode_timesteps += 1
         # Deterministic Policy Action
