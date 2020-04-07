@@ -55,12 +55,19 @@ class MinitaurBulletEnv(gym.Env):
             action_repeat=1,
 
             # WEIGHTS
+            # NOTE: ORIGINAL - V1
+            # distance_weight=0.2,
+            # energy_weight=0.005,
+            # shake_weight=0.2,
+            # drift_weight=0.05,
+            # rp_weight=0.05,
+            # rate_weight=0.05,
             distance_weight=0.3,
             energy_weight=0.005,
             shake_weight=0.5,
-            drift_weight=0.1,
-            rp_weight=0.1,
-            rate_weight=0.1,
+            drift_weight=0.05,
+            rp_weight=0.3,
+            rate_weight=0.05,
 
             distance_limit=float("inf"),
             observation_noise_stdev=0.0,
@@ -401,6 +408,7 @@ class MinitaurBulletEnv(gym.Env):
 
         # penalty for nonzero roll, pitch
         rp_reward = - (abs(obs[0]) + abs(obs[1]))
+        # print("ROLL: {} \t PITCH: {}".format(obs[0], obs[1]))
 
         # penalty for nonzero acc(y,z)
         shake_reward = - (abs(obs[3]) + abs(obs[4]))
