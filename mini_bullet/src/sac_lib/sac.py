@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.distributions import Normal
+import copy
 
 # alg specific imports
 from .softQnetwork import SoftQNetwork
@@ -28,7 +29,7 @@ class SoftActorCritic(object):
 
         # set up the networks
         self.value_net = ValueNetwork(state_dim, hidden_dim).to(device)
-        self.target_value_net = ValueNetwork(state_dim, hidden_dim).to(device)
+        self.target_value_net = copy.deepcopy(self.value_net)
         self.policy_net = policy.to(device)
 
         self.soft_q_net = SoftQNetwork(state_dim, action_dim,
@@ -115,3 +116,31 @@ class SoftActorCritic(object):
         self.log['q_value_loss'].append(q_value_loss.item())
         self.log['value_loss'].append(value_loss.item())
         self.log['policy_loss'].append(policy_loss.item())
+
+    def save(self, filename):
+        torch.save(self.value_net.state_dict(), filename + "_value_net")
+        torch.save(self.value_optimizer.state_dict(),
+                   filename + "_value_optimizer")
+        torch.save(self.policy_net.state_dict(), filename + "_policy_net")
+        torch.save(self.policy_optimizer.state_dict(),
+                   filename + "_policy_optimizer")
+        torch.save(self.soft_q_net.state_dict(), filename + "_soft_q_net")
+        torch.save(self.soft_q_optimizer.state_dict(),
+                   filename + "_soft_q_optimizer")
+
+    def load(self, filename):
+        self.value_net.load_state_dict(
+            torch.load(filename + "_value_net", map_location=device))
+        self.value_optimizer.load_state_dict(
+            torch.load(filename + "_value_optimizer",
+                       map_location=self.device))
+        self.policy_net.load_state_dict(
+            torch.load(filename + "_policy_net", map_location=device))
+        self.policy_optimizer.load_state_dict(
+            torch.load(filename + "_policy_optimizer",
+                       map_location=self.device))
+        self.soft_q_net.load_state_dict(
+            torch.load(filename + "_soft_q_net", map_location=device))
+        self.soft_q_optimizer.load_state_dict(
+            torch.load(filename + "_soft_q_optimizer",
+                       map_location=self.device))
