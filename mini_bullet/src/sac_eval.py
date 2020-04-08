@@ -2,7 +2,6 @@
 
 import numpy as np
 
-from td3_lib.td3 import ReplayBuffer, TD3Agent, evaluate_policy
 from sac_lib import SoftActorCritic, NormalizedActions, ReplayBuffer, PolicyNetwork
 
 from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
@@ -36,7 +35,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = MinitaurBulletEnv(render=True)
+    env = NormalizedActions(MinitaurBulletEnv(render=True))
 
     # Set seeds
     env.seed(seed)
@@ -51,21 +50,23 @@ def main():
 
     print("RECORDED MAX ACTION: {}".format(max_action))
 
-    policy = TD3Agent(state_dim, action_dim, max_action)
-    policy_num = 739999
-    if os.path.exists(models_path + "/" + file_name +
-                      str(policy_num) + "_critic"):
-        print("Loading Existing Policy")
-        policy.load(models_path + "/" + file_name + str(policy_num))
+    hidden_dim = 256
+    policy = PolicyNetwork(state_dim, action_dim, hidden_dim)
 
-    replay_buffer = ReplayBuffer()
-    # Optionally load existing policy, replace 9999 with num
-    buffer_number = 0  # BY DEFAULT WILL LOAD NOTHING, CHANGE THIS
-    if os.path.exists(replay_buffer.buffer_path + "/" + "replay_buffer_" +
-                      str(buffer_number) + '.data'):
-        print("Loading Replay Buffer " + str(buffer_number))
-        replay_buffer.load(buffer_number)
-        print(replay_buffer.storage)
+    replay_buffer_size = 1000000
+    replay_buffer = ReplayBuffer(replay_buffer_size)
+
+    sac = SoftActorCritic(policy=policy,
+                          state_dim=state_dim,
+                          action_dim=action_dim,
+                          replay_buffer=replay_buffer)
+
+    policy_num = 1029999
+    if os.path.exists(models_path + "/" + file_name + str(policy_num) +
+                      "_critic"):
+        print("Loading Existing Policy")
+        sac.load(models_path + "/" + file_name + str(policy_num))
+        policy = sac.policy_net
 
     # Evaluate untrained policy and init list for storage
     evaluations = []
@@ -82,7 +83,7 @@ def main():
 
         episode_timesteps += 1
         # Deterministic Policy Action
-        action = np.clip(policy.select_action(np.array(state)),
+        action = np.clip(policy.get_action(np.array(state)),
                          -max_action, max_action)
         # rospy.logdebug("Selected Acton: {}".format(action))
 
