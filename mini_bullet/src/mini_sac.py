@@ -21,10 +21,10 @@ def main():
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 4e6
-    start_timesteps = 1e3  # 1e3 for testing purposes, use 1e4 for real
+    start_timesteps = 1e4  # 1e3 for testing purposes, use 1e4 for real
     expl_noise = 0.1
     batch_size = 256
-    eval_freq = 1e3
+    eval_freq = 1e4
     save_model = True
     file_name = "mini_td3_"
 
