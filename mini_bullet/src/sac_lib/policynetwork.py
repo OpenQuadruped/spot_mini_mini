@@ -5,8 +5,17 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.distributions import Normal
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
 class PolicyNetwork(nn.Module):
-    def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3, log_std_min=-20, log_std_max=2):
+    def __init__(self,
+                 num_inputs,
+                 num_actions,
+                 hidden_size,
+                 init_w=3e-3,
+                 log_std_min=-20,
+                 log_std_max=2):
         super(PolicyNetwork, self).__init__()
 
         self.log_std_min = log_std_min
@@ -21,8 +30,8 @@ class PolicyNetwork(nn.Module):
         self.mean_linear.bias.data.uniform_(-init_w, init_w)
 
         self.log_std_linear = nn.Linear(hidden_size, num_actions)
-        self.log_std_linear.weight.data.uniform_(-init_w*0., init_w)
-        self.log_std_linear.bias.data.uniform_(-init_w*0., init_w)
+        self.log_std_linear.weight.data.uniform_(-init_w * 0., init_w)
+        self.log_std_linear.bias.data.uniform_(-init_w * 0., init_w)
         # self.log_std_linear.weight.data.zero_()
         # self.log_std_linear.bias.data.zero_()
 
@@ -31,7 +40,7 @@ class PolicyNetwork(nn.Module):
         # x = F.relu(self.linear2(x))
         x = torch.sin(self.linear1(state))
 
-        mean    = self.mean_linear(x)
+        mean = self.mean_linear(x)
         log_std = self.log_std_linear(F.relu(self.linear2(state)))
         log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
 
@@ -50,14 +59,13 @@ class PolicyNetwork(nn.Module):
 
         return action, log_prob, z, mean, log_std
 
-
     def get_action(self, state):
-        state = torch.FloatTensor(state).unsqueeze(0)
+        state = torch.FloatTensor(state).unsqueeze(0).to(device)
         mean, log_std = self.forward(state)
         std = log_std.exp()
 
         normal = Normal(mean, std)
-        z      = normal.sample()
+        z = normal.sample()
         action = torch.tanh(z)
 
         action = action.detach().cpu().numpy()
