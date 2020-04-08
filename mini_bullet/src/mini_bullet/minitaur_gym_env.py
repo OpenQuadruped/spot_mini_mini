@@ -56,24 +56,18 @@ class MinitaurBulletEnv(gym.Env):
 
             # WEIGHTS
             # NOTE: ORIGINAL - V1
-            # distance_weight=0.2,
-            # energy_weight=0.005,
-            # shake_weight=0.2,
-            # drift_weight=0.05,
-            # rp_weight=0.05,
-            # rate_weight=0.05,
-            distance_weight=0.3,
+            distance_weight=0.5,
             energy_weight=0.005,
-            shake_weight=0.5,
-            drift_weight=0.05,
-            rp_weight=0.3,
-            rate_weight=0.05,
+            shake_weight=0.05,
+            drift_weight=0.01,
+            rp_weight=0.02,
+            rate_weight=0.005,
 
             distance_limit=float("inf"),
             observation_noise_stdev=0.0,
             self_collision_enabled=True,
             motor_velocity_limit=np.inf,
-            pd_control_enabled=False,  #not needed to be true if accurate motor model is enabled (has its own better PD)
+            pd_control_enabled=False,  # not needed to be true if accurate motor model is enabled (has its own better PD)
             leg_model_enabled=True,
             accurate_motor_model_enabled=True,
             motor_kp=1.0,

@@ -51,7 +51,7 @@ def main():
     print("RECORDED MAX ACTION: {}".format(max_action))
 
     policy = TD3Agent(state_dim, action_dim, max_action)
-    policy_num = 19999
+    policy_num = 739999
     if os.path.exists(models_path + "/" + file_name +
                       str(policy_num) + "_critic"):
         print("Loading Existing Policy")
