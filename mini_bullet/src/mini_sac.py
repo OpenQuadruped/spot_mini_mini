@@ -15,7 +15,7 @@ import time
 def main():
     """ The main() function. """
 
-    print("STARTING MINITAUR TD3")
+    print("STARTING MINITAUR SAC")
 
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
@@ -80,7 +80,7 @@ def main():
     episode_timesteps = 0
     episode_num = 0
 
-    print("STARTED MINITAUR TD3")
+    print("STARTED MINITAUR SAC")
 
     for t in range(int(max_timesteps)):
 
@@ -136,7 +136,7 @@ def main():
             # evaluate_policy(policy, env_name, seed,
             np.save(results_path + "/" + str(file_name), evaluations)
             if save_model:
-                policy.save(models_path + "/" + str(file_name) + str(t))
+                sac.save(models_path + "/" + str(file_name) + str(t))
                 # replay_buffer.save(t)
 
     env.close()
