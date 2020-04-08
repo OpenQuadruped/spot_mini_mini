@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from mini_bullet.td3 import ReplayBuffer, TD3Agent, evaluate_policy
+from sac_lib import SoftActorCritic, NormalizedActions, ReplayBuffer, PolicyNetwork
 from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
 
 import gym
@@ -39,7 +39,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = MinitaurBulletEnv(render=False)
+    env = NormalizedActions(MinitaurBulletEnv(render=False))
 
     # Set seeds
     env.seed(seed)
@@ -54,21 +54,22 @@ def main():
 
     print("RECORDED MAX ACTION: {}".format(max_action))
 
-    policy = TD3Agent(state_dim, action_dim, max_action)
+    hidden_dim = 256
+    policy = PolicyNetwork(state_dim, action_dim, hidden_dim)
+
+    replay_buffer_size = 1000000
+    replay_buffer = ReplayBuffer(replay_buffer_size)
+
+    sac = SoftActorCritic(policy=policy,
+                          state_dim=state_dim,
+                          action_dim=action_dim,
+                          replay_buffer=replay_buffer)
+
     policy_num = 0
-    if os.path.exists(models_path + "/" + file_name +
-                      str(policy_num) + "_critic"):
+    if os.path.exists(models_path + "/" + file_name + str(policy_num) +
+                      "_critic"):
         print("Loading Existing Policy")
         policy.load(models_path + "/" + file_name + str(policy_num))
-
-    replay_buffer = ReplayBuffer()
-    # Optionally load existing policy, replace 9999 with num
-    buffer_number = 0  # BY DEFAULT WILL LOAD NOTHING, CHANGE THIS
-    if os.path.exists(replay_buffer.buffer_path + "/" + "replay_buffer_" +
-                      str(buffer_number) + '.data'):
-        print("Loading Replay Buffer " + str(buffer_number))
-        replay_buffer.load(buffer_number)
-        # print(replay_buffer.storage)
 
     # Evaluate untrained policy and init list for storage
     evaluations = []
@@ -99,8 +100,8 @@ def main():
             """
             action = np.clip(
                 (policy.select_action(np.array(state)) + np.random.normal(
-                    0, max_action * expl_noise, size=action_dim)),
-                -max_action, max_action)
+                    0, max_action * expl_noise, size=action_dim)), -max_action,
+                max_action)
             # rospy.logdebug("Selected Acton: {}".format(action))
 
         # Perform action
@@ -108,14 +109,14 @@ def main():
         done_bool = float(done)
 
         # Store data in replay buffer
-        replay_buffer.add((state, action, next_state, reward, done_bool))
+        replay_buffer.push(state, action, next_state, reward, done_bool)
 
         state = next_state
         episode_reward += reward
 
         # Train agent after collecting sufficient data for buffer
         if t >= start_timesteps:
-            policy.train(replay_buffer, batch_size)
+            sac.soft_q_update(batch_size)
 
         if done:
             # +1 to account for 0 indexing.
