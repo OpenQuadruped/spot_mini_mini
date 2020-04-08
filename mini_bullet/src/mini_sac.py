@@ -21,10 +21,10 @@ def main():
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 4e6
-    start_timesteps = 1e4  # 1e3 for testing purposes, use 1e4 for real
+    start_timesteps = 1e3  # 1e3 for testing purposes, use 1e4 for real
     expl_noise = 0.1
-    batch_size = 100
-    eval_freq = 1e4
+    batch_size = 256
+    eval_freq = 1e3
     save_model = True
     file_name = "mini_td3_"
 
@@ -99,7 +99,7 @@ def main():
                 position limit (breaks model)
             """
             action = np.clip(
-                (policy.select_action(np.array(state)) + np.random.normal(
+                (policy.get_action(np.array(state)) + np.random.normal(
                     0, max_action * expl_noise, size=action_dim)), -max_action,
                 max_action)
             # rospy.logdebug("Selected Acton: {}".format(action))
@@ -109,13 +109,13 @@ def main():
         done_bool = float(done)
 
         # Store data in replay buffer
-        replay_buffer.push(state, action, next_state, reward, done_bool)
+        replay_buffer.push(state, action, reward, next_state, done_bool)
 
         state = next_state
         episode_reward += reward
 
         # Train agent after collecting sufficient data for buffer
-        if t >= start_timesteps:
+        if t >= start_timesteps and len(replay_buffer) > batch_size:
             sac.soft_q_update(batch_size)
 
         if done:
