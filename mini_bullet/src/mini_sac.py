@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from td3_lib.td3 import ReplayBuffer, TD3Agent, evaluate_policy
+from mini_bullet.td3 import ReplayBuffer, TD3Agent, evaluate_policy
 from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
 
 import gym
