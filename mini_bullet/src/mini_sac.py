@@ -69,7 +69,8 @@ def main():
     if os.path.exists(models_path + "/" + file_name + str(policy_num) +
                       "_critic"):
         print("Loading Existing Policy")
-        policy.load(models_path + "/" + file_name + str(policy_num))
+        sac.load(models_path + "/" + file_name + str(policy_num))
+        policy = sac.policy_net
 
     # Evaluate untrained policy and init list for storage
     evaluations = []
