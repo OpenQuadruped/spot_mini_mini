@@ -26,7 +26,7 @@ def main():
     batch_size = 256
     eval_freq = 1e4
     save_model = True
-    file_name = "mini_td3_"
+    file_name = "mini_sac_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
