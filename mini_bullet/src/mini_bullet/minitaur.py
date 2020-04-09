@@ -326,11 +326,11 @@ class Minitaur(object):
         upper_bound[2:8] = np.inf
 
         # NOTE: ORIGINAL BELOW
-        upper_bound[8:8 + self.num_motors] = math.pi  # Joint angle.
-        upper_bound[self.num_motors + 8:2 * self.num_motors + 8] = (
-            motor.MOTOR_SPEED_LIMIT)  # Joint velocity.
-        upper_bound[2 * self.num_motors + 8:3 * self.num_motors + 8] = (
-            motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
+        # upper_bound[8:8 + self.num_motors] = math.pi  # Joint angle.
+        # upper_bound[self.num_motors + 8:2 * self.num_motors + 8] = (
+        #     motor.MOTOR_SPEED_LIMIT)  # Joint velocity.
+        # upper_bound[2 * self.num_motors + 8:3 * self.num_motors + 8] = (
+        #     motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
         # upper_bound[3 *
         #             self.num_motors:] = 1.0  # Quaternion of base orientation.
         # print("UPPER BOUND{}".format(upper_bound))
@@ -389,9 +389,9 @@ class Minitaur(object):
         observation.extend(list(ang_twist))
 
         # NOTE: ORIGINAL BELOW
-        observation.extend(self.GetMotorAngles().tolist())
-        observation.extend(self.GetMotorVelocities().tolist())
-        observation.extend(self.GetMotorTorques().tolist())
+        # observation.extend(self.GetMotorAngles().tolist())
+        # observation.extend(self.GetMotorVelocities().tolist())
+        # observation.extend(self.GetMotorTorques().tolist())
         # observation.extend(list(self.GetBaseOrientation()))
         return observation
 
