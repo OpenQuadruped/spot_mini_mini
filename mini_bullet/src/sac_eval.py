@@ -61,7 +61,7 @@ def main():
                           action_dim=action_dim,
                           replay_buffer=replay_buffer)
 
-    policy_num = 1029999
+    policy_num = 3979999
     if os.path.exists(models_path + "/" + file_name + str(policy_num) +
                       "_critic"):
         print("Loading Existing Policy")
