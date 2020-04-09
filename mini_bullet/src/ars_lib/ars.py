@@ -12,16 +12,16 @@ class Policy():
             action_dim,
             # how much weights are changed each step
             learning_rate=0.02,
-            # number of random noise variations generated
+            # number of random expl_noise variations generated
             # each step
             # each one will be run for 2 epochs, + and -
             num_deltas=16,
             # used to update weights, sorted by highest rwrd
             num_best_deltas=16,
             # number of timesteps per episode per rollout
-            episode_steps=2000,
-            # weight of sampled noise
-            noise=0.03,
+            episode_steps=500,
+            # weight of sampled exploration noise
+            expl_noise=0.01,
             # for seed gen
             seed=1):
 
@@ -32,8 +32,10 @@ class Policy():
         # there cannot be more best_deltas than there are deltas
         assert self.num_best_deltas <= self.num_deltas
         self.episode_steps = episode_steps
-        self.noise = noise
+        self.expl_noise = expl_noise
         self.seed = seed
+        self.state_dim = state_dim
+        self.action_dim = action_dim
 
         # input/ouput matrix with weights set to zero
         # this is the perception matrix (policy)
@@ -48,15 +50,15 @@ class Policy():
         if direction is None:
             return self.theta.dot(input)
 
-        # otherwise, add (+-) directed noise before taking dot product (policy)
+        # otherwise, add (+-) directed expl_noise before taking dot product (policy)
         # this is where the 2*num_deltas rollouts comes from
         elif direction == "+":
-            return (self.theta + self.noise * delta).dot(input)
+            return (self.theta + self.expl_noise * delta).dot(input)
         elif direction == "-":
-            return (self.theta - self.noise * delta).dot(input)
+            return (self.theta - self.expl_noise * delta).dot(input)
 
     def sample_deltas(self):
-        """ generate array of random noise matrices. Length of
+        """ generate array of random expl_noise matrices. Length of
             array = num_deltas
         """
         return [
@@ -117,21 +119,22 @@ class Normalizer():
 
 
 class ARSAgent():
-    def __init__(self, state_dim, action_dim, normalizer, policy, env):
-        self.state_dim = state_dim
-        self.action_dim = action_dim
+    def __init__(self, normalizer, policy, env):
         self.normalizer = normalizer
         self.policy = policy
+        self.state_dim = self.policy.state_dim
+        self.action_dim = self.policy.action_dim
         self.env = env
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
     def deploy(self, direction=None, delta=None):
         state = self.env.reset()
-        done = False
-        timesteps = 0.0
         sum_rewards = 0.0
+        timesteps = 0
+        done = False
         while not done and timesteps < self.policy.episode_steps:
+            # print("dt: {}".format(timesteps))
             self.normalizer.observe(state)
             # Normalize State
             state = self.normalizer.normalize(state)
@@ -139,20 +142,23 @@ class ARSAgent():
             state, reward, done, _ = self.env.step(action)
             # Clip reward between -1 and 1 to prevent outliers from
             # distorting weights
-            reward = max(min(reward, 1), -1)
+            reward = max(min(reward, 1.0), -1.0)
             sum_rewards += reward
             timesteps += 1
         return sum_rewards
 
     def train(self):
-        # Sample random noise deltas
+        # Sample random expl_noise deltas
+        print("Sampling Deltas")
         deltas = self.policy.sample_deltas()
         # Initialize +- reward list of size num_deltas
         positive_rewards = [0] * self.policy.num_deltas
         negative_rewards = [0] * self.policy.num_deltas
 
         # Execute 2*num_deltas rollouts and store +- rewards
+        print("Deploying Rollouts")
         for i in range(self.policy.num_deltas):
+            print("Rollout #{}".format(i + 1))
             positive_rewards[i] = self.deploy(direction="+", delta=deltas[i])
             negative_rewards[i] = self.deploy(direction="-", delta=deltas[i])
 
@@ -170,7 +176,7 @@ class ARSAgent():
             reverse=True)
 
         # Only take first best_num_deltas rollouts
-        rollouts = sorted_rollouts[:self.policy.best_num_deltas]
+        rollouts = sorted_rollouts[:self.policy.num_best_deltas]
 
         # Update Policy
         self.policy.update(rollouts, std_dev_rewards)
