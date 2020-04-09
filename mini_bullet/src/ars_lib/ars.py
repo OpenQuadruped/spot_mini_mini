@@ -1,3 +1,4 @@
+import pickle
 import os
 import numpy as np
 
@@ -17,7 +18,11 @@ class Policy():
             num_deltas=16,
             # used to update weights, sorted by highest rwrd
             num_best_deltas=16,
+            # number of timesteps per episode per rollout
+            episode_steps=2000,
+            # weight of sampled noise
             noise=0.03,
+            # for seed gen
             seed=1):
 
         # Tunable Hyperparameters
@@ -26,6 +31,7 @@ class Policy():
         self.num_best_deltas = num_best_deltas
         # there cannot be more best_deltas than there are deltas
         assert self.num_best_deltas <= self.num_deltas
+        self.episode_steps = episode_steps
         self.noise = noise
         self.seed = seed
 
@@ -57,16 +63,16 @@ class Policy():
             np.random.randn(*self.theta.shape) for _ in range(self.num_deltas)
         ]
 
-    def update(self, rollouts, sigma_rewards):
+    def update(self, rollouts, std_dev_rewards):
         """ Update policy weights (theta) based on rewards
             from 2*num_deltas rollouts
         """
-        # sigma_rewards is the standard deviation of the rewards
+        # std_dev_rewards is the standard deviation of the rewards
         step = np.zeros(self.theta.shape)
         for r_pos, r_neg, delta in rollouts:
             step += (r_pos - r_neg) * delta
         self.theta += self.learning_rate / (self.num_best_deltas *
-                                            sigma_rewards) * step
+                                            std_dev_rewards) * step
 
 
 class Normalizer():
@@ -111,60 +117,78 @@ class Normalizer():
 
 
 class ARSAgent():
-    def __init__(self, state_dim, action_dim, normalizer, policy):
+    def __init__(self, state_dim, action_dim, normalizer, policy, env):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.normalizer = normalizer
         self.policy = policy
+        self.env = env
 
-    # Explore the policy on one specific direction and over one episode
-    # DO THIS ONCE PER ROLLOUT
-    def explore(self, direction=None, delta=None):
+    # Deploy Policy in one direction over one whole episode
+    # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
+    def deploy(self, direction=None, delta=None):
         state = self.env.reset()
         done = False
-        num_plays = 0.0
+        timesteps = 0.0
         sum_rewards = 0.0
-        while not done and num_plays < self.policy.episode_length:
+        while not done and timesteps < self.policy.episode_steps:
             self.normalizer.observe(state)
+            # Normalize State
             state = self.normalizer.normalize(state)
             action = self.policy.evaluate(state, delta, direction)
             state, reward, done, _ = self.env.step(action)
+            # Clip reward between -1 and 1 to prevent outliers from
+            # distorting weights
             reward = max(min(reward, 1), -1)
             sum_rewards += reward
-            num_plays += 1
+            timesteps += 1
         return sum_rewards
 
     def train(self):
-        # initialize the random noise deltas and the positive/negative rewards
+        # Sample random noise deltas
         deltas = self.policy.sample_deltas()
+        # Initialize +- reward list of size num_deltas
         positive_rewards = [0] * self.policy.num_deltas
         negative_rewards = [0] * self.policy.num_deltas
 
-        # play an episode each with positive deltas and negative deltas, collect rewards
-        for k in range(self.policy.num_deltas):
-            positive_rewards[k] = self.explore(direction="+",
-                                               delta=deltas[k])
-            negative_rewards[k] = self.explore(direction="-",
-                                               delta=deltas[k])
+        # Execute 2*num_deltas rollouts and store +- rewards
+        for i in range(self.policy.num_deltas):
+            positive_rewards[i] = self.deploy(direction="+", delta=deltas[i])
+            negative_rewards[i] = self.deploy(direction="-", delta=deltas[i])
 
-        # Compute the standard deviation of all rewards
-        sigma_rewards = np.array(positive_rewards + negative_rewards).std()
+        # Calculate std dev
+        std_dev_rewards = np.array(positive_rewards + negative_rewards).std()
 
-        # Sort the rollouts by the max(r_pos, r_neg) and select the deltas with best rewards
-        scores = {
-            k: max(r_pos, r_neg)
-            for k, (r_pos, r_neg
-                    ) in enumerate(zip(positive_rewards, negative_rewards))
-        }
-        order = sorted(scores.keys(),
-                       key=lambda x: scores[x],
-                       reverse=True)[:self.policy.num_best_deltas]
-        rollouts = [(positive_rewards[k], negative_rewards[k], deltas[k])
-                    for k in order]
+        # Order rollouts in decreasing list using cum reward as criterion
+        unsorted_rollouts = [(positive_rewards[i], negative_rewards[i],
+                              deltas[i])
+                             for i in range(self.policy.num_deltas)]
+        # When sorting, take the max between the reward for +- disturbance
+        sorted_rollouts = sorted(
+            unsorted_rollouts,
+            key=lambda x: max(unsorted_rollouts[0], unsorted_rollouts[1]),
+            reverse=True)
 
-        # Update the policy
-        self.policy.update(rollouts, sigma_rewards)
+        # Only take first best_num_deltas rollouts
+        rollouts = sorted_rollouts[:self.policy.best_num_deltas]
 
-        # Play an episode with the new weights and print the score
-        reward_evaluation = self.explore()
-        print('Step: ', step, 'Reward: ', reward_evaluation)
+        # Update Policy
+        self.policy.update(rollouts, std_dev_rewards)
+
+        # Execute Current Policy
+        eval_reward = self.deploy()
+        return eval_reward
+
+    def save(self, filename):
+        """ Save the Policy
+        """
+        with open(
+                filename + '_policy', 'wb') as filehandle:
+            pickle.dump(self.storage, filehandle)
+
+    def load(self, filename):
+        """ Load the Policy
+        """
+        with open(
+                filename + '_policy', 'rb') as filehandle:
+            self.storage = pickle.load(filehandle)
