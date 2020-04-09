@@ -57,9 +57,9 @@ class MinitaurBulletEnv(gym.Env):
             # WEIGHTS
             distance_weight=1.0,
             energy_weight=0.005,
-            shake_weight=0.2,
+            shake_weight=0.0,
             drift_weight=0.0,
-            rp_weight=0.2,
+            rp_weight=0.0,
             rate_weight=0.0,
 
             distance_limit=float("inf"),
