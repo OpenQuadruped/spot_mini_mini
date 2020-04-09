@@ -321,18 +321,19 @@ class Minitaur(object):
     """
         upper_bound = np.array([0.0] * self.GetObservationDimension())
         # roll, pitch
-        upper_bound[0:2] = np.pi
+        upper_bound[0:2] = np.pi / 2.0
         # acc, rate in x,y,z
-        upper_bound[2:] = np.inf
+        upper_bound[2:8] = np.inf
 
         # NOTE: ORIGINAL BELOW
-        # upper_bound[0:self.num_motors] = math.pi  # Joint angle.
-        # upper_bound[self.num_motors:2 * self.num_motors] = (
-        #     motor.MOTOR_SPEED_LIMIT)  # Joint velocity.
-        # upper_bound[2 * self.num_motors:3 * self.num_motors] = (
-        #     motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
+        upper_bound[8:8 + self.num_motors] = math.pi  # Joint angle.
+        upper_bound[self.num_motors + 8:2 * self.num_motors + 8] = (
+            motor.MOTOR_SPEED_LIMIT)  # Joint velocity.
+        upper_bound[2 * self.num_motors + 8:3 * self.num_motors + 8] = (
+            motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
         # upper_bound[3 *
         #             self.num_motors:] = 1.0  # Quaternion of base orientation.
+        # print("UPPER BOUND{}".format(upper_bound))
         return upper_bound
 
     def GetObservationLowerBound(self):
@@ -388,9 +389,9 @@ class Minitaur(object):
         observation.extend(list(ang_twist))
 
         # NOTE: ORIGINAL BELOW
-        # observation.extend(self.GetMotorAngles().tolist())
-        # observation.extend(self.GetMotorVelocities().tolist())
-        # observation.extend(self.GetMotorTorques().tolist())
+        observation.extend(self.GetMotorAngles().tolist())
+        observation.extend(self.GetMotorVelocities().tolist())
+        observation.extend(self.GetMotorTorques().tolist())
         # observation.extend(list(self.GetBaseOrientation()))
         return observation
 

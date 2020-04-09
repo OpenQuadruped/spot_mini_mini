@@ -108,3 +108,63 @@ class Normalizer():
         state_mean = self.mean
         state_std = np.sqrt(self.var)
         return (inputs - state_mean) / state_std
+
+
+class ARSAgent():
+    def __init__(self, state_dim, action_dim, normalizer, policy):
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.normalizer = normalizer
+        self.policy = policy
+
+    # Explore the policy on one specific direction and over one episode
+    # DO THIS ONCE PER ROLLOUT
+    def explore(self, direction=None, delta=None):
+        state = self.env.reset()
+        done = False
+        num_plays = 0.0
+        sum_rewards = 0.0
+        while not done and num_plays < self.policy.episode_length:
+            self.normalizer.observe(state)
+            state = self.normalizer.normalize(state)
+            action = self.policy.evaluate(state, delta, direction)
+            state, reward, done, _ = self.env.step(action)
+            reward = max(min(reward, 1), -1)
+            sum_rewards += reward
+            num_plays += 1
+        return sum_rewards
+
+    def train(self):
+        # initialize the random noise deltas and the positive/negative rewards
+        deltas = self.policy.sample_deltas()
+        positive_rewards = [0] * self.policy.num_deltas
+        negative_rewards = [0] * self.policy.num_deltas
+
+        # play an episode each with positive deltas and negative deltas, collect rewards
+        for k in range(self.policy.num_deltas):
+            positive_rewards[k] = self.explore(direction="+",
+                                               delta=deltas[k])
+            negative_rewards[k] = self.explore(direction="-",
+                                               delta=deltas[k])
+
+        # Compute the standard deviation of all rewards
+        sigma_rewards = np.array(positive_rewards + negative_rewards).std()
+
+        # Sort the rollouts by the max(r_pos, r_neg) and select the deltas with best rewards
+        scores = {
+            k: max(r_pos, r_neg)
+            for k, (r_pos, r_neg
+                    ) in enumerate(zip(positive_rewards, negative_rewards))
+        }
+        order = sorted(scores.keys(),
+                       key=lambda x: scores[x],
+                       reverse=True)[:self.policy.num_best_deltas]
+        rollouts = [(positive_rewards[k], negative_rewards[k], deltas[k])
+                    for k in order]
+
+        # Update the policy
+        self.policy.update(rollouts, sigma_rewards)
+
+        # Play an episode with the new weights and print the score
+        reward_evaluation = self.explore()
+        print('Step: ', step, 'Reward: ', reward_evaluation)
