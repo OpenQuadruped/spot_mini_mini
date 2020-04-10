@@ -116,6 +116,7 @@ def main():
         episode_timesteps += 1
 
         episode_reward = agent.train_parallel(parentPipes)
+        # episode_reward = agent.train()
         # +1 to account for 0 indexing.
         # +0 on ep_timesteps since it will increment +1 even if done=True
         print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(
