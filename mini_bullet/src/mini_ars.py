@@ -12,7 +12,7 @@ import os
 # Parallelization improvements based on:
 # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/ARS/ars.py
 import multiprocessing as mp
-from multiprocessing import Process, Pipe
+from multiprocessing import Pipe
 
 # Messages for Pipe
 _RESET = 1
@@ -31,7 +31,7 @@ def main():
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
-    max_timesteps = 1e4
+    max_timesteps = 4e6
     eval_freq = 1e1
     save_model = True
     file_name = "mini_ars_"
@@ -107,7 +107,11 @@ def main():
 
     print("STARTED MINITAUR ARS")
 
-    for t in range(int(max_timesteps)):
+    t = 0
+    while t < (int(max_timesteps)):
+
+        # Maximum timesteps per rollout
+        t += policy.episode_steps
 
         episode_timesteps += 1
 
@@ -115,20 +119,21 @@ def main():
         # +1 to account for 0 indexing.
         # +0 on ep_timesteps since it will increment +1 even if done=True
         print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(
-            t + 1, episode_num, episode_timesteps, episode_reward))
+            t, episode_num, policy.episode_steps, episode_reward))
         # Reset environment
         evaluations.append(episode_reward)
         episode_reward = 0
         episode_timesteps = 0
-        episode_num += 1
 
         # Evaluate episode
-        if (t + 1) % eval_freq == 0:
+        if (episode_num + 1) % eval_freq == 0:
             # evaluate_agent(agent, env_name, seed,
             np.save(results_path + "/" + str(file_name), evaluations)
             if save_model:
                 agent.save(models_path + "/" + str(file_name) + str(t))
                 # replay_buffer.save(t)
+
+        episode_num += 1
 
     # Close pipes and hence envs
     for parentPipe in parentPipes:
