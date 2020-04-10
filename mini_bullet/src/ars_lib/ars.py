@@ -1,14 +1,11 @@
 import pickle
-import os
 import numpy as np
 
 # Multiprocessing package for python
 # Parallelization improvements based on:
 # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/ARS/ars.py
-import multiprocessing as mp
-from multiprocessing import Process, Pipe
 
-# Messages for Pipe
+# Messages for Pipes
 _RESET = 1
 _CLOSE = 2
 _EXPLORE = 3
@@ -329,10 +326,10 @@ class ARSAgent():
         """ Save the Policy
         """
         with open(filename + '_policy', 'wb') as filehandle:
-            pickle.dump(self.storage, filehandle)
+            pickle.dump(self.policy, filehandle)
 
     def load(self, filename):
         """ Load the Policy
         """
         with open(filename + '_policy', 'rb') as filehandle:
-            self.storage = pickle.load(filehandle)
+            self.policy = pickle.load(filehandle)
