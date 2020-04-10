@@ -227,7 +227,7 @@ class ARSAgent():
     def train(self):
         # Sample random expl_noise deltas
         print("-------------------------------")
-        print("Sampling Deltas")
+        # print("Sampling Deltas")
         deltas = self.policy.sample_deltas()
         # Initialize +- reward list of size num_deltas
         positive_rewards = [0] * self.policy.num_deltas
@@ -293,7 +293,7 @@ class ARSAgent():
                     [_EXPLORE, [self.normalizer, self.policy, "-", deltas[i]]])
             for i in range(self.policy.num_deltas):
                 # Receive cummulative reward from each rollout
-                positive_rewards[i] = parentPipes[i].recv()[0]
+                negative_rewards[i] = parentPipes[i].recv()[0]
 
         else:
             raise ValueError(
