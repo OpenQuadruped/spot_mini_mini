@@ -303,17 +303,19 @@ class ARSAgent():
         std_dev_rewards = np.array(positive_rewards + negative_rewards).std()
 
         # Order rollouts in decreasing list using cum reward as criterion
-        unsorted_rollouts = [(positive_rewards[i], negative_rewards[i],
-                              deltas[i])
-                             for i in range(self.policy.num_deltas)]
-        # When sorting, take the max between the reward for +- disturbance
-        sorted_rollouts = sorted(
-            unsorted_rollouts,
-            key=lambda x: max(unsorted_rollouts[0], unsorted_rollouts[1]),
-            reverse=True)
-
-        # Only take first best_num_deltas rollouts
-        rollouts = sorted_rollouts[:self.policy.num_best_deltas]
+        # take max between reward for +- disturbance as that rollout's reward
+        # Store max between positive and negative reward as key for sort
+        scores = {
+            k: max(r_pos, r_neg)
+            for k, (
+                r_pos,
+                r_neg) in enumerate(zip(positive_rewards, negative_rewards))
+        }
+        indeces = sorted(scores.keys(), key=lambda x: scores[x],
+                         reverse=True)[:self.policy.num_deltas]
+        # print("INDECES: ", indeces)
+        rollouts = [(positive_rewards[k], negative_rewards[k], deltas[k])
+                    for k in indeces]
 
         # Update Policy
         self.policy.update(rollouts, std_dev_rewards)
