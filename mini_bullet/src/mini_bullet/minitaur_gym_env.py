@@ -56,11 +56,11 @@ class MinitaurBulletEnv(gym.Env):
 
             # WEIGHTS
             distance_weight=1.0,
-            energy_weight=0.005,
-            shake_weight=0.0,
-            drift_weight=1.0,
+            energy_weight=0.000,
+            shake_weight=0.05,
+            drift_weight=2.0,
             rp_weight=0.0,
-            rate_weight=0.3,
+            rate_weight=0.2,
             distance_limit=float("inf"),
             observation_noise_stdev=0.0,
             self_collision_enabled=True,
@@ -398,7 +398,7 @@ class MinitaurBulletEnv(gym.Env):
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = self.minitaur.prev_lin_twist[0]
         # print("FORWARD SPEED: {}".format(fwd_speed))
-        desired_speed = 0.5
+        desired_speed = 0.4
 
         # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
         # to make sure that at 0vel there is 0 reawrd.
