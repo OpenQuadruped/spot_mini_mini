@@ -54,7 +54,7 @@ def main():
 
     # Initialize Agent with normalizer, policy and gym env
     agent = ARSAgent(normalizer, policy, env)
-    agent_num = 100000
+    agent_num = 90000
     if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                       "_policy"):
         print("Loading Existing agent")
