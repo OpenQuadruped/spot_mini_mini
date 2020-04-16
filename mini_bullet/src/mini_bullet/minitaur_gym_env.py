@@ -58,10 +58,9 @@ class MinitaurBulletEnv(gym.Env):
             distance_weight=1.0,
             energy_weight=0.005,
             shake_weight=0.0,
-            drift_weight=0.0,
+            drift_weight=1.0,
             rp_weight=0.0,
-            rate_weight=0.0,
-
+            rate_weight=0.1,
             distance_limit=float("inf"),
             observation_noise_stdev=0.0,
             self_collision_enabled=True,
@@ -397,17 +396,30 @@ class MinitaurBulletEnv(gym.Env):
         # forward_reward = current_base_position[0] - self._last_base_position[0]
 
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
-        forward_reward = self.minitaur.prev_lin_twist[0]
+        fwd_speed = self.minitaur.prev_lin_twist[0]
+        print("FORWARD SPEED: {}".format(fwd_speed))
+        desired_speed = 0.5
+
+        # f(x)=-(x-(1)/(desired))^(2)*(desired^2)+1
+        # to make sure that at 0vel there is 0 reawrd.
+        # also squishes allowable tolerance
+        forward_reward = (-(fwd_speed -
+                            (1.0 / desired_speed))**2) * (desired_speed**
+                                                          2) + 1.0
+        if forward_reward < 0.0:
+            forward_reward = 0.0
+
+        forward_reward = fwd_speed
 
         # penalty for nonzero roll, pitch
-        rp_reward = - (abs(obs[0]) + abs(obs[1]))
+        rp_reward = -(abs(obs[0]) + abs(obs[1]))
         # print("ROLL: {} \t PITCH: {}".format(obs[0], obs[1]))
 
         # penalty for nonzero acc(z)
-        shake_reward = - abs(obs[4])
+        shake_reward = -abs(obs[4])
 
         # penalty for nonzero rate (x,y,z)
-        rate_reward = - (abs(obs[5]) + abs(obs[6]) + abs(obs[7]))
+        rate_reward = -(abs(obs[5]) + abs(obs[6]) + abs(obs[7]))
 
         # drift_reward = -abs(current_base_position[1] -
         #                     self._last_base_position[1])

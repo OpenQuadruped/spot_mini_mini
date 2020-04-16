@@ -161,6 +161,7 @@ class Minitaur(object):
 
         self._overheat_counter = np.zeros(self.num_motors)
         self._motor_enabled_list = [True] * self.num_motors
+        # self.SetFootFriction(10000000000.0)
 
     def _SetMotorTorqueById(self, motor_id, torque):
         self._pybullet_client.setJointMotorControl2(
