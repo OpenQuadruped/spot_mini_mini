@@ -37,7 +37,9 @@ def ParallelWorker(childPipe, env):
             policy = payload[1]
             direction = payload[2]
             delta = payload[3]
-            state = env.reset()
+            desired_velocity = payload[4]
+            desired_rate = payload[5]
+            state = env.reset(desired_velocity, desired_rate)
             sum_rewards = 0.0
             timesteps = 0
             done = False
@@ -198,11 +200,16 @@ class ARSAgent():
         self.action_dim = self.policy.action_dim
         self.env = env
         self.max_action = float(self.env.action_space.high[0])
+        self.successes = 0
+        self.last_reward = 0.0
+        self.phase = 0
+        self.desired_velocity = 0.5
+        self.desired_rate = 0.0
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
     def deploy(self, direction=None, delta=None):
-        state = self.env.reset()
+        state = self.env.reset(self.desired_velocity, self.desired_rate)
         sum_rewards = 0.0
         timesteps = 0
         done = False
@@ -280,8 +287,13 @@ class ARSAgent():
                 parentPipe = parentPipes[i]
                 # NOTE: target for parentPipe specified in main_ars.py
                 # (target is ParallelWorker fcn defined up top)
-                parentPipe.send(
-                    [_EXPLORE, [self.normalizer, self.policy, "+", deltas[i]]])
+                parentPipe.send([
+                    _EXPLORE,
+                    [
+                        self.normalizer, self.policy, "+", deltas[i],
+                        self.desired_velocity, self.desired_rate
+                    ]
+                ])
             for i in range(self.policy.num_deltas):
                 # Receive cummulative reward from each rollout
                 positive_rewards[i] = parentPipes[i].recv()[0]
@@ -289,8 +301,13 @@ class ARSAgent():
             for i in range(self.policy.num_deltas):
                 # Execute each rollout on a separate thread
                 parentPipe = parentPipes[i]
-                parentPipe.send(
-                    [_EXPLORE, [self.normalizer, self.policy, "-", deltas[i]]])
+                parentPipe.send([
+                    _EXPLORE,
+                    [
+                        self.normalizer, self.policy, "-", deltas[i],
+                        self.desired_velocity, self.desired_rate
+                    ]
+                ])
             for i in range(self.policy.num_deltas):
                 # Receive cummulative reward from each rollout
                 negative_rewards[i] = parentPipes[i].recv()[0]
@@ -322,7 +339,26 @@ class ARSAgent():
 
         # Execute Current Policy
         eval_reward = self.deploy()
+        self.last_reward = eval_reward
         return eval_reward
+
+    def evolve_state(self):
+        """ Change desired velocity and rate parameters
+            over course of training if success criteria
+            is met for current goals
+        """
+        if self.last_reward > 400.0:
+            self.successes += 1
+
+        if self.successes > 10:
+            self.successes = 0
+
+            # 10 phases for fwd vel
+            # start at 0.5 m/s and increment -= 0.1
+            # down to -0.5 m/s
+            self.desired_velocity -= 0.1
+            print("SUCCESS: NEW DESIRED VELOCITY IS {}".format(
+                self.desired_velocity))
 
     def save(self, filename):
         """ Save the Policy
