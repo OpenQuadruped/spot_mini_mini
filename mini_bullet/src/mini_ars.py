@@ -100,8 +100,7 @@ def main():
 
     # Start multiprocessing
     for proc_num in range(num_processes):
-        p = mp.Process(target=ParallelWorker,
-                       args=(childPipes[proc_num], env))
+        p = mp.Process(target=ParallelWorker, args=(childPipes[proc_num], env))
         p.start()
         processes.append(p)
 
@@ -119,8 +118,9 @@ def main():
         # episode_reward = agent.train()
         # +1 to account for 0 indexing.
         # +0 on ep_timesteps since it will increment +1 even if done=True
-        print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(
-            t, episode_num, policy.episode_steps, episode_reward))
+        print("Total T: {} Episode Num: {} Episode T: {} Reward: {}, >400: {}".
+              format(t, episode_num, policy.episode_steps, episode_reward,
+                     agent.successes))
         # Reset environment
         evaluations.append(episode_reward)
         episode_reward = 0
@@ -131,7 +131,8 @@ def main():
             # evaluate_agent(agent, env_name, seed,
             np.save(results_path + "/" + str(file_name), evaluations)
             if save_model:
-                agent.save(models_path + "/" + str(file_name) + str(t))
+                agent.save(models_path + "/" + str(file_name) +
+                           str(episode_num))
                 # replay_buffer.save(t)
 
         episode_num += 1

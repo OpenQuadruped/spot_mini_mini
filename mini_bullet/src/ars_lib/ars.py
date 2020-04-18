@@ -340,6 +340,9 @@ class ARSAgent():
         # Execute Current Policy
         eval_reward = self.deploy()
         self.last_reward = eval_reward
+
+        # Call evolve_state function to adjust reward/state
+        self.evolve_state()
         return eval_reward
 
     def evolve_state(self):
@@ -349,6 +352,8 @@ class ARSAgent():
         """
         if self.last_reward > 400.0:
             self.successes += 1
+        elif self.successes > 0:
+            self.successes -= 1
 
         if self.successes > 10:
             self.successes = 0
