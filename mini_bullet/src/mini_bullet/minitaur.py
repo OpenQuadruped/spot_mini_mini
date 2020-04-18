@@ -43,7 +43,9 @@ class Minitaur(object):
                  torque_control_enabled=False,
                  motor_overheat_protection=False,
                  on_rack=False,
-                 kd_for_pd_controllers=0.3):
+                 kd_for_pd_controllers=0.3,
+                 desired_velocity=0.5,
+                 desired_rate=0.0):
         """Constructs a minitaur and reset it to the initial states.
 
     Args:
@@ -67,6 +69,9 @@ class Minitaur(object):
         the walking gait. In this mode, the minitaur's base is hanged midair so
         that its walking gait is clearer to visualize.
       kd_for_pd_controllers: kd value for the pd controllers of the motors.
+
+      desired_velocity: additional observation space dimension for policy
+      desired_rate: additional observation space dimension for policy
     """
         # used to calculate minitaur acceleration
         self.prev_lin_twist = np.array([0, 0, 0])
@@ -100,6 +105,10 @@ class Minitaur(object):
             self._kp = 1
             self._kd = 1
         self.time_step = time_step
+
+        self.desired_velocity = desired_velocity
+        self.desired_rate = desired_rate
+
         self.Reset()
 
     def _RecordMassInfoFromURDF(self):
@@ -126,13 +135,19 @@ class Minitaur(object):
             self._joint_name_to_id[motor_name] for motor_name in MOTOR_NAMES
         ]
 
-    def Reset(self, reload_urdf=True):
+    def Reset(self, reload_urdf=True, desired_velocity=None, desired_rate=None):
         """Reset the minitaur to its initial states.
 
     Args:
       reload_urdf: Whether to reload the urdf file. If not, Reset() just place
         the minitaur back to its starting position.
     """
+        # UPDATE DESIRED VELOCITY AND RATE STATES
+        if desired_velocity is not None:
+            self.desired_velocity = desired_velocity
+        if desired_rate is not None:
+            self.desired_rate = desired_rate
+
         if reload_urdf:
             if self._self_collision_enabled:
                 self.quadruped = self._pybullet_client.loadURDF(
@@ -325,11 +340,14 @@ class Minitaur(object):
         # acc, rate in x,y,z
         upper_bound[2:8] = np.inf
 
+        # 8:10 are velocity and rate bounds, min and max are +-10
+        upper_bound[8:10] = 10
+
         # NOTE: ORIGINAL BELOW
-        # upper_bound[8:8 + self.num_motors] = math.pi  # Joint angle.
-        # upper_bound[self.num_motors + 8:2 * self.num_motors + 8] = (
+        # upper_bound[10:10 + self.num_motors] = math.pi  # Joint angle.
+        # upper_bound[self.num_motors + 10:2 * self.num_motors + 10] = (
         #     motor.MOTOR_SPEED_LIMIT)  # Joint velocity.
-        # upper_bound[2 * self.num_motors + 8:3 * self.num_motors + 8] = (
+        # upper_bound[2 * self.num_motors + 10:3 * self.num_motors + 10] = (
         #     motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
         # upper_bound[3 *
         #             self.num_motors:] = 1.0  # Quaternion of base orientation.
@@ -387,6 +405,10 @@ class Minitaur(object):
         observation.append(pitch)
         observation.extend(lin_acc.tolist())
         observation.extend(list(ang_twist))
+
+        # velocity and rate
+        observation.append(self.desired_velocity)
+        observation.append(self.desired_rate)
 
         # NOTE: ORIGINAL BELOW
         # observation.extend(self.GetMotorAngles().tolist())

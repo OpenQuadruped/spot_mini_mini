@@ -76,7 +76,9 @@ class MinitaurBulletEnv(gym.Env):
             on_rack=False,
             render=False,
             kd_for_pd_controllers=0.3,
-            env_randomizer=minitaur_env_randomizer.MinitaurEnvRandomizer()):
+            env_randomizer=minitaur_env_randomizer.MinitaurEnvRandomizer(),
+            desired_velocity=0.5,
+            desired_rate=0.0):
         """Initialize the minitaur gym environment.
 
     Args:
@@ -161,6 +163,9 @@ class MinitaurBulletEnv(gym.Env):
             self._pybullet_client = bc.BulletClient()
 
         self.seed()
+
+        self.desired_velocity = desired_velocity
+        self.desired_rate = desired_rate
         self.reset()
         observation_high = (self.minitaur.GetObservationUpperBound() +
                             OBSERVATION_EPS)
@@ -183,7 +188,13 @@ class MinitaurBulletEnv(gym.Env):
     def configure(self, args):
         self._args = args
 
-    def reset(self):
+    def reset(self, desired_velocity=None, desired_rate=None):
+
+        if desired_velocity is not None:
+            self.desired_velocity = desired_velocity
+        if desired_rate is not None:
+            self.desired_rate = desired_rate
+
         if self._hard_reset:
             self._pybullet_client.resetSimulation()
             self._pybullet_client.setPhysicsEngineParameter(
@@ -212,9 +223,13 @@ class MinitaurBulletEnv(gym.Env):
                 torque_control_enabled=self._torque_control_enabled,
                 motor_overheat_protection=motor_protect,
                 on_rack=self._on_rack,
-                kd_for_pd_controllers=self._kd_for_pd_controllers))
+                kd_for_pd_controllers=self._kd_for_pd_controllers,
+                desired_velocity=self.desired_velocity,
+                desired_rate=self.desired_rate))
         else:
-            self.minitaur.Reset(reload_urdf=False)
+            self.minitaur.Reset(reload_urdf=False,
+                                desired_velocity=self.desired_velocity,
+                                desired_rate=self.desired_rate)
 
         if self._env_randomizer is not None:
             self._env_randomizer.randomize_env(self)
@@ -398,13 +413,13 @@ class MinitaurBulletEnv(gym.Env):
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = self.minitaur.prev_lin_twist[0]
         # print("FORWARD SPEED: {}".format(fwd_speed))
-        desired_speed = 0.4
+        # self.desired_velocity = 0.4
 
         # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
         # to make sure that at 0vel there is 0 reawrd.
         # also squishes allowable tolerance
-        forward_reward = (-(fwd_speed - (desired_speed))**2) * (
-            (1.0 / desired_speed)**2) + 1.0
+        forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
+            (1.0 / self.desired_velocity)**2) + 1.0
         if forward_reward < 0.0 and fwd_speed < 0.0:
             forward_reward = 0.0
 
