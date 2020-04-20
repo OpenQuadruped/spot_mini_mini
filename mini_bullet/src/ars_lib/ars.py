@@ -205,6 +205,9 @@ class ARSAgent():
         self.phase = 0
         self.desired_velocity = 0.5
         self.desired_rate = 0.0
+        self.flip = 0
+        self.increment = 0
+        self.scaledown = True
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
@@ -350,20 +353,55 @@ class ARSAgent():
             over course of training if success criteria
             is met for current goals
         """
-        if self.last_reward > 400.0:
-            self.successes += 1
-        elif self.successes > 0:
-            self.successes -= 1
+        # if self.last_reward > 400.0:
+        #     self.successes += 1
+        # elif self.successes > 0:
+        #     self.successes -= 1
 
-        if self.successes > 10:
-            self.successes = 0
+        # if self.successes > 10:
+        #     self.successes = 0
 
-            # 10 phases for fwd vel
-            # start at 0.5 m/s and increment -= 0.1
-            # down to -0.5 m/s
-            self.desired_velocity -= 0.1
-            print("SUCCESS: NEW DESIRED VELOCITY IS {}".format(
-                self.desired_velocity))
+        #     # # alternating phases for fwd vel
+        #     # # start at 0.5 m/s and then flip to -0.5ms
+        #     # # then increment to -0.4ms, then flip to 0.4ms
+        #     # # then decrement to 0.3ms etc.
+
+        #     # if self.flip % 2 == 0:
+        #     #     self.desired_velocity *= -1
+        #     # else:
+        #     #     if self.increment % 2 != 0:
+        #     #         if self.scaledown:
+        #     #             if np.sign(self.desired_velocity) < 0:
+        #     #                 self.desired_velocity += 0.1
+        #     #             else:
+        #     #                 self.desired_velocity -= 0.1
+        #     #         else:
+        #     #             if np.sign(self.desired_velocity) > 0:
+        #     #                 self.desired_velocity += 0.1
+        #     #             else:
+        #     #                 self.desired_velocity -= 0.1
+
+        #     #     if self.desired_velocity == 0.0:
+        #     #         self.scaledown = False
+        #     #     elif abs(self.desired_velocity) == 0.5:
+        #     #         self.increment = True
+        #     if self.scaledown:
+        #         self.desired_velocity -= 0.1
+        #     else:
+        #         self.desired_velocity += 0.1
+
+        #     if self.desired_velocity >= 0.5:
+        #         self.scaledown = True
+        #     elif self.desired_velocity <= -0.5:
+        #         self.scaledown = False
+
+        #     # self.flip += 1
+        #     # self.increment += 1
+
+        self.desired_velocity = np.random.uniform(low=-0.5, high=0.5)
+
+        print("NEW DESIRED VELOCITY IS {}".format(
+            self.desired_velocity))
 
     def save(self, filename):
         """ Save the Policy

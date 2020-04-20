@@ -412,15 +412,20 @@ class MinitaurBulletEnv(gym.Env):
 
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = self.minitaur.prev_lin_twist[0]
-        # print("FORWARD SPEED: {}".format(fwd_speed))
+        # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
+        #     fwd_speed, obs[-2]))
         # self.desired_velocity = 0.4
 
         # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
         # to make sure that at 0vel there is 0 reawrd.
         # also squishes allowable tolerance
-        forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
-            (1.0 / self.desired_velocity)**2) + 1.0
-        if forward_reward < 0.0 and fwd_speed < 0.0:
+        if self.desired_velocity != 0:
+            forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
+                (1.0 / self.desired_velocity)**2) + 1.0
+        else:
+            forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
+                (1.0 / 0.1)**2) + 1.0
+        if forward_reward < 0.0:
             forward_reward = 0.0
 
         forward_reward = fwd_speed
