@@ -1,9 +1,38 @@
 import pickle
 import numpy as np
-
+import numpy.random as npr
 # Multiprocessing package for python
 # Parallelization improvements based on:
 # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/ARS/ars.py
+
+
+"""
+
+--> policy has shape [stat_dim. hidden_dim, action_dim]
+out_action = np.dot(th2, nnfun(np.dot(th1, state)))
+
+th1 = npr.normal(0., 1.0, size=(hidden_dim1, state_dim))
+th2 = npr.normal(0., 1.0, size=(action_dim, hidden_dim1))
+
+# in other words
+# theta = [th1, th2]
+
+# sample thetas from here
+# theta + delta_theta ~ p(theta, eps)
+# delta_theta ~ N(0, eps)
+
+
+# cluster of parameters
+delta_th1 = npr.normal(size=th1.shape)
+delta_th2 = npr.normal(size=th1.shape)
+
+do rollout +, - from (delta_th1, delta_th2)
+
+Update mean th1, th2 from rollouts
+
+"""
+
+
 
 # Messages for Pipes
 _RESET = 1
@@ -99,7 +128,12 @@ class Policy():
 
         # input/ouput matrix with weights set to zero
         # this is the perception matrix (policy)
-        self.theta = np.zeros((action_dim, state_dim))
+        layers = [state_dim, 32, 32, action_dim]
+        self.theta = [] # theta is a list of weights and biases
+        for in_dim, out_dim in zip(layers[:-1], layers[1:]):
+            self.theta.append(
+                [npr.normal(0., 0.1, size=(out_dim, in_dim)), npr.normal(0., 0.1, size=(out_dim,))]
+            )
 
     def evaluate(self, state, delta=None, direction=None):
         """ state --> action
@@ -108,12 +142,22 @@ class Policy():
         # if direction is None, deployment mode: takes dot product
         # to directly sample from (use) policy
         if direction is None:
-            return self.theta.dot(state)
+            x = state
+            for w, b in self.theta[:-1]:
+                x = np.tanh(np.dot(w, x) + b)
+            w, b = self.theta[-1]
+            return np.dot(w, x) + b
 
         # otherwise, add (+-) directed expl_noise before taking dot product (policy)
         # this is where the 2*num_deltas rollouts comes from
         elif direction == "+":
-            return (self.theta + self.expl_noise * delta).dot(state)
+            x = state
+            for (w, b), (dw, db) in zip(self.theta[:-1], delta[:-1]):
+                x = np.tanh(np.dot(w+self.expl_noise*dw, x) + b+self.expl_noise*db)
+            w, b = self.theta[-1]
+            dw, db = delta[-1]
+            return np.dot(w+self.expl_noise*dw, x) + b + self.expl_noise*db
+
         elif direction == "-":
             return (self.theta - self.expl_noise * delta).dot(state)
 
@@ -133,20 +177,29 @@ class Policy():
         # print("SHAPE OF EXAMPLE DELTA NOMRALLY: {}".format(
         #     np.random.randn(self.theta.shape[0], self.theta.shape[1]).shape))
 
+        # each element in deltas will be a list of w,b that parametrize the nn Polic
+        # that is, each list in deltas is a list of w,b deltas
         for _ in range(self.num_deltas):
             deltas.append(
-                np.random.randn(self.theta.shape[0], self.theta.shape[1]))
-
+                [[npr.normal(0., 1.0, size=w.shape), npr.normal(0., 1.0, size=b.shape)], for w,b in self.theta]
+            )
+        # list of num_deltas of delta parameters of size dim(self.theta)
         return deltas
 
     def update(self, rollouts, std_dev_rewards):
         """ Update policy weights (theta) based on rewards
             from 2*num_deltas rollouts
         """
+        # TODO: update the step dimensions [w,b for w,b in self.thetas]
         step = np.zeros(self.theta.shape)
+        # step = [[zeros(dim(w)), zeros(dim(b))] for w,b in self.thetas]
         for r_pos, r_neg, delta in rollouts:
             # how much to deviate from policy
-            step += (r_pos - r_neg) * delta
+            # TODO: update update rule so that deltas are updated from the list of deltas
+            # step will be a for loop over the deltas
+            step += (r_pos - r_neg) * delta # loop over each w,b delta
+
+        # TODO: update to list dims delta updates have to be along the list of w,b
         self.theta += self.learning_rate / (self.num_best_deltas *
                                             std_dev_rewards) * step
 
