@@ -109,7 +109,8 @@ class Minitaur(object):
         self.desired_velocity = desired_velocity
         self.desired_rate = desired_rate
 
-        self.Reset()
+        self.Reset(desired_velocity=desired_velocity,
+                   desired_rate=desired_rate)
 
     def _RecordMassInfoFromURDF(self):
         self._base_mass_urdf = self._pybullet_client.getDynamicsInfo(
@@ -135,7 +136,8 @@ class Minitaur(object):
             self._joint_name_to_id[motor_name] for motor_name in MOTOR_NAMES
         ]
 
-    def Reset(self, reload_urdf=True, desired_velocity=None, desired_rate=None):
+    def Reset(self, reload_urdf=True, desired_velocity=None,
+              desired_rate=None):
         """Reset the minitaur to its initial states.
 
     Args:
