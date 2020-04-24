@@ -1,11 +1,10 @@
 import pickle
 import numpy as np
 import numpy.random as npr
+import copy
 # Multiprocessing package for python
 # Parallelization improvements based on:
 # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/ARS/ars.py
-
-
 """
 
 --> policy has shape [stat_dim. hidden_dim, action_dim]
@@ -31,8 +30,6 @@ do rollout +, - from (delta_th1, delta_th2)
 Update mean th1, th2 from rollouts
 
 """
-
-
 
 # Messages for Pipes
 _RESET = 1
@@ -92,6 +89,77 @@ def ParallelWorker(childPipe, env):
     childPipe.close()
 
 
+class NN():
+    def __init__(self, input_dim=10, hidden_dim=32, output_dim=8):
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+
+        # Initialize Weights and Biases of hidden layers
+        self.th1_w = npr.normal(0.0,
+                                0.1,
+                                size=(self.hidden_dim, self.input_dim))
+        self.th1_b = npr.normal(0.0, 0.1, size=(self.hidden_dim,))
+        self.th2_w = npr.normal(0.0,
+                                0.1,
+                                size=(self.output_dim, self.hidden_dim))
+        self.th2_b = npr.normal(0.0, 0.1, size=(self.output_dim,))
+
+    def forward(self, state):
+        """ Forward computation for state-->action """
+        L1 = np.dot(self.th1_w, state) + self.th1_b
+        ACT1 = np.tanh(L1)
+        L2 = np.dot(self.th2_w, ACT1) + self.th2_b
+        ACT2 = np.tanh(L2)
+
+        return ACT2
+
+    def addsub_delta(self, direction, nn, epsilon):
+        """ Perturb main NN using deltas
+        """
+        if direction == "+":
+            self.th1_w += nn.th1_w * epsilon
+            self.th1_b += nn.th1_b * epsilon
+            self.th2_w += nn.th2_w * epsilon
+            self.th2_b += nn.th2_b * epsilon
+        elif direction == "-":
+            self.th1_w -= nn.th1_w * epsilon
+            self.th1_b -= nn.th1_b * epsilon
+            self.th2_w -= nn.th2_w * epsilon
+            self.th2_b -= nn.th2_b * epsilon
+
+    def update_params(self, step, learning_rate, std_dev, num_best_deltas):
+        """ Modify policy based on step - used by main NN
+        """
+        coef = learning_rate / (num_best_deltas * std_dev)
+        self.th1_w += step.th1_w * coef
+        self.th1_b += step.th1_b * coef
+        self.th2_w += step.th2_w * coef
+        self.th2_b += step.th2_b * coef
+
+    def update_step(self, r_pos, r_neg, delta):
+        """  update NN from rewards and delta
+             which will be passed to main NN during update
+        """
+        coef = (r_pos - r_neg)
+        self.th1_w += delta.th1_w * coef
+        self.th1_b += delta.th1_b * coef
+        self.th2_w += delta.th2_w * coef
+        self.th2_b += delta.th2_b * coef
+
+    def compose_step(self):
+        """  reset NN params to zero
+        """
+        self.th1_w = npr.normal(0.0,
+                                0.0,
+                                size=(self.hidden_dim, self.input_dim))
+        self.th1_b = npr.normal(0.0, 0.0, size=(self.hidden_dim,))
+        self.th2_w = npr.normal(0.0,
+                                0.0,
+                                size=(self.output_dim, self.hidden_dim))
+        self.th2_b = npr.normal(0.0, 0.0, size=(self.output_dim,))
+
+
 class Policy():
     """ state --> action
     """
@@ -112,7 +180,9 @@ class Policy():
             # weight of sampled exploration noise
             expl_noise=0.01,
             # for seed gen
-            seed=1):
+            seed=1,
+            # NN hidden layer
+            hidden_dim=32):
 
         # Tunable Hyperparameters
         self.learning_rate = learning_rate
@@ -125,41 +195,34 @@ class Policy():
         self.seed = seed
         self.state_dim = state_dim
         self.action_dim = action_dim
+        self.hidden_dim = hidden_dim
 
-        # input/ouput matrix with weights set to zero
-        # this is the perception matrix (policy)
-        layers = [state_dim, 32, 32, action_dim]
-        self.theta = [] # theta is a list of weights and biases
-        for in_dim, out_dim in zip(layers[:-1], layers[1:]):
-            self.theta.append(
-                [npr.normal(0., 0.1, size=(out_dim, in_dim)), npr.normal(0., 0.1, size=(out_dim,))]
-            )
+        # Perceptron Matrix (policy)
+        self.theta = NN(state_dim, hidden_dim, action_dim)
 
     def evaluate(self, state, delta=None, direction=None):
         """ state --> action
         """
 
+        perturbed_theta = copy.deepcopy(self.theta)
+
         # if direction is None, deployment mode: takes dot product
         # to directly sample from (use) policy
-        if direction is None:
+        if direction is None or delta is None:
             x = state
-            for w, b in self.theta[:-1]:
-                x = np.tanh(np.dot(w, x) + b)
-            w, b = self.theta[-1]
-            return np.dot(w, x) + b
+            return self.theta.forward(x)
 
-        # otherwise, add (+-) directed expl_noise before taking dot product (policy)
+        # otherwise, add (+-) directed expl_noise before using policy
         # this is where the 2*num_deltas rollouts comes from
         elif direction == "+":
             x = state
-            for (w, b), (dw, db) in zip(self.theta[:-1], delta[:-1]):
-                x = np.tanh(np.dot(w+self.expl_noise*dw, x) + b+self.expl_noise*db)
-            w, b = self.theta[-1]
-            dw, db = delta[-1]
-            return np.dot(w+self.expl_noise*dw, x) + b + self.expl_noise*db
+            perturbed_theta.addsub_delta(direction, delta, self.expl_noise)
+            return perturbed_theta.forward(x)
 
         elif direction == "-":
-            return (self.theta - self.expl_noise * delta).dot(state)
+            x = state
+            perturbed_theta.addsub_delta(direction, delta, self.expl_noise)
+            return perturbed_theta.forward(x)
 
     def sample_deltas(self):
         """ generate array of random expl_noise matrices. Length of
@@ -168,21 +231,8 @@ class Policy():
             n=action dim
         """
         deltas = []
-        # print("SHAPE THING with *: {}".format(*self.theta.shape))
-        # print("SHAPE THING NORMALLY: ({}, {})".format(self.theta.shape[0],
-        #                                               self.theta.shape[1]))
-        # print("ACTUAL SHAPE: {}".format(self.theta.shape))
-        # print("SHAPE OF EXAMPLE DELTA WITH *: {}".format(
-        #     np.random.randn(*self.theta.shape).shape))
-        # print("SHAPE OF EXAMPLE DELTA NOMRALLY: {}".format(
-        #     np.random.randn(self.theta.shape[0], self.theta.shape[1]).shape))
-
-        # each element in deltas will be a list of w,b that parametrize the nn Polic
-        # that is, each list in deltas is a list of w,b deltas
         for _ in range(self.num_deltas):
-            deltas.append(
-                [[npr.normal(0., 1.0, size=w.shape), npr.normal(0., 1.0, size=b.shape)], for w,b in self.theta]
-            )
+            deltas.append(NN(self.state_dim, self.hidden_dim, self.action_dim))
         # list of num_deltas of delta parameters of size dim(self.theta)
         return deltas
 
@@ -190,18 +240,16 @@ class Policy():
         """ Update policy weights (theta) based on rewards
             from 2*num_deltas rollouts
         """
-        # TODO: update the step dimensions [w,b for w,b in self.thetas]
-        step = np.zeros(self.theta.shape)
+        step = NN(self.state_dim, self.hidden_dim, self.action_dim)
+        step.compose_step()
         # step = [[zeros(dim(w)), zeros(dim(b))] for w,b in self.thetas]
         for r_pos, r_neg, delta in rollouts:
             # how much to deviate from policy
-            # TODO: update update rule so that deltas are updated from the list of deltas
             # step will be a for loop over the deltas
-            step += (r_pos - r_neg) * delta # loop over each w,b delta
+            step.update_step(r_pos, r_neg, delta)
 
-        # TODO: update to list dims delta updates have to be along the list of w,b
-        self.theta += self.learning_rate / (self.num_best_deltas *
-                                            std_dev_rewards) * step
+        self.theta.update_params(step, self.learning_rate, std_dev_rewards,
+                                 self.num_best_deltas)
 
 
 class Normalizer():
@@ -453,8 +501,7 @@ class ARSAgent():
 
         self.desired_velocity = np.random.uniform(low=-0.5, high=0.5)
 
-        print("NEW DESIRED VELOCITY IS {}".format(
-            self.desired_velocity))
+        print("NEW DESIRED VELOCITY IS {}".format(self.desired_velocity))
 
     def save(self, filename):
         """ Save the Policy
