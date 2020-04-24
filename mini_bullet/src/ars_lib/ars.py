@@ -499,7 +499,7 @@ class ARSAgent():
         #     # self.flip += 1
         #     # self.increment += 1
 
-        self.desired_velocity = np.random.uniform(low=-0.5, high=0.5)
+        # self.desired_velocity = np.random.uniform(low=-0.5, high=0.5)
 
         print("NEW DESIRED VELOCITY IS {}".format(self.desired_velocity))
 
