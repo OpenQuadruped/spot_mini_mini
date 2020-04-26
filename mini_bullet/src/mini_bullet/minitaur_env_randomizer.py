@@ -66,3 +66,9 @@ class MinitaurEnvRandomizer(env_randomizer_base.EnvRandomizerBase):
         randomized_foot_friction = random.uniform(MINITAUR_LEG_FRICTION[0],
                                                   MINITAUR_LEG_FRICTION[1])
         minitaur.SetFootFriction(randomized_foot_friction)
+
+        # print(
+        # "Randomizing Minitaur: \t Base Mass: {} \t Leg Mass: {} \t Damping: {} \t Friction: {} \t Voltage: {}"
+        # .format(randomized_base_mass, randomized_leg_masses,
+        #         randomized_motor_damping, randomized_foot_friction,
+        #         randomized_battery_voltage))
