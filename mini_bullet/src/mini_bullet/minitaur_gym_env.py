@@ -474,7 +474,7 @@ class MinitaurBulletEnv(gym.Env):
         self._get_observation()
         observation = np.array(self._observation)
         if self._observation_noise_stdev > 0:
-            observation += (np.random.normal(
+            observation += (self.np_random.normal(
                 scale=self._observation_noise_stdev, size=observation.shape) *
                             self.minitaur.GetObservationUpperBound())
         return observation

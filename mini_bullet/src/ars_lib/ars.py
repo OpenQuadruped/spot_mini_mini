@@ -168,7 +168,7 @@ class Policy():
             state_dim,
             action_dim,
             # how much weights are changed each step
-            learning_rate=0.02,
+            learning_rate=0.05,
             # number of random expl_noise variations generated
             # each step
             # each one will be run for 2 epochs, + and -
@@ -180,7 +180,7 @@ class Policy():
             # weight of sampled exploration noise
             expl_noise=0.01,
             # for seed gen
-            seed=1,
+            seed=0,
             # NN hidden layer
             hidden_dim=32):
 
@@ -499,7 +499,7 @@ class ARSAgent():
         #     # self.flip += 1
         #     # self.increment += 1
 
-        # self.desired_velocity = np.random.uniform(low=-0.5, high=0.5)
+        self.desired_velocity = np.random.uniform(low=0.0, high=0.5)
 
         print("NEW DESIRED VELOCITY IS {}".format(self.desired_velocity))
 
