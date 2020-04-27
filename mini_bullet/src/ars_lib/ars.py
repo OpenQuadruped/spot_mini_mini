@@ -304,7 +304,7 @@ class ARSAgent():
         self.successes = 0
         self.last_reward = 0.0
         self.phase = 0
-        self.desired_velocity = 1.0
+        self.desired_velocity = 0.5
         self.desired_rate = 0.0
         self.flip = 0
         self.increment = 0
@@ -499,7 +499,7 @@ class ARSAgent():
         #     # self.flip += 1
         #     # self.increment += 1
 
-        self.desired_velocity = np.random.uniform(low=0.0, high=0.5)
+        # self.desired_velocity = np.random.uniform(low=0.0, high=0.5)
 
         print("NEW DESIRED VELOCITY IS {}".format(self.desired_velocity))
 
