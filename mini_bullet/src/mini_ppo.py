@@ -56,6 +56,14 @@ def main():
     print("ACTION DIM: {}".format(action_dim))
     max_action = float(env.action_space.high[0])
 
+    # Prepare environments
+    # returns one state per environment
+    envs = [make_env() for i in range(NUM_ENVS)]
+    envs = SubprocVecEnv(envs)
+
+    ac = ActorCritic(state_dim, action_dim, HIDDEN_DIM).to(device)
+    agent = PPO(ac=ac)
+
     print("RECORDED MAX ACTION: {}".format(max_action))
 
     agent_num = 0
@@ -72,16 +80,6 @@ def main():
     episode_reward = 0
     episode_timesteps = 0
     episode_num = 0
-
-    # Prepare environments
-    # returns one state per environment
-    envs = [make_env() for i in range(NUM_ENVS)]
-    envs = SubprocVecEnv(envs)
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.shape[0]
-
-    ac = ActorCritic(state_dim, action_dim, HIDDEN_DIM).to(device)
-    agent = PPO(ac=ac)
 
     # Reset all environments
     state = envs.reset()
