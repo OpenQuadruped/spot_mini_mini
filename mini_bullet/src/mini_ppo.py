@@ -2,31 +2,26 @@
 
 import numpy as np
 
-from ppo_lib import ActorCritic, PPO
+from ppo_lib.ppo import PPO, ActorCritic, NUM_ENVS, HIDDEN_DIM, device
 from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
+from lib.multiprocessing_env import SubprocVecEnv
 
-import gym
 import torch
 import os
-
-import time
 
 
 def main():
     """ The main() function. """
 
-    print("STARTING MINITAUR SAC")
+    print("STARTING MINITAUR PPO")
 
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 4e6
-    start_timesteps = 1e4  # 1e3 for testing purposes, use 1e4 for real
-    expl_noise = 0.1
-    batch_size = 256
-    eval_freq = 1e4
+    eval_freq = 1e2
     save_model = True
-    file_name = "mini_sac_"
+    file_name = "mini_ppo_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
@@ -54,93 +49,66 @@ def main():
 
     print("RECORDED MAX ACTION: {}".format(max_action))
 
-    hidden_dim = 256
-    policy = PolicyNetwork(state_dim, action_dim, hidden_dim)
+    agent_num = 0
 
-    replay_buffer_size = 1000000
-    replay_buffer = ReplayBuffer(replay_buffer_size)
+    if os.path.exists(models_path + "/" + file_name + str(agent_num) +
+                      "_policy"):
+        print("Loading Existing agent")
+        agent.load(models_path + "/" + file_name + str(agent_num))
 
-    sac = SoftActorCritic(policy=policy,
-                          state_dim=state_dim,
-                          action_dim=action_dim,
-                          replay_buffer=replay_buffer)
-
-    policy_num = 0
-    if os.path.exists(models_path + "/" + file_name + str(policy_num) +
-                      "_critic"):
-        print("Loading Existing Policy")
-        sac.load(models_path + "/" + file_name + str(policy_num))
-        policy = sac.policy_net
-
-    # Evaluate untrained policy and init list for storage
+    # Evaluate untrained agent and init list for storage
     evaluations = []
 
-    state = env.reset()
-    done = False
+    env.reset()
     episode_reward = 0
     episode_timesteps = 0
     episode_num = 0
 
-    print("STARTED MINITAUR SAC")
+    # Prepare environments
+    # returns one state per environment
+    envs = [MinitaurBulletEnv(render=False) for i in range(NUM_ENVS)]
+    envs = SubprocVecEnv(envs)
+    state_dim = envs.observation_space.shape[0]
+    action_dim = envs.action_space.shape[0]
 
-    for t in range(int(max_timesteps)):
+    ac = ActorCritic(state_dim, action_dim, HIDDEN_DIM).to(device)
+    agent = PPO(ac=ac)
+
+    # Reset all environments
+    state = envs.reset()
+
+    print("STARTED MINITAUR PPO")
+
+    t = 0
+    while t < (int(max_timesteps)):
+
+        # Maximum timesteps per rollout
+        t += 500
 
         episode_timesteps += 1
 
-        # Select action randomly or according to policy
-        # Random Action - no training yet, just storing in buffer
-        if t < start_timesteps:
-            action = env.action_space.sample()
-            # rospy.logdebug("Sampled Action")
-        else:
-            # According to policy + Exploraton Noise
-            # print("POLICY Action")
-            """ Note we clip at +-0.99.... because Gazebo
-                has problems executing actions at the
-                position limit (breaks model)
-            """
-            action = np.clip(
-                (policy.get_action(np.array(state)) + np.random.normal(
-                    0, max_action * expl_noise, size=action_dim)), -max_action,
-                max_action)
-            # rospy.logdebug("Selected Acton: {}".format(action))
-
-        # Perform action
-        next_state, reward, done, _ = env.step(action)
-        done_bool = float(done)
-
-        # Store data in replay buffer
-        replay_buffer.push(state, action, reward, next_state, done_bool)
-
-        state = next_state
-        episode_reward += reward
-
-        # Train agent after collecting sufficient data for buffer
-        if t >= start_timesteps and len(replay_buffer) > batch_size:
-            sac.soft_q_update(batch_size)
-
-        if done:
-            # +1 to account for 0 indexing.
-            # +0 on ep_timesteps since it will increment +1 even if done=True
-            print(
-                "Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(
-                    t + 1, episode_num, episode_timesteps, episode_reward))
-            # Reset environment
-            state, done = env.reset(), False
-            evaluations.append(episode_reward)
-            episode_reward = 0
-            episode_timesteps = 0
-            episode_num += 1
+        state = agent.train(state, envs)
+        episode_reward = agent.deploy(env)
+        # episode_reward = agent.train()
+        # +1 to account for 0 indexing.
+        # +0 on ep_timesteps since it will increment +1 even if done=True
+        print("Episode Num: {} Reward: {}".format(
+            episode_num, episode_reward))
+        # Reset environment
+        evaluations.append(episode_reward)
+        episode_reward = 0
+        episode_timesteps = 0
 
         # Evaluate episode
-        if (t + 1) % eval_freq == 0:
-            # evaluate_policy(policy, env_name, seed,
+        if (episode_num + 1) % eval_freq == 0:
+            # evaluate_agent(agent, env_name, seed,
             np.save(results_path + "/" + str(file_name), evaluations)
             if save_model:
-                sac.save(models_path + "/" + str(file_name) + str(t))
+                agent.save(models_path + "/" + str(file_name) +
+                           str(episode_num))
                 # replay_buffer.save(t)
 
-    env.close()
+        episode_num += 1
 
 
 if __name__ == '__main__':
