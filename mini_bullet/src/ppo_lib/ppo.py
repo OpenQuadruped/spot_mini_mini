@@ -48,7 +48,7 @@ class ActorCritic(nn.Module):
             nn.ReLU(),
             # ACTIVATED LAYER -> ACTION
             nn.Linear(hidden_dim, action_dim),
-        )
+            nn.Tanh())
 
         # Critic Network
         self.critic = nn.Sequential(
@@ -108,142 +108,139 @@ class PPO():
         # Adam Optimizer
         self.optimizer = optim.Adam(ac.parameters(), lr=self.learning_rate)
 
-        def train(self, state, envs):
-            # TRAINING DATA STORAGE
-            log_probs = []
-            values = []
-            states = []
-            actions = []
-            rewards = []
-            done_masks = []
+    def train(self, state, envs):
+        # TRAINING DATA STORAGE
+        log_probs = []
+        values = []
+        states = []
+        actions = []
+        rewards = []
+        done_masks = []
 
-            # Each PPO_STEP generates s,a,r,s',d from each env
-            for _ in range(PPO_STEPS):
-                state = torch.FloatTensor(state).to(device)
-                # Get stochastic action and value from state using ac
+        # Each PPO_STEP generates s,a,r,s',d from each env
+        for _ in range(PPO_STEPS):
+            state = torch.FloatTensor(state).to(device)
+            # Get stochastic action and value from state using ac
+            dist, value = self.ac(state)
+
+            action = torch.clamp(dist.sample(), -1, 1)
+            # each state, reward, done is a list of results from each parallel environment
+            next_state, reward, done, _ = envs.step(action.cpu().numpy())
+            # Calculate the log probability of an action given a state
+            log_prob = dist.log_prob(action)
+
+            # STORE training data
+            # Each list is PPO_STEPS long and each entry in the list is NUM_ENVS wide
+            # Log probs
+            log_probs.append(log_prob)
+            # Critic Values
+            values.append(value)
+            # Rewards
+            rewards.append(torch.FloatTensor(reward).unsqueeze(1).to(device))
+            # Done done_masks
+            done_masks.append(
+                torch.FloatTensor(1 - done).unsqueeze(1).to(device))
+
+            states.append(state)
+            actions.append(action)
+
+            state = next_state
+
+        # Run the final next_state through the network to get its value
+        # This is to properly calculate the returns
+        next_state = torch.FloatTensor(next_state).to(device)
+        _, next_value = self.ac(next_state)
+
+        # Calculate Generalized Advantage Estimation
+        returns = self.compute_gae(next_value, rewards, done_masks, values)
+
+        # Concatenate returns from GAE to Torch Tensor (so 1D list instead of 2D but longer)
+        returns = torch.cat(returns).detach()
+        log_probs = torch.cat(log_probs).detach()
+        values = torch.cat(values).detach()
+        states = torch.cat(states)
+        actions = torch.cat(actions)
+        # Subtract values from returns to get advantages (remember we added those in for returns)
+        advantage = returns - values
+        # Normalize Advantages (-mean)/std
+        advantage = self.normalize(advantage)
+
+        # Update Policy
+        self.update(states, actions, log_probs, returns, advantage)
+
+        return state
+
+    def deploy(self, env, deterministic=True):
+        state = env.reset()
+        done = False
+        total_reward = 0
+        while not done:
+            state = torch.FloatTensor(state).unsqueeze(0).to(device)
+            dist, _ = self.ac(state)
+            action = np.clip(dist.mean.detach().cpu().numpy()[0], -1, 1) if deterministic \
+                else np.clip(dist.sample().cpu().numpy()[0], -1, 1)
+            next_state, reward, done, _ = env.step(action)
+            state = next_state
+            total_reward += reward
+        return total_reward
+
+    def normalize(self, x):
+        x -= x.mean()
+        x /= (x.std() + 1e-8)
+        return x
+
+    def compute_gae(self, next_value, rewards, done_masks, values):
+        values = values + [next_value]
+        gae = 0
+        returns = []
+        # Loop backwards from latest experience to first experience
+        for step in reversed(range(len(rewards))):
+            # NOTE: multiplying by a mask of 0 (done), we don't consider the value of the next
+            # State since the current state is terminal
+            delta = rewards[step] + self.gamma * values[
+                step + 1] * done_masks[step] - values[step]
+            # GAE is a moving average of advantages discounted by gamma * gae_lam
+            gae = delta + self.gamma * self.gae_lambda * done_masks[step] * gae
+
+            # To get the return, we add the value of the state we previously subtracted
+            # prepend to get correct order back
+            returns.insert(0, gae + values[step])
+        return returns
+
+    def rollouts(self, states, actions, log_probs, returns, advantage):
+        batch_size = states.size(0)
+        # generates random mini-batches until we have covered the full batch
+        for _ in range(batch_size // self.mini_batch_size):
+            rand_ids = np.random.randint(0, batch_size, self.mini_batch_size)
+            yield states[rand_ids, :], actions[rand_ids, :], log_probs[
+                rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
+
+    def update(self, states, actions, log_probs, returns, advantages):
+
+        # PPO EPOCHS is the number of times we will go through ALL the training data to make updates
+        for _ in range(self.ppo_epochs):
+            # grabs random mini-batches several times until we have covered all data
+            for state, action, old_log_probs, return_, advantage in self.rollouts(
+                    states, actions, log_probs, returns, advantages):
                 dist, value = self.ac(state)
+                entropy = dist.entropy().mean()
+                new_log_probs = dist.log_prob(action)
 
-                action = dist.sample()
-                # each state, reward, done is a list of results from each parallel environment
-                next_state, reward, done, _ = envs.step(action.cpu().numpy())
-                # Calculate the log probability of an action given a state
-                log_prob = dist.log_prob(action)
+                # To get ratio in log space, subtract then exp
+                ratio = (new_log_probs - old_log_probs).exp()
+                # Surrogate 1: r*A
+                surr1 = ratio * advantage
+                # Surrogate 2: r_clip*A
+                surr2 = torch.clamp(ratio, 1.0 - self.ppo_epsilon,
+                                    1.0 + self.ppo_epsilon) * advantage
+                # Loss is min of surr1,surr2 (mean over all envs)
+                actor_loss = -torch.min(surr1, surr2).mean()
+                # MSE between GAE returns and Critic-estimated state value
+                critic_loss = (return_ - value).pow(2).mean()
 
-                # STORE training data
-                # Each list is PPO_STEPS long and each entry in the list is NUM_ENVS wide
-                # Log probs
-                log_probs.append(log_prob)
-                # Critic Values
-                values.append(value)
-                # Rewards
-                rewards.append(
-                    torch.FloatTensor(reward).unsqueeze(1).to(device))
-                # Done done_masks
-                done_masks.append(
-                    torch.FloatTensor(1 - done).unsqueeze(1).to(device))
+                # Final loss for backprop
+                loss = self.critic_discount * critic_loss + actor_loss - self.entropy_beta * entropy
 
-                states.append(state)
-                actions.append(action)
-
-                state = next_state
-
-            # Run the final next_state through the network to get its value
-            # This is to properly calculate the returns
-            next_state = torch.FloatTensor(next_state).to(device)
-            _, next_value = self.ac(next_state)
-
-            # Calculate Generalized Advantage Estimation
-            returns = self.compute_gae(next_value, rewards, done_masks, values)
-
-            # Concatenate returns from GAE to Torch Tensor (so 1D list instead of 2D but longer)
-            returns = torch.cat(returns).detach()
-            log_probs = torch.cat(log_probs).detach()
-            values = torch.cat(values).detach()
-            states = torch.cat(states)
-            actions = torch.cat(actions)
-            # Subtract values from returns to get advantages (remember we added those in for returns)
-            advantage = returns - values
-            # Normalize Advantages (-mean)/std
-            advantage = self.normalize(advantage)
-
-            # Update Policy
-            self.update(states, actions, log_probs, returns, advantage)
-
-            return state
-
-        def deploy(self, env, deterministic=True):
-            state = env.reset()
-            done = False
-            total_reward = 0
-            while not done:
-                state = torch.FloatTensor(state).unsqueeze(0).to(device)
-                dist, _ = self.ac(state)
-                action = dist.mean.detach().cpu().numpy()[0] if deterministic \
-                    else dist.sample().cpu().numpy()[0]
-                next_state, reward, done, _ = env.step(action)
-                state = next_state
-                total_reward += reward
-            return total_reward
-
-        def normalize(self, x):
-            x -= x.mean()
-            x /= (x.std() + 1e-8)
-            return x
-
-        def compute_gae(self, next_value, rewards, done_masks, values):
-            values = values + [next_value]
-            gae = 0
-            returns = []
-            # Loop backwards from latest experience to first experience
-            for step in reversed(range(len(rewards))):
-                # NOTE: multiplying by a mask of 0 (done), we don't consider the value of the next
-                # State since the current state is terminal
-                delta = rewards[step] + self.gamma * values[
-                    step + 1] * done_masks[step] - values[step]
-                # GAE is a moving average of advantages discounted by gamma * gae_lam
-                gae = delta + self.gamma * self.gae_lambda * done_masks[
-                    step] * gae
-
-                # To get the return, we add the value of the state we previously subtracted
-                # prepend to get correct order back
-                returns.insert(0, gae + values[step])
-            return returns
-
-        def rollouts(self, states, actions, log_probs, returns, advantage):
-            batch_size = states.size(0)
-            # generates random mini-batches until we have covered the full batch
-            for _ in range(batch_size // self.mini_batch_size):
-                rand_ids = np.random.randint(0, batch_size,
-                                             self.mini_batch_size)
-                yield states[rand_ids, :], actions[rand_ids, :], log_probs[
-                    rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
-
-        def update(self, states, actions, log_probs, returns, advantages):
-
-            # PPO EPOCHS is the number of times we will go through ALL the training data to make updates
-            for _ in range(self.ppo_epochs):
-                # grabs random mini-batches several times until we have covered all data
-                for state, action, old_log_probs, return_, advantage in self.rollouts(
-                        states, actions, log_probs, returns, advantages):
-                    dist, value = ac(state)
-                    entropy = dist.entropy().mean()
-                    new_log_probs = dist.log_prob(action)
-
-                    # To get ratio in log space, subtract then exp
-                    ratio = (new_log_probs - old_log_probs).exp()
-                    # Surrogate 1: r*A
-                    surr1 = ratio * advantage
-                    # Surrogate 2: r_clip*A
-                    surr2 = torch.clamp(ratio, 1.0 - self.ppo_epsilon,
-                                        1.0 + self.ppo_epsilon) * advantage
-                    # Loss is min of surr1,surr2 (mean over all envs)
-                    actor_loss = -torch.min(surr1, surr2).mean()
-                    # MSE between GAE returns and Critic-estimated state value
-                    critic_loss = (return_ - value).pow(2).mean()
-
-                    # Final loss for backprop
-                    loss = self.critic_discount * critic_loss + actor_loss - self.entropy_beta * entropy
-
-                    self.optimizer.zero_grad()
-                    loss.backward()
-                    self.optimizer.step()
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
