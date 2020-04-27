@@ -6,8 +6,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Normal
 
-from lib.multiprocessing_env import SubprocVecEnv
-
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
 # Envs to run in parallel
@@ -86,7 +84,7 @@ class ActorCritic(nn.Module):
 
 class PPO():
     def __init__(self,
-                 ac=ActorCritic(0, 0),
+                 ac,
                  learning_rate=LEARNING_RATE,
                  gamma=GAMMA,
                  gae_lambda=GAE_LAMBDA,
@@ -110,13 +108,13 @@ class PPO():
         # Adam Optimizer
         self.optimizer = optim.Adam(ac.parameters(), lr=ppo.learning_rate)
 
-        def deploy(self, env, ac, device, deterministic=True):
+        def deploy(self, env, deterministic=True):
             state = env.reset()
             done = False
             total_reward = 0
             while not done:
                 state = torch.FloatTensor(state).unsqueeze(0).to(device)
-                dist, _ = ac(state)
+                dist, _ = self.ac(state)
                 action = dist.mean.detach().cpu().numpy()[0] if deterministic \
                     else dist.sample().cpu().numpy()[0]
                 next_state, reward, done, _ = env.step(action)
