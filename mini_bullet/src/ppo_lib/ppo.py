@@ -9,7 +9,7 @@ from torch.distributions import Normal
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
 # Envs to run in parallel
-NUM_ENVS = 1
+NUM_ENVS = 8
 # Hidden layer neurons
 HIDDEN_DIM = 256
 # passed to Adam Optimizer
@@ -47,8 +47,7 @@ class ActorCritic(nn.Module):
             # ACTIVATION
             nn.ReLU(),
             # ACTIVATED LAYER -> ACTION
-            nn.Linear(hidden_dim, action_dim),
-            nn.Tanh())
+            nn.Linear(hidden_dim, action_dim))
 
         # Critic Network
         self.critic = nn.Sequential(
@@ -107,6 +106,11 @@ class PPO():
 
         # Adam Optimizer
         self.optimizer = optim.Adam(ac.parameters(), lr=self.learning_rate)
+
+    def save(self, filename):
+        torch.save(self.ac.state_dict(), filename + "_policy")
+        torch.save(self.optimizer.state_dict(),
+                   filename + "_optimizer")
 
     def train(self, state, envs):
         # TRAINING DATA STORAGE
