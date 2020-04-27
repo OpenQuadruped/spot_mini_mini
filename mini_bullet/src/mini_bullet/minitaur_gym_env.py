@@ -16,6 +16,7 @@ from . import minitaur
 import pybullet_data
 from . import minitaur_env_randomizer
 from pkg_resources import parse_version
+from gym.envs.registration import register
 
 currentdir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -32,6 +33,13 @@ ACTION_EPS = 0.01
 OBSERVATION_EPS = 0.01
 RENDER_HEIGHT = 720
 RENDER_WIDTH = 960
+
+# Register as OpenAI Gym Environment
+register(
+    id="MinitaurBulletEnv-v999",
+    entry_point='mini_bullet.minitaur_gym_env:MinitaurBulletEnv',
+    max_episode_steps=500,
+)
 
 
 class MinitaurBulletEnv(gym.Env):

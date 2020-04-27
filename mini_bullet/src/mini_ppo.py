@@ -4,10 +4,19 @@ import numpy as np
 
 from ppo_lib.ppo import PPO, ActorCritic, NUM_ENVS, HIDDEN_DIM, device
 from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
-from lib.multiprocessing_env import SubprocVecEnv
+from multi_proc.multiproc import SubprocVecEnv
+import gym
 
 import torch
 import os
+
+
+def make_env():
+    # returns a function which creates a single environment
+    def _thunk():
+        env = gym.make("MinitaurBulletEnv-v999")
+        return env
+    return _thunk
 
 
 def main():
@@ -66,10 +75,10 @@ def main():
 
     # Prepare environments
     # returns one state per environment
-    envs = [MinitaurBulletEnv(render=False) for i in range(NUM_ENVS)]
+    envs = [make_env() for i in range(NUM_ENVS)]
     envs = SubprocVecEnv(envs)
-    state_dim = envs.observation_space.shape[0]
-    action_dim = envs.action_space.shape[0]
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.shape[0]
 
     ac = ActorCritic(state_dim, action_dim, HIDDEN_DIM).to(device)
     agent = PPO(ac=ac)

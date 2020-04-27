@@ -9,7 +9,7 @@ from torch.distributions import Normal
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
 # Envs to run in parallel
-NUM_ENVS = 8
+NUM_ENVS = 1
 # Hidden layer neurons
 HIDDEN_DIM = 256
 # passed to Adam Optimizer
@@ -106,7 +106,70 @@ class PPO():
         self.ppo_epochs = ppo_epochs
 
         # Adam Optimizer
-        self.optimizer = optim.Adam(ac.parameters(), lr=ppo.learning_rate)
+        self.optimizer = optim.Adam(ac.parameters(), lr=self.learning_rate)
+
+        def train(self, state, envs):
+            # TRAINING DATA STORAGE
+            log_probs = []
+            values = []
+            states = []
+            actions = []
+            rewards = []
+            done_masks = []
+
+            # Each PPO_STEP generates s,a,r,s',d from each env
+            for _ in range(PPO_STEPS):
+                state = torch.FloatTensor(state).to(device)
+                # Get stochastic action and value from state using ac
+                dist, value = self.ac(state)
+
+                action = dist.sample()
+                # each state, reward, done is a list of results from each parallel environment
+                next_state, reward, done, _ = envs.step(action.cpu().numpy())
+                # Calculate the log probability of an action given a state
+                log_prob = dist.log_prob(action)
+
+                # STORE training data
+                # Each list is PPO_STEPS long and each entry in the list is NUM_ENVS wide
+                # Log probs
+                log_probs.append(log_prob)
+                # Critic Values
+                values.append(value)
+                # Rewards
+                rewards.append(
+                    torch.FloatTensor(reward).unsqueeze(1).to(device))
+                # Done done_masks
+                done_masks.append(
+                    torch.FloatTensor(1 - done).unsqueeze(1).to(device))
+
+                states.append(state)
+                actions.append(action)
+
+                state = next_state
+
+            # Run the final next_state through the network to get its value
+            # This is to properly calculate the returns
+            next_state = torch.FloatTensor(next_state).to(device)
+            _, next_value = self.ac(next_state)
+
+            # Calculate Generalized Advantage Estimation
+            returns = self.compute_gae(next_value, rewards, done_masks, values)
+
+            # Concatenate returns from GAE to Torch Tensor (so 1D list instead of 2D but longer)
+            returns = torch.cat(returns).detach()
+            log_probs = torch.cat(log_probs).detach()
+            values = torch.cat(values).detach()
+            states = torch.cat(states)
+            actions = torch.cat(actions)
+            # Subtract values from returns to get advantages (remember we added those in for returns)
+            advantage = returns - values
+            # Normalize Advantages (-mean)/std
+            advantage = self.normalize(advantage)
+
+            # Update Policy
+            self.update(states, actions, log_probs, returns, advantage)
+
+            return state
 
         def deploy(self, env, deterministic=True):
             state = env.reset()
@@ -146,7 +209,7 @@ class PPO():
                 returns.insert(0, gae + values[step])
             return returns
 
-        def ppo_iter(self, states, actions, log_probs, returns, advantage):
+        def rollouts(self, states, actions, log_probs, returns, advantage):
             batch_size = states.size(0)
             # generates random mini-batches until we have covered the full batch
             for _ in range(batch_size // self.mini_batch_size):
@@ -155,12 +218,12 @@ class PPO():
                 yield states[rand_ids, :], actions[rand_ids, :], log_probs[
                     rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
 
-        def ppo_update(self, states, actions, log_probs, returns, advantages):
+        def update(self, states, actions, log_probs, returns, advantages):
 
             # PPO EPOCHS is the number of times we will go through ALL the training data to make updates
             for _ in range(self.ppo_epochs):
                 # grabs random mini-batches several times until we have covered all data
-                for state, action, old_log_probs, return_, advantage in self.ppo_iter(
+                for state, action, old_log_probs, return_, advantage in self.rollouts(
                         states, actions, log_probs, returns, advantages):
                     dist, value = ac(state)
                     entropy = dist.entropy().mean()
@@ -184,68 +247,3 @@ class PPO():
                     self.optimizer.zero_grad()
                     loss.backward()
                     self.optimizer.step()
-
-            def train(self, state, envs):
-                # TRAINING DATA STORAGE
-                log_probs = []
-                values = []
-                states = []
-                actions = []
-                rewards = []
-                done_masks = []
-
-                # Each PPO_STEP generates s,a,r,s',d from each env
-                for _ in range(PPO_STEPS):
-                    state = torch.FloatTensor(state).to(device)
-                    # Get stochastic action and value from state using ac
-                    dist, value = self.ac(state)
-
-                    action = dist.sample()
-                    # each state, reward, done is a list of results from each parallel environment
-                    next_state, reward, done, _ = envs.step(
-                        action.cpu().numpy())
-                    # Calculate the log probability of an action given a state
-                    log_prob = dist.log_prob(action)
-
-                    # STORE training data
-                    # Each list is PPO_STEPS long and each entry in the list is NUM_ENVS wide
-                    # Log probs
-                    log_probs.append(log_prob)
-                    # Critic Values
-                    values.append(value)
-                    # Rewards
-                    rewards.append(
-                        torch.FloatTensor(reward).unsqueeze(1).to(device))
-                    # Done done_masks
-                    done_masks.append(
-                        torch.FloatTensor(1 - done).unsqueeze(1).to(device))
-
-                    states.append(state)
-                    actions.append(action)
-
-                    state = next_state
-
-                # Run the final next_state through the network to get its value
-                # This is to properly calculate the returns
-                next_state = torch.FloatTensor(next_state).to(device)
-                _, next_value = self.ac(next_state)
-
-                # Calculate Generalized Advantage Estimation
-                returns = self.compute_gae(next_value, rewards, done_masks,
-                                           values)
-
-                # Concatenate returns from GAE to Torch Tensor (so 1D list instead of 2D but longer)
-                returns = torch.cat(returns).detach()
-                log_probs = torch.cat(log_probs).detach()
-                values = torch.cat(values).detach()
-                states = torch.cat(states)
-                actions = torch.cat(actions)
-                # Subtract values from returns to get advantages (remember we added those in for returns)
-                advantage = returns - values
-                # Normalize Advantages (-mean)/std
-                advantage = self.normalize(advantage)
-
-                # Update Policy
-                self.ppo_update(states, actions, log_probs, returns, advantage)
-
-                return state
