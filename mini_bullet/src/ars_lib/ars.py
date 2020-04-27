@@ -304,7 +304,7 @@ class ARSAgent():
         self.successes = 0
         self.last_reward = 0.0
         self.phase = 0
-        self.desired_velocity = 0.5
+        self.desired_velocity = 1.0
         self.desired_rate = 0.0
         self.flip = 0
         self.increment = 0
