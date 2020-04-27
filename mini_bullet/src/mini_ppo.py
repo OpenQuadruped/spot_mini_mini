@@ -28,7 +28,7 @@ def main():
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 4e6
-    eval_freq = 1e2
+    eval_freq = 1e1
     save_model = True
     file_name = "mini_ppo_"
 
@@ -108,6 +108,7 @@ def main():
 
         # Evaluate episode
         if (episode_num + 1) % eval_freq == 0:
+            print("Saving Episode: {}".format(episode_num))
             # evaluate_agent(agent, env_name, seed,
             np.save(results_path + "/" + str(file_name), evaluations)
             if save_model:
