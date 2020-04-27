@@ -109,8 +109,7 @@ class PPO():
 
     def save(self, filename):
         torch.save(self.ac.state_dict(), filename + "_policy")
-        torch.save(self.optimizer.state_dict(),
-                   filename + "_optimizer")
+        torch.save(self.optimizer.state_dict(), filename + "_optimizer")
 
     def train(self, state, envs):
         # TRAINING DATA STORAGE
@@ -122,7 +121,7 @@ class PPO():
         done_masks = []
 
         # Each PPO_STEP generates s,a,r,s',d from each env
-        for _ in range(PPO_STEPS):
+        for _ in range(self.ppo_steps):
             state = torch.FloatTensor(state).to(device)
             # Get stochastic action and value from state using ac
             dist, value = self.ac(state)
@@ -170,22 +169,30 @@ class PPO():
         advantage = self.normalize(advantage)
 
         # Update Policy
+        # print("-------------------------")
+        # print("Updating Policy")
         self.update(states, actions, log_probs, returns, advantage)
 
         return state
 
     def deploy(self, env, deterministic=True):
+        # print("Deploying Test")
+        # print("-------------------------")
         state = env.reset()
         done = False
         total_reward = 0
+        episode_steps = 0
         while not done:
             state = torch.FloatTensor(state).unsqueeze(0).to(device)
             dist, _ = self.ac(state)
-            action = np.clip(dist.mean.detach().cpu().numpy()[0], -1, 1) if deterministic \
-                else np.clip(dist.sample().cpu().numpy()[0], -1, 1)
+            action = torch.clamp(dist.mean, -1, 1).detach().cpu().numpy()[0] if deterministic \
+                else torch.clamp(dist.sample(), -1, 1).cpu().numpy()[0]
             next_state, reward, done, _ = env.step(action)
             state = next_state
             total_reward += reward
+            episode_steps += 1
+            if episode_steps > 500:
+                done = True
         return total_reward
 
     def normalize(self, x):
