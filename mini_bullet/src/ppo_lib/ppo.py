@@ -47,7 +47,8 @@ class ActorCritic(nn.Module):
             # ACTIVATION
             nn.ReLU(),
             # ACTIVATED LAYER -> ACTION
-            nn.Linear(hidden_dim, action_dim))
+            nn.Linear(hidden_dim, action_dim),
+            nn.Tanh())
 
         # Critic Network
         self.critic = nn.Sequential(
@@ -110,6 +111,13 @@ class PPO():
     def save(self, filename):
         torch.save(self.ac.state_dict(), filename + "_policy")
         torch.save(self.optimizer.state_dict(), filename + "_optimizer")
+
+    def load(self, filename):
+        self.ac.load_state_dict(
+            torch.load(filename + "_policy", map_location=device))
+        self.optimizer.load_state_dict(
+            torch.load(filename + "_optimizer",
+                       map_location=device))
 
     def train(self, state, envs):
         # TRAINING DATA STORAGE
