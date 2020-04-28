@@ -43,7 +43,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = MinitaurBulletEnv(render=False)
+    env = MinitaurBulletEnv(render=True)
 
     # Set seeds
     env.seed(seed)
@@ -56,17 +56,12 @@ def main():
     print("ACTION DIM: {}".format(action_dim))
     max_action = float(env.action_space.high[0])
 
-    # Prepare environments
-    # returns one state per environment
-    envs = [make_env() for i in range(NUM_ENVS)]
-    envs = SubprocVecEnv(envs)
-
     ac = ActorCritic(state_dim, action_dim, HIDDEN_DIM).to(device)
     agent = PPO(ac=ac)
 
     print("RECORDED MAX ACTION: {}".format(max_action))
 
-    agent_num = 0
+    agent_num = 2709
 
     if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                       "_policy"):
@@ -81,10 +76,7 @@ def main():
     episode_timesteps = 0
     episode_num = 0
 
-    # Reset all environments
-    state = envs.reset()
-
-    print("STARTED MINITAUR PPO")
+    print("STARTED MINITAUR TEST SCRIPT")
 
     t = 0
     while t < (int(max_timesteps)):
@@ -94,8 +86,7 @@ def main():
 
         episode_timesteps += 1
 
-        state = agent.train(state, envs)
-        episode_reward = agent.deploy(env, False)
+        episode_reward = agent.deploy(env)
         # episode_reward = agent.train()
         # +1 to account for 0 indexing.
         # +0 on ep_timesteps since it will increment +1 even if done=True
@@ -105,18 +96,9 @@ def main():
         evaluations.append(episode_reward)
         episode_reward = 0
         episode_timesteps = 0
-
-        # Evaluate episode
-        if (episode_num + 1) % eval_freq == 0:
-            print("Saving Episode: {}".format(episode_num))
-            # evaluate_agent(agent, env_name, seed,
-            np.save(results_path + "/" + str(file_name), evaluations)
-            if save_model:
-                agent.save(models_path + "/" + str(file_name) +
-                           str(episode_num))
-                # replay_buffer.save(t)
-
         episode_num += 1
+
+    env.close()
 
 
 if __name__ == '__main__':
