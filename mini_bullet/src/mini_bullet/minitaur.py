@@ -341,7 +341,7 @@ class Minitaur(object):
         upper_bound[2:8] = np.inf
 
         # 8:10 are velocity and rate bounds, min and max are +-10
-        upper_bound[8:10] = 10
+        # upper_bound[8:10] = 10
 
         # NOTE: ORIGINAL BELOW
         # upper_bound[10:10 + self.num_motors] = math.pi  # Joint angle.
@@ -407,8 +407,8 @@ class Minitaur(object):
         observation.extend(list(ang_twist))
 
         # velocity and rate
-        observation.append(self.desired_velocity)
-        observation.append(self.desired_rate)
+        # observation.append(self.desired_velocity)
+        # observation.append(self.desired_rate)
 
         # NOTE: ORIGINAL BELOW
         # observation.extend(self.GetMotorAngles().tolist())

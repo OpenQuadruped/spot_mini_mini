@@ -64,10 +64,11 @@ class MinitaurBulletEnv(gym.Env):
 
             # WEIGHTS
             distance_weight=1.0,
-            energy_weight=0.000,
-            shake_weight=0.05,
+            rotation_weight=1.0,
+            energy_weight=0.0005,
+            shake_weight=0.005,
             drift_weight=2.0,
-            rp_weight=0.0,
+            rp_weight=0.05,
             rate_weight=0.2,
             distance_limit=float("inf"),
             observation_noise_stdev=0.0,
@@ -134,6 +135,7 @@ class MinitaurBulletEnv(gym.Env):
         self._is_render = render
         self._last_base_position = [0, 0, 0]
         self._distance_weight = distance_weight
+        self._rotation_weight = rotation_weight
         self._energy_weight = energy_weight
         self._drift_weight = drift_weight
         self._shake_weight = shake_weight
@@ -421,7 +423,7 @@ class MinitaurBulletEnv(gym.Env):
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = self.minitaur.prev_lin_twist[0]
         # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
-        #     fwd_speed, obs[-2]))
+        #     fwd_speed, self.desired_velocity))
         # self.desired_velocity = 0.4
 
         # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
@@ -436,7 +438,19 @@ class MinitaurBulletEnv(gym.Env):
         if forward_reward < 0.0:
             forward_reward = 0.0
 
-        forward_reward = fwd_speed
+        rotation_rate = obs[7]
+
+        if self.desired_rate != 0:
+            rot_reward = (-(rotation_rate - (self.desired_rate))**2) * (
+                (1.0 / self.desired_rate)**2) + 1.0
+        else:
+            rot_reward = (-(rotation_rate - (self.desired_rate))**2) * (
+                (1.0 / 0.1)**2) + 1.0
+
+        # Make sure that for forward-policy there is the appropriate rotation penalty
+        if self.desired_velocity != 0:
+            self._rotation_weight = self._rate_weight
+            rot_reward = - abs(obs[7])
 
         # penalty for nonzero roll, pitch
         rp_reward = -(abs(obs[0]) + abs(obs[1]))
@@ -446,7 +460,7 @@ class MinitaurBulletEnv(gym.Env):
         shake_reward = -abs(obs[4])
 
         # penalty for nonzero rate (x,y,z)
-        rate_reward = -(abs(obs[5]) + abs(obs[6]) + abs(obs[7]))
+        rate_reward = -(abs(obs[5]) + abs(obs[6]))
 
         # drift_reward = -abs(current_base_position[1] -
         #                     self._last_base_position[1])
@@ -458,10 +472,11 @@ class MinitaurBulletEnv(gym.Env):
         # shake_reward = -abs(current_base_position[2] -
         #                     self._last_base_position[2])
         self._last_base_position = current_base_position
-        energy_reward = np.abs(
+        energy_reward = - np.abs(
             np.dot(self.minitaur.GetMotorTorques(),
                    self.minitaur.GetMotorVelocities())) * self._time_step
-        reward = (self._distance_weight * forward_reward -
+        reward = (self._distance_weight * forward_reward +
+                  self._rotation_weight * rot_reward +
                   self._energy_weight * energy_reward +
                   self._drift_weight * drift_reward +
                   self._shake_weight * shake_reward +
