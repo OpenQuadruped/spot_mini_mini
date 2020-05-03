@@ -1,5 +1,4 @@
 """This file implements the gym environment of minitaur.
-
 """
 
 import os
@@ -16,6 +15,7 @@ from . import minitaur
 import pybullet_data
 from . import minitaur_env_randomizer
 from pkg_resources import parse_version
+from gym.envs.registration import register
 
 currentdir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -33,16 +33,21 @@ OBSERVATION_EPS = 0.01
 RENDER_HEIGHT = 720
 RENDER_WIDTH = 960
 
+# Register as OpenAI Gym Environment
+register(
+    id="MinitaurBulletEnv-v999",
+    entry_point='mini_bullet.minitaur_gym_env:MinitaurBulletEnv',
+    max_episode_steps=500,
+)
+
 
 class MinitaurBulletEnv(gym.Env):
     """The gym environment for the minitaur.
-
   It simulates the locomotion of a minitaur, a quadruped robot. The state space
   include the angles, velocities and torques for all the motors and the action
   space is the desired motor angle for each motor. The reward function is based
   on how far the minitaur walks in 1000 steps and penalizes the energy
   expenditure.
-
   """
     metadata = {
         "render.modes": ["human", "rgb_array"],
@@ -56,11 +61,12 @@ class MinitaurBulletEnv(gym.Env):
 
             # WEIGHTS
             distance_weight=1.0,
-            energy_weight=0.000,
-            shake_weight=0.05,
+            rotation_weight=1.0,
+            energy_weight=0.0005,
+            shake_weight=0.005,
             drift_weight=2.0,
-            rp_weight=0.0,
-            rate_weight=0.2,
+            rp_weight=0.05,
+            rate_weight=0.1,
             distance_limit=float("inf"),
             observation_noise_stdev=0.0,
             self_collision_enabled=True,
@@ -80,7 +86,6 @@ class MinitaurBulletEnv(gym.Env):
             desired_velocity=0.5,
             desired_rate=0.0):
         """Initialize the minitaur gym environment.
-
     Args:
       urdf_root: The path to the urdf data folder.
       action_repeat: The number of simulation steps before actions are applied.
@@ -126,6 +131,7 @@ class MinitaurBulletEnv(gym.Env):
         self._is_render = render
         self._last_base_position = [0, 0, 0]
         self._distance_weight = distance_weight
+        self._rotation_weight = rotation_weight
         self._energy_weight = energy_weight
         self._drift_weight = drift_weight
         self._shake_weight = shake_weight
@@ -262,16 +268,13 @@ class MinitaurBulletEnv(gym.Env):
 
     def step(self, action):
         """Step forward the simulation, given the action.
-
     Args:
       action: A list of desired motor angles for eight motors.
-
     Returns:
       observations: The angles, velocities and torques of all motors.
       reward: The reward for the current state-action pair.
       done: Whether the episode has ended.
       info: A dictionary that stores diagnostic information.
-
     Raises:
       ValueError: The action dimension is not the same as the number of motors.
       ValueError: The magnitude of actions is out of bounds.
@@ -335,7 +338,6 @@ class MinitaurBulletEnv(gym.Env):
 
     def get_minitaur_motor_angles(self):
         """Get the minitaur's motor angles.
-
     Returns:
       A numpy array of motor angles.
     """
@@ -345,7 +347,6 @@ class MinitaurBulletEnv(gym.Env):
 
     def get_minitaur_motor_velocities(self):
         """Get the minitaur's motor velocities.
-
     Returns:
       A numpy array of motor velocities.
     """
@@ -355,7 +356,6 @@ class MinitaurBulletEnv(gym.Env):
 
     def get_minitaur_motor_torques(self):
         """Get the minitaur's motor torques.
-
     Returns:
       A numpy array of motor torques.
     """
@@ -365,7 +365,6 @@ class MinitaurBulletEnv(gym.Env):
 
     def get_minitaur_base_orientation(self):
         """Get the minitaur's base orientation, represented by a quaternion.
-
     Returns:
       A numpy array of minitaur's orientation.
     """
@@ -373,11 +372,9 @@ class MinitaurBulletEnv(gym.Env):
 
     def is_fallen(self):
         """Decide whether the minitaur has fallen.
-
     If the up directions between the base and the world is larger (the dot
     product is smaller than 0.85) or the base is very low on the ground
     (the height is smaller than 0.13 meter), the minitaur is considered fallen.
-
     Returns:
       Boolean value that indicates whether the minitaur has fallen.
     """
@@ -399,9 +396,7 @@ class MinitaurBulletEnv(gym.Env):
         acc (y,z) = 0
         FORWARD-BACKWARD: rate(x,y,z) = 0
         --> HIDDEN REWARD: x(+-) velocity reference, not incl. in obs
-
         SPIN: acc(x) = 0, rate(x,y) = 0, rate (z) = rate reference
-
         Also include drift, energy vanilla rewards
         """
         current_base_position = self.minitaur.GetBasePosition()
@@ -412,22 +407,37 @@ class MinitaurBulletEnv(gym.Env):
 
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = self.minitaur.prev_lin_twist[0]
+        # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
+        #     fwd_speed, self.desired_velocity))
+        # self.desired_velocity = 0.4
 
         # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
         # to make sure that at 0vel there is 0 reawrd.
         # also squishes allowable tolerance
-        # obs[-2] is desired velocity
-        if obs[-2] != 0:
-            forward_reward = (-(fwd_speed -
-                                (obs[-2]))**2) * ((1.0 / obs[-2])**2) + 1.0
+        if self.desired_velocity != 0:
+            forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
+                (1.0 / self.desired_velocity)**2) + 1.0
         else:
-            forward_reward = (-(fwd_speed -
-                                (obs[-2]))**2) * ((1.0 / 0.1)**2) + 1.0
+            forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
+                (1.0 / 0.1)**2) + 1.0
         if forward_reward < 0.0:
             forward_reward = 0.0
 
-        # print("FORWARD SPEED: {} \t STATE SPEED: {} \t FORWARD REWARD: {}".
-        #       format(fwd_speed, obs[-2], forward_reward))
+        yaw_rate = obs[7]
+
+        if self.desired_rate != 0:
+            rot_reward = (-(yaw_rate - (self.desired_rate))**2) * (
+                (1.0 / self.desired_rate)**2) + 1.0
+        else:
+            rot_reward = (-(yaw_rate - (self.desired_rate))**2) * (
+                (1.0 / 0.1)**2) + 1.0
+
+        # Make sure that for forward-policy there is the appropriate rotation penalty
+        if self.desired_velocity != 0:
+            self._rotation_weight = self._rate_weight
+            rot_reward = - abs(obs[7])
+        elif self.desired_rate != 0:
+            forward_reward = 0.0
 
         # penalty for nonzero roll, pitch
         rp_reward = -(abs(obs[0]) + abs(obs[1]))
@@ -437,7 +447,7 @@ class MinitaurBulletEnv(gym.Env):
         shake_reward = -abs(obs[4])
 
         # penalty for nonzero rate (x,y,z)
-        rate_reward = -(abs(obs[5]) + abs(obs[6]) + abs(obs[7]))
+        rate_reward = -(abs(obs[5]) + abs(obs[6]))
 
         # drift_reward = -abs(current_base_position[1] -
         #                     self._last_base_position[1])
@@ -449,10 +459,11 @@ class MinitaurBulletEnv(gym.Env):
         # shake_reward = -abs(current_base_position[2] -
         #                     self._last_base_position[2])
         self._last_base_position = current_base_position
-        energy_reward = np.abs(
+        energy_reward = - np.abs(
             np.dot(self.minitaur.GetMotorTorques(),
                    self.minitaur.GetMotorVelocities())) * self._time_step
-        reward = (self._distance_weight * forward_reward -
+        reward = (self._distance_weight * forward_reward +
+                  self._rotation_weight * rot_reward +
                   self._energy_weight * energy_reward +
                   self._drift_weight * drift_reward +
                   self._shake_weight * shake_reward +
@@ -473,7 +484,7 @@ class MinitaurBulletEnv(gym.Env):
         self._get_observation()
         observation = np.array(self._observation)
         if self._observation_noise_stdev > 0:
-            observation += (np.random.normal(
+            observation += (self.np_random.normal(
                 scale=self._observation_noise_stdev, size=observation.shape) *
                             self.minitaur.GetObservationUpperBound())
         return observation

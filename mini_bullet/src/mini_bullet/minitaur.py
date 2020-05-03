@@ -1,5 +1,4 @@
 """This file implements the functionalities of a minitaur using pybullet.
-
 """
 import copy
 import math
@@ -28,7 +27,6 @@ BASE_LINK_ID = -1
 
 class Minitaur(object):
     """The minitaur class that simulates a quadruped robot from Ghost Robotics.
-
   """
     def __init__(self,
                  pybullet_client,
@@ -47,7 +45,6 @@ class Minitaur(object):
                  desired_velocity=0.5,
                  desired_rate=0.0):
         """Constructs a minitaur and reset it to the initial states.
-
     Args:
       pybullet_client: The instance of BulletClient to manage different
         simulations.
@@ -69,7 +66,6 @@ class Minitaur(object):
         the walking gait. In this mode, the minitaur's base is hanged midair so
         that its walking gait is clearer to visualize.
       kd_for_pd_controllers: kd value for the pd controllers of the motors.
-
       desired_velocity: additional observation space dimension for policy
       desired_rate: additional observation space dimension for policy
     """
@@ -109,8 +105,7 @@ class Minitaur(object):
         self.desired_velocity = desired_velocity
         self.desired_rate = desired_rate
 
-        self.Reset(desired_velocity=desired_velocity,
-                   desired_rate=desired_rate)
+        self.Reset()
 
     def _RecordMassInfoFromURDF(self):
         self._base_mass_urdf = self._pybullet_client.getDynamicsInfo(
@@ -136,10 +131,8 @@ class Minitaur(object):
             self._joint_name_to_id[motor_name] for motor_name in MOTOR_NAMES
         ]
 
-    def Reset(self, reload_urdf=True, desired_velocity=None,
-              desired_rate=None):
+    def Reset(self, reload_urdf=True, desired_velocity=None, desired_rate=None):
         """Reset the minitaur to its initial states.
-
     Args:
       reload_urdf: Whether to reload the urdf file. If not, Reset() just place
         the minitaur back to its starting position.
@@ -202,7 +195,6 @@ class Minitaur(object):
 
     def ResetPose(self, add_constraint):
         """Reset the pose of the minitaur.
-
     Args:
       add_constraint: Whether to add a constraint at the joints of two feet.
     """
@@ -211,7 +203,6 @@ class Minitaur(object):
 
     def _ResetPoseForLeg(self, leg_id, add_constraint):
         """Reset the initial pose for the leg.
-
     Args:
       leg_id: It should be 0, 1, 2, or 3, which represents the leg at
         front_left, back_left, front_right and back_right.
@@ -293,7 +284,6 @@ class Minitaur(object):
 
     def GetBasePosition(self):
         """Get the position of minitaur's base.
-
     Returns:
       The position of minitaur's base.
     """
@@ -303,7 +293,6 @@ class Minitaur(object):
 
     def GetBaseOrientation(self):
         """Get the orientation of minitaur's base, represented as quaternion.
-
     Returns:
       The orientation of minitaur's base.
     """
@@ -313,7 +302,6 @@ class Minitaur(object):
 
     def GetBaseTwitst(self):
         """Get the Twist of minitaur's base.
-
     Returns:
       The Twist of the minitaur's base.
     """
@@ -321,7 +309,6 @@ class Minitaur(object):
 
     def GetActionDimension(self):
         """Get the length of the action list.
-
     Returns:
       The length of the action list.
     """
@@ -329,11 +316,9 @@ class Minitaur(object):
 
     def GetObservationUpperBound(self):
         """Get the upper bound of the observation.
-
     Returns:
       The upper bound of an observation. See GetObservation() for the details
         of each element of an observation.
-
       NOTE: Changed just like GetObservation()
     """
         upper_bound = np.array([0.0] * self.GetObservationDimension())
@@ -343,7 +328,7 @@ class Minitaur(object):
         upper_bound[2:8] = np.inf
 
         # 8:10 are velocity and rate bounds, min and max are +-10
-        upper_bound[8:10] = 10
+        # upper_bound[8:10] = 10
 
         # NOTE: ORIGINAL BELOW
         # upper_bound[10:10 + self.num_motors] = math.pi  # Joint angle.
@@ -362,7 +347,6 @@ class Minitaur(object):
 
     def GetObservationDimension(self):
         """Get the length of the observation list.
-
     Returns:
       The length of the observation list.
     """
@@ -370,14 +354,11 @@ class Minitaur(object):
 
     def GetObservation(self):
         """Get the observations of minitaur.
-
     It includes the angles, velocities, torques and the orientation of the base.
-
     Returns:
       The observation list. observation[0:8] are motor angles. observation[8:16]
       are motor velocities, observation[16:24] are motor torques.
       observation[24:28] is the orientation of the base, in quaternion form.
-
       NOTE: DIVERGES FROM STOCK MINITAUR ENV. WILL LEAVE ORIGINAL COMMENTED
       For my purpose, the observation space includes Roll and Pitch, as well as
       acceleration and gyroscopic rate along the x,y,z axes. All of this
@@ -385,7 +366,6 @@ class Minitaur(object):
       will contain a hidden velocity reward (fwd, bwd) which cannot be measured
       and so is not included. For spinning, the gyroscopic z rate will be used
       as the (explicit) velocity reward.
-
       This version operates without motor torques, angles and velocities. Erwin
       Coumans' paper suggests a sparse observation space leads to higher reward
     """
@@ -409,8 +389,8 @@ class Minitaur(object):
         observation.extend(list(ang_twist))
 
         # velocity and rate
-        observation.append(self.desired_velocity)
-        observation.append(self.desired_rate)
+        # observation.append(self.desired_velocity)
+        # observation.append(self.desired_rate)
 
         # NOTE: ORIGINAL BELOW
         # observation.extend(self.GetMotorAngles().tolist())
@@ -421,13 +401,11 @@ class Minitaur(object):
 
     def ApplyAction(self, motor_commands):
         """Set the desired motor angles to the motors of the minitaur.
-
     The desired motor angles are clipped based on the maximum allowed velocity.
     If the pd_control_enabled is True, a torque is calculated according to
     the difference between current and desired joint angle, as well as the joint
     velocity. This torque is exerted to the motor. For more information about
     PD control, please refer to: https://en.wikipedia.org/wiki/PID_controller.
-
     Args:
       motor_commands: The eight desired motor angles.
     """
@@ -496,7 +474,6 @@ class Minitaur(object):
 
     def GetMotorAngles(self):
         """Get the eight motor angles at the current moment.
-
     Returns:
       Motor angles.
     """
@@ -509,7 +486,6 @@ class Minitaur(object):
 
     def GetMotorVelocities(self):
         """Get the velocity of all eight motors.
-
     Returns:
       Velocities of all eight motors.
     """
@@ -522,7 +498,6 @@ class Minitaur(object):
 
     def GetMotorTorques(self):
         """Get the amount of torques the motors are exerting.
-
     Returns:
       Motor torques of all eight motors.
     """
@@ -539,7 +514,6 @@ class Minitaur(object):
 
     def ConvertFromLegModel(self, actions):
         """Convert the actions that use leg model to the real motor actions.
-
     Args:
       actions: The theta, phi of the leg model.
     Returns:
@@ -579,11 +553,9 @@ class Minitaur(object):
 
     def SetLegMasses(self, leg_masses):
         """Set the mass of the legs.
-
     A leg includes leg_link and motor. All four leg_links have the same mass,
     which is leg_masses[0]. All four motors have the same mass, which is
     leg_mass[1].
-
     Args:
       leg_masses: The leg masses. leg_masses[0] is the mass of the leg link.
         leg_masses[1] is the mass of the motor.
@@ -599,7 +571,6 @@ class Minitaur(object):
 
     def SetFootFriction(self, foot_friction):
         """Set the lateral friction of the feet.
-
     Args:
       foot_friction: The lateral friction coefficient of the foot. This value is
         shared by all four feet.
