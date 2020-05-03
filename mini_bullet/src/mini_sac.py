@@ -80,6 +80,7 @@ def main():
     episode_reward = 0
     episode_timesteps = 0
     episode_num = 0
+    max_t_per_ep = 500
 
     print("STARTED MINITAUR SAC")
 
@@ -87,23 +88,7 @@ def main():
 
         episode_timesteps += 1
 
-        # Select action randomly or according to policy
-        # Random Action - no training yet, just storing in buffer
-        if t < start_timesteps:
-            action = env.action_space.sample()
-            # rospy.logdebug("Sampled Action")
-        else:
-            # According to policy + Exploraton Noise
-            # print("POLICY Action")
-            """ Note we clip at +-0.99.... because Gazebo
-                has problems executing actions at the
-                position limit (breaks model)
-            """
-            action = np.clip(
-                (policy.get_action(np.array(state)) + np.random.normal(
-                    0, max_action * expl_noise, size=action_dim)), -max_action,
-                max_action)
-            # rospy.logdebug("Selected Acton: {}".format(action))
+        action = sac.policy_net.get_action(state)
 
         # Perform action
         next_state, reward, done, _ = env.step(action)
@@ -116,8 +101,11 @@ def main():
         episode_reward += reward
 
         # Train agent after collecting sufficient data for buffer
-        if t >= start_timesteps and len(replay_buffer) > batch_size:
+        if len(replay_buffer) > batch_size:
             sac.soft_q_update(batch_size)
+
+        if episode_timesteps > max_t_per_ep:
+            done = True
 
         if done:
             # +1 to account for 0 indexing.

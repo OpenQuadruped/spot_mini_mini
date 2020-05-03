@@ -76,6 +76,7 @@ def main():
     episode_reward = 0
     episode_timesteps = 0
     episode_num = 0
+    max_t_per_ep = 500
 
     print("STARTED MINITAUR TD3")
 
@@ -114,6 +115,9 @@ def main():
         # Train agent after collecting sufficient data for buffer
         if t >= start_timesteps:
             policy.train(replay_buffer, batch_size)
+
+        if episode_timesteps > max_t_per_ep:
+            done = True
 
         if done:
             # +1 to account for 0 indexing.

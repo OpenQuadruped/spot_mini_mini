@@ -90,7 +90,7 @@ def ParallelWorker(childPipe, env):
 
 
 class NN():
-    def __init__(self, input_dim=10, hidden_dim=32, output_dim=8):
+    def __init__(self, input_dim=10, hidden_dim=256, output_dim=8):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
@@ -304,8 +304,8 @@ class ARSAgent():
         self.successes = 0
         self.last_reward = 0.0
         self.phase = 0
-        self.desired_velocity = 0.5
-        self.desired_rate = 0.0
+        self.desired_velocity = self.env.desired_velocity
+        self.desired_rate = self.env.desired_rate
         self.flip = 0
         self.increment = 0
         self.scaledown = True
