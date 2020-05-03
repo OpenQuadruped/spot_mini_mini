@@ -69,7 +69,7 @@ class MinitaurBulletEnv(gym.Env):
             shake_weight=0.005,
             drift_weight=2.0,
             rp_weight=0.05,
-            rate_weight=0.2,
+            rate_weight=0.1,
             distance_limit=float("inf"),
             observation_noise_stdev=0.0,
             self_collision_enabled=True,
@@ -86,7 +86,7 @@ class MinitaurBulletEnv(gym.Env):
             render=False,
             kd_for_pd_controllers=0.3,
             env_randomizer=minitaur_env_randomizer.MinitaurEnvRandomizer(),
-            desired_velocity=0.5,
+            desired_velocity=-0.5,
             desired_rate=0.0):
         """Initialize the minitaur gym environment.
 
@@ -438,19 +438,21 @@ class MinitaurBulletEnv(gym.Env):
         if forward_reward < 0.0:
             forward_reward = 0.0
 
-        rotation_rate = obs[7]
+        yaw_rate = obs[7]
 
         if self.desired_rate != 0:
-            rot_reward = (-(rotation_rate - (self.desired_rate))**2) * (
+            rot_reward = (-(yaw_rate - (self.desired_rate))**2) * (
                 (1.0 / self.desired_rate)**2) + 1.0
         else:
-            rot_reward = (-(rotation_rate - (self.desired_rate))**2) * (
+            rot_reward = (-(yaw_rate - (self.desired_rate))**2) * (
                 (1.0 / 0.1)**2) + 1.0
 
         # Make sure that for forward-policy there is the appropriate rotation penalty
         if self.desired_velocity != 0:
             self._rotation_weight = self._rate_weight
             rot_reward = - abs(obs[7])
+        elif self.desired_rate != 0:
+            forward_reward = 0.0
 
         # penalty for nonzero roll, pitch
         rp_reward = -(abs(obs[0]) + abs(obs[1]))
