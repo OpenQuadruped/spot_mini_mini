@@ -31,7 +31,7 @@ def main():
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
-    max_timesteps = 4e6
+    max_timesteps = 2e6
     eval_freq = 1e1
     save_model = True
     file_name = "mini_ars_"
