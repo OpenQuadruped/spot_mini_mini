@@ -203,7 +203,7 @@ class ARSAgent():
         self.successes = 0
         self.last_reward = 0.0
         self.phase = 0
-        self.desired_velocity = 0.5
+        self.desired_velocity = 0.2
         self.desired_rate = 0.0
         self.flip = 0
         self.increment = 0
@@ -403,6 +403,8 @@ class ARSAgent():
 
         print("NEW DESIRED VELOCITY IS {}".format(
             self.desired_velocity))
+        print("NEW DESIRED RATE IS {}".format(
+            self.desired_rate))
 
     def save(self, filename):
         """ Save the Policy

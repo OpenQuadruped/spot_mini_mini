@@ -83,8 +83,9 @@ class MinitaurBulletEnv(gym.Env):
             render=False,
             kd_for_pd_controllers=0.3,
             env_randomizer=minitaur_env_randomizer.MinitaurEnvRandomizer(),
-            desired_velocity=0.5,
-            desired_rate=0.0):
+            desired_velocity=0.2,
+            desired_rate=0.0,
+            lateral=True):
         """Initialize the minitaur gym environment.
     Args:
       urdf_root: The path to the urdf data folder.
@@ -172,6 +173,8 @@ class MinitaurBulletEnv(gym.Env):
 
         self.desired_velocity = desired_velocity
         self.desired_rate = desired_rate
+        # Change fwd/bwd reward to side-side reward
+        self.lateral = lateral
         self.reset()
         observation_high = (self.minitaur.GetObservationUpperBound() +
                             OBSERVATION_EPS)
@@ -382,8 +385,9 @@ class MinitaurBulletEnv(gym.Env):
         rot_mat = self._pybullet_client.getMatrixFromQuaternion(orientation)
         local_up = rot_mat[6:]
         pos = self.minitaur.GetBasePosition()
-        return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85
-                or pos[2] < 0.13)
+        # return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85
+        #         or pos[2] < 0.13)
+        return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85)
 
     def _termination(self):
         position = self.minitaur.GetBasePosition()
@@ -407,19 +411,36 @@ class MinitaurBulletEnv(gym.Env):
 
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = self.minitaur.prev_lin_twist[0]
+        lat_speed = self.minitaur.prev_lin_twist[1]
         # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
         #     fwd_speed, self.desired_velocity))
         # self.desired_velocity = 0.4
 
-        # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
-        # to make sure that at 0vel there is 0 reawrd.
-        # also squishes allowable tolerance
-        if self.desired_velocity != 0:
-            forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
-                (1.0 / self.desired_velocity)**2) + 1.0
+        # Modification for lateral/fwd rewards
+        # FORWARD
+        if not self.lateral:
+            # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
+            # to make sure that at 0vel there is 0 reawrd.
+            # also squishes allowable tolerance
+            if self.desired_velocity != 0:
+                forward_reward = (-(fwd_speed -
+                                    (self.desired_velocity))**2) * (
+                                        (1.0 / self.desired_velocity)**2) + 1.0
+            else:
+                forward_reward = (-(fwd_speed -
+                                    (self.desired_velocity))**2) * (
+                                        (1.0 / 0.1)**2) + 1.0
+        # LATERAL
         else:
-            forward_reward = (-(fwd_speed - (self.desired_velocity))**2) * (
-                (1.0 / 0.1)**2) + 1.0
+            if self.desired_velocity != 0:
+                forward_reward = (-(lat_speed -
+                                    (self.desired_velocity))**2) * (
+                                        (1.0 / self.desired_velocity)**2) + 1.0
+            else:
+                forward_reward = (-(lat_speed -
+                                    (self.desired_velocity))**2) * (
+                                        (1.0 / 0.1)**2) + 1.0
+
         if forward_reward < 0.0:
             forward_reward = 0.0
 
@@ -429,13 +450,13 @@ class MinitaurBulletEnv(gym.Env):
             rot_reward = (-(yaw_rate - (self.desired_rate))**2) * (
                 (1.0 / self.desired_rate)**2) + 1.0
         else:
-            rot_reward = (-(yaw_rate - (self.desired_rate))**2) * (
-                (1.0 / 0.1)**2) + 1.0
+            rot_reward = (-(yaw_rate -
+                            (self.desired_rate))**2) * ((1.0 / 0.1)**2) + 1.0
 
         # Make sure that for forward-policy there is the appropriate rotation penalty
         if self.desired_velocity != 0:
             self._rotation_weight = self._rate_weight
-            rot_reward = - abs(obs[7])
+            rot_reward = -abs(obs[7])
         elif self.desired_rate != 0:
             forward_reward = 0.0
 
@@ -456,10 +477,14 @@ class MinitaurBulletEnv(gym.Env):
         # NOTE: for side-side, drift reward becomes in x instead
         drift_reward = -abs(current_base_position[1])
 
+        # If Lateral, change drift reward
+        if self.lateral:
+            drift_reward = -abs(current_base_position[0])
+
         # shake_reward = -abs(current_base_position[2] -
         #                     self._last_base_position[2])
         self._last_base_position = current_base_position
-        energy_reward = - np.abs(
+        energy_reward = -np.abs(
             np.dot(self.minitaur.GetMotorTorques(),
                    self.minitaur.GetMotorVelocities())) * self._time_step
         reward = (self._distance_weight * forward_reward +
