@@ -18,15 +18,25 @@ namespace tele
         // \param
         Teleop(const int & linear, const int & angular, const double & l_scale, const double & a_scale);
 
-    private:
-
         // \brief Takes a Joy messages and converts it to linear and angular velocity (Twist)
         // \param joy: sensor_msgs describing Joystick inputs
-        // \returns: resultant Twist due to joy command
-        geometry_msgs::Twist joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
+        void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
 
-        int linear_, angular_;
+        // \brief returns the  most recently commanded Twist
+        // \returns: Twist
+        geometry_msgs::Twist return_twist();
+
+        // \brief returns a boolean indicating whether the movement switch trigger has been pressed
+        // \returns: switch_trigger(bool)
+        bool return_trigger();
+
+    private:
+
+        int linear_ = 1;
+        int angular_= 2;
         double l_scale_, a_scale_;
+        geometry_msgs::Twist twist;
+        bool switch_trigger;
     };
     
 }
