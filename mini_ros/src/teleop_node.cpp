@@ -15,6 +15,8 @@
 #include <mini_ros/minitaur.hpp>
 #include <mini_ros/teleop.hpp>
 #include "mini_ros/MiniCmd.h"
+#include "std_msgs/Bool.h"
+#include "std_srvs/Empty.h"
 
 #include <functional>  // To use std::bind
 
@@ -28,6 +30,8 @@ int main(int argc, char** argv)
     double frequency = 60;
     int linear = 1;
     int angular = 2;
+    int sw = 0;
+    int es = 1;
     double l_scale = 2.0;
     double a_scale = 2.0;
 
@@ -40,9 +44,17 @@ int main(int argc, char** argv)
     nh_.getParam("axis_angular", angular);
     nh_.getParam("scale_linear", l_scale);
     nh_.getParam("scale_angular", a_scale);
+    nh_.getParam("button_switch", sw);
+    nh_.getParam("button_estop", es);
 
-    tele::Teleop teleop = tele::Teleop(linear, angular, l_scale, a_scale);
+    tele::Teleop teleop = tele::Teleop(linear, angular, l_scale, a_scale, sw, es);
 
+    // Init Switch Movement Server
+    ros::ServiceClient switch_movement_client = nh.serviceClient<std_srvs::Empty>("switch_movement");
+    ros::service::waitForService("switch_movement", -1);
+
+    // Init ESTOP Publisher
+    ros::Publisher estop_pub = nh.advertise<std_msgs::Bool>("estop", 1);
     // Init Command Publisher
     ros::Publisher vel_pub = nh.advertise<geometry_msgs::Twist>("teleop", 1);
 
@@ -57,13 +69,23 @@ int main(int argc, char** argv)
     {
         ros::spinOnce();
 
-        if (!teleop.return_trigger())
+        if (teleop.return_estop())
         {
+            ROS_WARN("SENDING E-STOP COMMAND!");
+        } else if (!teleop.return_trigger())
+        {
+          // Send Twist
           vel_pub.publish(teleop.return_twist());
         } else
         {
-          // TODO: Switch Service
+          // Call Switch Service
+          std_srvs::Empty e;
+          switch_movement_client.call(e);
         }
+
+        std_msgs::Bool estop;
+        estop.data = teleop.return_estop();
+        estop_pub.publish(estop);
         
         
         rate.sleep();

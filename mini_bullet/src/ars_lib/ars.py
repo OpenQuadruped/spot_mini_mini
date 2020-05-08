@@ -79,11 +79,11 @@ class Policy():
             # used to update weights, sorted by highest rwrd
             num_best_deltas=16,
             # number of timesteps per episode per rollout
-            episode_steps=500,
+            episode_steps=2000,
             # weight of sampled exploration noise
             expl_noise=0.01,
             # for seed gen
-            seed=1):
+            seed=0):
 
         # Tunable Hyperparameters
         self.learning_rate = learning_rate
@@ -94,6 +94,7 @@ class Policy():
         self.episode_steps = episode_steps
         self.expl_noise = expl_noise
         self.seed = seed
+        np.random.seed(seed)
         self.state_dim = state_dim
         self.action_dim = action_dim
 
@@ -203,7 +204,7 @@ class ARSAgent():
         self.successes = 0
         self.last_reward = 0.0
         self.phase = 0
-        self.desired_velocity = 0.2
+        self.desired_velocity = -0.2
         self.desired_rate = 0.0
         self.flip = 0
         self.increment = 0

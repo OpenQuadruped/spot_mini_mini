@@ -15,11 +15,17 @@
 #include <mini_ros/minitaur.hpp>
 #include <mini_ros/teleop.hpp>
 #include "mini_ros/MiniCmd.h"
+#include "std_srvs/Empty.h"
+#include "std_msgs/Bool.h"
 
 // Global Vars
 mini::Minitaur minitaur = mini::Minitaur();
 bool teleop_flag = false;
 bool motion_flag = false;
+// Init Time
+ros::Time current_time;
+ros::Time last_time;
+
 
 void teleop_callback(const geometry_msgs::Twist &tw)
 { 
@@ -35,6 +41,28 @@ void teleop_callback(const geometry_msgs::Twist &tw)
   minitaur.update_command(tw.linear.x, tw.angular.z);
 }
 
+void estop_callback(const std_msgs::Bool &estop)
+{ 
+  if (estop.data)
+  {
+    minitaur.update_command(0.0, 0.0);
+    motion_flag = true;
+    ROS_ERROR("ENGAGING MANUAL E-STOP!");
+  }
+
+  last_time = ros::Time::now();
+}
+
+
+bool swm_callback(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
+/// Switches the Movement mode from FB (Forward/Backward) to LR (Left/Right)
+/// and vice versa
+{
+    minitaur.switch_movement();
+    motion_flag = true;
+    return true;
+}
+
 
 int main(int argc, char** argv)
 /// The Main Function ///
@@ -43,6 +71,8 @@ int main(int argc, char** argv)
 
     // Vars
     double frequency = 60;
+    // Seconds for timeout
+    double timeout = 1.0;
 
     ros::init(argc, argv, "mini_sm_node"); // register the node on ROS
     ros::NodeHandle nh; // get a handle to ROS
@@ -52,8 +82,12 @@ int main(int argc, char** argv)
 
     // Init Subscriber
     ros::Subscriber teleop_sub = nh.subscribe("teleop", 1, teleop_callback);
+    ros::Subscriber estop_sub = nh.subscribe("estop", 1, estop_callback);
     // Init Command Publisher
     ros::Publisher mini_pub = nh.advertise<mini_ros::MiniCmd>("mini_cmd", 1);
+
+    // Init Switch Movement Service Server
+    ros::ServiceServer switch_movement_server = nh.advertiseService("switch_movement", swm_callback);
 
     // Init MiniCmd
     mini_ros::MiniCmd mini_cmd;
@@ -63,14 +97,18 @@ int main(int argc, char** argv)
     mini_cmd.motion = "Stop";
 
     ros::Rate rate(frequency);
+    current_time = ros::Time::now();
+    last_time = ros::Time::now();
     // Main While
     while (ros::ok())
     {
         ros::spinOnce();
+        current_time = ros::Time::now();
 
         mini::MiniCommand cmd = minitaur.return_command();
 
-        if (!motion_flag)
+        // Condition for sending non-stop command
+        if (!motion_flag and !(current_time.toSec() - last_time.toSec() > timeout))
         {
           mini_cmd.velocity = cmd.velocity;
           mini_cmd.rate = cmd.rate;
@@ -112,6 +150,11 @@ int main(int argc, char** argv)
           mini_cmd.velocity = 0.0;
           mini_cmd.rate = 0.0;
           mini_cmd.motion = "Stop";
+        }
+
+        if (current_time.toSec() - last_time.toSec() > timeout)
+        {
+          ROS_ERROR("TIMEOUT...ENGAGING E-STOP!");
         }
 
         // Now publish

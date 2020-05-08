@@ -83,7 +83,7 @@ class MinitaurBulletEnv(gym.Env):
             render=False,
             kd_for_pd_controllers=0.3,
             env_randomizer=minitaur_env_randomizer.MinitaurEnvRandomizer(),
-            desired_velocity=0.2,
+            desired_velocity=-0.2,
             desired_rate=0.0,
             lateral=True):
         """Initialize the minitaur gym environment.
@@ -170,6 +170,8 @@ class MinitaurBulletEnv(gym.Env):
             self._pybullet_client = bc.BulletClient()
 
         self.seed()
+
+        np.random.seed(0)
 
         self.desired_velocity = desired_velocity
         self.desired_rate = desired_rate

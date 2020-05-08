@@ -1,5 +1,4 @@
 """Randomize the minitaur_gym_env when reset() is called."""
-import random
 import numpy as np
 from . import env_randomizer_base
 
@@ -24,6 +23,8 @@ class MinitaurEnvRandomizer(env_randomizer_base.EnvRandomizerBase):
         self._battery_voltage_range = battery_voltage_range
         self._motor_viscous_damping_range = motor_viscous_damping_range
 
+        np.random.seed(0)
+
     def randomize_env(self, env):
         self._randomize_minitaur(env.minitaur)
 
@@ -38,7 +39,7 @@ class MinitaurEnvRandomizer(env_randomizer_base.EnvRandomizerBase):
       minitaur: the Minitaur instance in minitaur_gym_env environment.
     """
         base_mass = minitaur.GetBaseMassFromURDF()
-        randomized_base_mass = random.uniform(
+        randomized_base_mass = np.random.uniform(
             base_mass * (1.0 + self._minitaur_base_mass_err_range[0]),
             base_mass * (1.0 + self._minitaur_base_mass_err_range[1]))
         minitaur.SetBaseMass(randomized_base_mass)
@@ -55,14 +56,14 @@ class MinitaurEnvRandomizer(env_randomizer_base.EnvRandomizerBase):
         ]
         minitaur.SetLegMasses(randomized_leg_masses)
 
-        randomized_battery_voltage = random.uniform(BATTERY_VOLTAGE_RANGE[0],
-                                                    BATTERY_VOLTAGE_RANGE[1])
+        randomized_battery_voltage = np.random.uniform(
+            BATTERY_VOLTAGE_RANGE[0], BATTERY_VOLTAGE_RANGE[1])
         minitaur.SetBatteryVoltage(randomized_battery_voltage)
 
-        randomized_motor_damping = random.uniform(
+        randomized_motor_damping = np.random.uniform(
             MOTOR_VISCOUS_DAMPING_RANGE[0], MOTOR_VISCOUS_DAMPING_RANGE[1])
         minitaur.SetMotorViscousDamping(randomized_motor_damping)
 
-        randomized_foot_friction = random.uniform(MINITAUR_LEG_FRICTION[0],
-                                                  MINITAUR_LEG_FRICTION[1])
+        randomized_foot_friction = np.random.uniform(MINITAUR_LEG_FRICTION[0],
+                                                     MINITAUR_LEG_FRICTION[1])
         minitaur.SetFootFriction(randomized_foot_friction)

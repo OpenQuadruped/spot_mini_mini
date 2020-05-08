@@ -2,12 +2,16 @@
 
 namespace tele
 {
-	Teleop::Teleop(const int & linear, const int & angular, const double & l_scale, const double & a_scale)
+	Teleop::Teleop(const int & linear, const int & angular, const double & l_scale, const double & a_scale, const int & sw, const int & es)
 	{
 		linear_ = linear;
 		angular_ = angular;
 		l_scale_ = l_scale;
 		a_scale_ = a_scale;
+		sw_ = sw;
+		es_ = es;
+		switch_trigger = false;
+		ESTOP = false;
 	}
 
 	void Teleop::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
@@ -15,8 +19,13 @@ namespace tele
 		geometry_msgs::Twist twist;
 		twist.angular.z = a_scale_*joy->axes[angular_];
 		twist.linear.x = l_scale_*joy->axes[linear_];
-		// TODO:
-		switch_trigger = false;
+		
+
+		// Switch Trigger: Button X
+		switch_trigger = joy->buttons[sw_];
+
+		// ESTOP: Button Y
+		ESTOP = joy->buttons[es_];
 	}
 
 	geometry_msgs::Twist Teleop::return_twist()
@@ -27,5 +36,10 @@ namespace tele
 	bool Teleop::return_trigger()
 	{
 		return switch_trigger;
+	}
+
+	bool Teleop::return_estop()
+	{
+		return ESTOP;
 	}
 }
