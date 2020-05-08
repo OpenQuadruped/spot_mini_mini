@@ -15,7 +15,6 @@ namespace tele
 		geometry_msgs::Twist twist;
 		twist.angular.z = a_scale_*joy->axes[angular_];
 		twist.linear.x = l_scale_*joy->axes[linear_];
-
 		return twist;
 	}
 }
