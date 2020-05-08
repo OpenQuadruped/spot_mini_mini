@@ -135,6 +135,7 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/minitaur.cpp
+  src/${PROJECT_NAME}/teleop.cpp
 )
 
 ## Add cmake target dependencies of the library
