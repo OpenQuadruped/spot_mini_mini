@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     ROS_INFO("STARTING NODE: Teleoperation");
 
     // Vars
-    double frequency = 60;
+    double frequency = 10;
     int linear = 1;
     int angular = 2;
     int sw = 0;
@@ -69,7 +69,10 @@ int main(int argc, char** argv)
     {
         ros::spinOnce();
 
-        if (teleop.return_estop())
+        std_msgs::Bool estop;
+        estop.data = teleop.return_estop();
+
+        if (estop.data)
         {
             ROS_WARN("SENDING E-STOP COMMAND!");
         } else if (!teleop.return_trigger())
@@ -83,8 +86,6 @@ int main(int argc, char** argv)
           switch_movement_client.call(e);
         }
 
-        std_msgs::Bool estop;
-        estop.data = teleop.return_estop();
         estop_pub.publish(estop);
         
         

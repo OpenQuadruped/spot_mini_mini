@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     ROS_INFO("STARTING NODE: Minitaur State Machine");
 
     // Vars
-    double frequency = 60;
+    double frequency = 5;
     // Seconds for timeout
     double timeout = 1.0;
 
