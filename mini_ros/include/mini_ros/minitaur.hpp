@@ -26,7 +26,7 @@ namespace mini
             return true;
         } else {
             return false;
-    }
+        }
     }
 
     enum Motion {Forward, Backward, Left, Right, CW, CCW, Stop, Recover, ForwardLeft, ForwardRight};
