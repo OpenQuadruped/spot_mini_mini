@@ -40,6 +40,7 @@ namespace mini
         double rate = 0.0;
     };
 
+    // \brief Minitaur class responsible for high-level motion commands
     class Minitaur
     {
 
