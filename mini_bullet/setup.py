@@ -1,11 +1,16 @@
-## ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
-## Copies from http://docs.ros.org/melodic/api/catkin/html/howto/format2/installing_python.html and edited for our package
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+from setuptools import setup, find_packages
 
-# fetch values from package.xml
-setup_args = generate_distutils_setup(
-    packages=['mini_bullet'],
-    package_dir={'': 'src'})
+setup(
+   name='mb',
+   version='1.0',
+   description='Pybullet Minitaur Environment and ARS Library',
+   author='Maurice Rahme',
+   author_email='maurierahme20202@u.northwestern.edu',
+   package_dir={'':'src'},
+   packages=find_packages('src')
+)
 
-setup(**setup_args)
+# sudo python setup.py build
+# THEN
+# sudo python setup.py install
+
