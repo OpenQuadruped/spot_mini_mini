@@ -21,4 +21,8 @@
   <param name="button_switch" value="0" type="int"/>
   <param name="button_estop" value="1" type="int"/>
 </node>
+
+<!-- Policy Node -->
+<node name="policies" pkg="mini_ros" type="policies" output="screen"/>
+
 </launch>

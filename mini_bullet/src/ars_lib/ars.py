@@ -210,6 +210,21 @@ class ARSAgent():
         self.increment = 0
         self.scaledown = True
 
+    def deployOnce(self, state, direction=None, delta=None):
+        # print("dt: {}".format(timesteps))
+        self.normalizer.observe(state)
+        # Normalize State
+        state = self.normalizer.normalize(state)
+        action = self.policy.evaluate(state, delta, direction)
+        # Clip action between +-1 for execution in env
+        for a in range(len(action)):
+            action[a] = np.clip(action[a], -self.max_action, self.max_action)
+        state, reward, done, _ = self.env.step(action)
+        # Clip reward between -1 and 1 to prevent outliers from
+        # distorting weights
+        reward = np.clip(reward, -self.max_action, self.max_action)
+        return state, reward
+
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
     def deploy(self, direction=None, delta=None):
@@ -402,10 +417,8 @@ class ARSAgent():
         # self.desired_velocity = np.random.uniform(low=0.0, high=1.0)
         self.desired_velocity = self.desired_velocity
 
-        print("NEW DESIRED VELOCITY IS {}".format(
-            self.desired_velocity))
-        print("NEW DESIRED RATE IS {}".format(
-            self.desired_rate))
+        print("NEW DESIRED VELOCITY IS {}".format(self.desired_velocity))
+        print("NEW DESIRED RATE IS {}".format(self.desired_rate))
 
     def save(self, filename):
         """ Save the Policy

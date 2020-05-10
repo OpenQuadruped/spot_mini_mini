@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+"""
+DESCRIPTION:
+
+SUBSCRIBERS:
+"""
+
+from __future__ import division
+import rospy
+import numpy as np
+from mini_ros.msg import MiniCmd
+from ars_lib.ars import ARSAgent, Normalizer, Policy
+from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
+
+import torch
+import os
+
+
+class MiniCommander():
+    def __init__(self):
+
+        rospy.init_node('Policies', anonymous=True)
+        self.agents = {}
+        self.movetypes = [
+            "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
+        ]
+        self.state = None
+        self.mini_cmd = MiniCmd()
+        self.mini_cmd.motion = "Stop"
+        self.mini_cmd.velocity = 0.0
+        self.mini_cmd.rate = 0.0
+
+        self.load_minitaur()
+        # callback from mini_cmd topic
+        self.sub = rospy.Subscriber('mini_cmd', MiniCmd, self.callback)
+
+    def load_minitaur(self):
+        print("Loading various Minitaur Policies")
+
+        self.file_name = "mini_ars_"
+        # Find abs path to this file
+        my_path = os.path.abspath(os.path.dirname(__file__))
+        self.models_path = os.path.join(my_path, "../policies")
+
+        if not os.path.exists(self.models_path):
+            os.makedirs(self.models_path)
+
+        env = MinitaurBulletEnv(render=True)
+
+        seed = 0
+        # Set seeds
+        env.seed(seed)
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+
+        state_dim = env.observation_space.shape[0]
+        print("STATE DIM: {}".format(state_dim))
+        action_dim = env.action_space.shape[0]
+        print("ACTION DIM: {}".format(action_dim))
+        max_action = float(env.action_space.high[0])
+        print("RECORDED MAX ACTION: {}".format(max_action))
+
+        self.state = env.reset(self.mini_cmd.velocity, self.mini_cmd.rate)
+
+        # Initialize Normalizer
+        normalizer = Normalizer(state_dim)
+        # Initialize Policy
+        policy = Policy(state_dim, action_dim)
+        # Initialize Agent with normalizer, policy gym env, and initial state
+        agent = ARSAgent(normalizer, policy, env)
+
+        # Populate Agent Dictionary
+        for movetype in self.movetypes:
+            self.agents[movetype] = self.load_policy(movetype, agent)
+        print("READY TO GO!")
+
+    def load_policy(self, agent_type, agent):
+        if os.path.exists(self.models_path + "/" + self.file_name +
+                          agent_type + "_policy"):
+            print("Loading Agent: " + self.agent_type)
+            agent.load(self.models_path + "/" + self.file_name +
+                       agent_type)
+            agent.policy.episode_steps = 1e12
+        return agent
+
+    def callback(self, mini_cmd):
+        """ Reads the desired Minitaur command and passes it for execution
+
+            Args: mini_cmd
+        """
+        try:
+            # Update mini_cmd
+            self.mini_cmd = mini_cmd
+            # log input data as debug-level message
+            rospy.logdebug(mini_cmd)
+        except rospy.ROSInterruptException:
+            pass
+
+    def move(self):
+        # For now there are no velocity commands.
+        # Select agent in dict
+        agent = self.agents[self.mini_cmd.motion]
+        # Update state (also returns reward)
+        self.state, _ = agent.deployOnce(self.state)
+
+
+def main():
+    """ The main() function. """
+    mini_commander = MiniCommander()
+    # This is called continuously. Has timeout functionality too
+    mini_commander.move()
+    rospy.spin()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
