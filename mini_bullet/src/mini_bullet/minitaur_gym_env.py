@@ -83,7 +83,7 @@ class MinitaurBulletEnv(gym.Env):
             render=False,
             kd_for_pd_controllers=0.3,
             env_randomizer=minitaur_env_randomizer.MinitaurEnvRandomizer(),
-            desired_velocity=-0.2,
+            desired_velocity=-0.3,
             desired_rate=0.0,
             lateral=True):
         """Initialize the minitaur gym environment.
@@ -387,9 +387,8 @@ class MinitaurBulletEnv(gym.Env):
         rot_mat = self._pybullet_client.getMatrixFromQuaternion(orientation)
         local_up = rot_mat[6:]
         pos = self.minitaur.GetBasePosition()
-        # return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85
-        #         or pos[2] < 0.13)
-        return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85)
+        return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85
+                or pos[2] < 0.10)
 
     def _termination(self):
         position = self.minitaur.GetBasePosition()

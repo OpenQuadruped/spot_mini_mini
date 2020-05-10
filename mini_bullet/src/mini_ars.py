@@ -31,7 +31,7 @@ def main():
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
-    max_timesteps = 2e6
+    max_timesteps = 4e6
     eval_freq = 1e1
     save_model = True
     file_name = "mini_ars_"
@@ -79,7 +79,7 @@ def main():
     # Evaluate untrained agent and init list for storage
     evaluations = []
 
-    env.reset()
+    env.reset(agent.desired_velocity, agent.desired_rate)
     episode_reward = 0
     episode_timesteps = 0
     episode_num = 0
