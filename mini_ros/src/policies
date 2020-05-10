@@ -21,8 +21,11 @@ class MiniCommander():
 
         rospy.init_node('Policies', anonymous=True)
         self.agents = {}
+        # self.movetypes = [
+        #     "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
+        # ]
         self.movetypes = [
-            "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
+            "Stop", "Forward", "Backward", "Left", "CW", "CCW"
         ]
         self.state = None
         self.mini_cmd = MiniCmd()
@@ -31,8 +34,10 @@ class MiniCommander():
         self.mini_cmd.rate = 0.0
 
         self.load_minitaur()
+        print("AGENTS: ", self.agents)
         # callback from mini_cmd topic
         self.sub = rospy.Subscriber('mini_cmd', MiniCmd, self.callback)
+        print("READY TO GO!")
 
     def load_minitaur(self):
         print("Loading various Minitaur Policies")
@@ -45,43 +50,61 @@ class MiniCommander():
         if not os.path.exists(self.models_path):
             os.makedirs(self.models_path)
 
-        env = MinitaurBulletEnv(render=True)
+        self.env = MinitaurBulletEnv(render=True)
 
         seed = 0
         # Set seeds
-        env.seed(seed)
+        self.env.seed(seed)
         torch.manual_seed(seed)
         np.random.seed(seed)
 
-        state_dim = env.observation_space.shape[0]
+        state_dim = self.env.observation_space.shape[0]
         print("STATE DIM: {}".format(state_dim))
-        action_dim = env.action_space.shape[0]
+        action_dim = self.env.action_space.shape[0]
         print("ACTION DIM: {}".format(action_dim))
-        max_action = float(env.action_space.high[0])
+        max_action = float(self.env.action_space.high[0])
         print("RECORDED MAX ACTION: {}".format(max_action))
 
-        self.state = env.reset(self.mini_cmd.velocity, self.mini_cmd.rate)
+        self.state = self.env.reset(self.mini_cmd.velocity, self.mini_cmd.rate)
 
         # Initialize Normalizer
         normalizer = Normalizer(state_dim)
         # Initialize Policy
         policy = Policy(state_dim, action_dim)
         # Initialize Agent with normalizer, policy gym env, and initial state
-        agent = ARSAgent(normalizer, policy, env)
+        agent = ARSAgent(normalizer, policy, self.env)
 
         # Populate Agent Dictionary
         for movetype in self.movetypes:
-            self.agents[movetype] = self.load_policy(movetype, agent)
-        print("READY TO GO!")
+            self.agents[movetype] = self.load_policy(movetype, normalizer, policy)
+        # NOTE: MANUAL OVERRIDE
+        self.agents["Stop"] = ARSAgent(normalizer, policy, self.env)
 
-    def load_policy(self, agent_type, agent):
-        if os.path.exists(self.models_path + "/" + self.file_name +
-                          agent_type + "_policy"):
-            print("Loading Agent: " + self.agent_type)
-            agent.load(self.models_path + "/" + self.file_name +
-                       agent_type)
-            agent.policy.episode_steps = 1e12
+    def load_policy(self, agent_type, normalizer, policy):
+        agent = ARSAgent(normalizer, policy, self.env)
+        if agent_type != "Stop":
+            if os.path.exists(self.models_path + "/" + self.file_name +
+                              agent_type + "_policy"):
+                print("Loading Agent: " + agent_type)
+                agent.load(self.models_path + "/" + self.file_name +
+                           agent_type)
+                agent.policy.episode_steps = 1e12
         return agent
+
+    def deploy(self, agent):
+        agent.normalizer.observe(self.state)
+        # print("-----------------------")
+        # Normalize State
+        state = agent.normalizer.normalize(self.state)
+        action = agent.policy.theta.dot(self.state)
+        # Clip action between +-1 for execution in env
+        for a in range(len(action)):
+            action[a] = np.clip(action[a], -agent.max_action, agent.max_action)
+        state, reward, done, _ = self.env.step(action)
+        # Clip reward between -1 and 1 to prevent outliers from
+        # distorting weights
+        reward = np.clip(reward, -agent.max_action, agent.max_action)
+        return state, reward
 
     def callback(self, mini_cmd):
         """ Reads the desired Minitaur command and passes it for execution
@@ -99,17 +122,22 @@ class MiniCommander():
     def move(self):
         # For now there are no velocity commands.
         # Select agent in dict
+        # print("COMMAND: ", self.mini_cmd.motion)
         agent = self.agents[self.mini_cmd.motion]
+        # print("MOVING")
         # Update state (also returns reward)
-        self.state, _ = agent.deployOnce(self.state)
+        self.state, _ = self.deploy(agent)
 
 
 def main():
     """ The main() function. """
     mini_commander = MiniCommander()
-    # This is called continuously. Has timeout functionality too
-    mini_commander.move()
-    rospy.spin()
+    rate = rospy.Rate(100)
+    while not rospy.is_shutdown():
+        # This is called continuously. Has timeout functionality too
+        mini_commander.move()
+        rate.sleep()
+        # rospy.spin()
 
 
 if __name__ == '__main__':
