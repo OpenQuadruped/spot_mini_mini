@@ -219,15 +219,18 @@ class ARSAgent():
         timesteps = 0
         done = False
         while not done and timesteps < self.policy.episode_steps:
+            # print("STATE: ", state)
             # print("dt: {}".format(timesteps))
             self.normalizer.observe(state)
             # Normalize State
             state = self.normalizer.normalize(state)
+            # print("STATE: ", state)
             action = self.policy.evaluate(state, delta, direction)
             # Clip action between +-1 for execution in env
             for a in range(len(action)):
                 action[a] = np.clip(action[a], -self.max_action,
                                     self.max_action)
+            # print("ACTION: ", action)
             state, reward, done, _ = self.env.step(action)
             # Clip reward between -1 and 1 to prevent outliers from
             # distorting weights

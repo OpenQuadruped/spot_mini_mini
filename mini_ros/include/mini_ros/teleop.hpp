@@ -41,8 +41,8 @@ namespace tele
 
     private:
 
-        int linear_ = 1;
-        int angular_= 2;
+        int linear_ = 0;
+        int angular_= 1;
         int sw_ = 0;
         int es_ = 1;
         double l_scale_, a_scale_;

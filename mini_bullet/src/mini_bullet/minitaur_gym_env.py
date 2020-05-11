@@ -83,7 +83,7 @@ class MinitaurBulletEnv(gym.Env):
             render=False,
             kd_for_pd_controllers=0.3,
             env_randomizer=minitaur_env_randomizer.MinitaurEnvRandomizer(),
-            desired_velocity=-0.3,
+            desired_velocity=0.3,
             desired_rate=0.0,
             lateral=True):
         """Initialize the minitaur gym environment.
@@ -218,7 +218,7 @@ class MinitaurBulletEnv(gym.Env):
                                                     rgbaColor=[1, 1, 1, 0.9])
             self._pybullet_client.configureDebugVisualizer(
                 self._pybullet_client.COV_ENABLE_PLANAR_REFLECTION, 0)
-            self._pybullet_client.setGravity(0, 0, -10)
+            self._pybullet_client.setGravity(0, 0, -9.81)
             acc_motor = self._accurate_motor_model_enabled
             motor_protect = self._motor_overheat_protection
             self.minitaur = (minitaur.Minitaur(
