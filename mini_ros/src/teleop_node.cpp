@@ -28,8 +28,8 @@ int main(int argc, char** argv)
 
     // Vars
     double frequency = 10;
-    int linear = 1;
-    int angular = 2;
+    int linear = 0;
+    int angular = 1;
     int sw = 0;
     int es = 1;
     double l_scale = 2.0;
