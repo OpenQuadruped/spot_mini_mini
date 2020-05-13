@@ -34,6 +34,7 @@ int main(int argc, char** argv)
     int es = 1;
     double l_scale = 1.0;
     double a_scale = -1.0;
+    double debounce_thresh = 0.15; // sec
 
     ros::init(argc, argv, "teleop_node"); // register the node on ROS
     ros::NodeHandle nh; // get a handle to ROS
@@ -46,6 +47,7 @@ int main(int argc, char** argv)
     nh_.getParam("scale_angular", a_scale);
     nh_.getParam("button_switch", sw);
     nh_.getParam("button_estop", es);
+    nh_.getParam("debounce_thresh", debounce_thresh);
 
     tele::Teleop teleop = tele::Teleop(linear, angular, l_scale, a_scale, sw, es);
 
@@ -64,26 +66,37 @@ int main(int argc, char** argv)
     ros::Subscriber joy_sub = nh.subscribe<sensor_msgs::Joy>("joy", 1, &tele::Teleop::joyCallback, &teleop);
 
     ros::Rate rate(frequency);
+
+    // Record time for debouncing buttons
+    ros::Time current_time = ros::Time::now();
+    ros::Time last_time = ros::Time::now();
+
+
     // Main While
     while (ros::ok())
     {
         ros::spinOnce();
+        current_time = ros::Time::now();
 
         std_msgs::Bool estop;
         estop.data = teleop.return_estop();
 
-        if (estop.data)
+        if (estop.data and current_time.toSec() - last_time.toSec() >= debounce_thresh)
         {
-            ROS_WARN("SENDING E-STOP COMMAND!");
+            ROS_INFO("SENDING E-STOP COMMAND!");
+            last_time = ros::Time::now();
         } else if (!teleop.return_trigger())
         {
           // Send Twist
           vel_pub.publish(teleop.return_twist());
-        } else
+          estop.data = 0;
+        } else if (current_time.toSec() - last_time.toSec() >= debounce_thresh)
         {
           // Call Switch Service
           std_srvs::Empty e;
           switch_movement_client.call(e);
+          estop.data = 0;
+          last_time = ros::Time::now();
         }
 
         estop_pub.publish(estop);
