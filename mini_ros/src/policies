@@ -124,11 +124,18 @@ class MiniCommander():
         agent = self.agents[self.mini_cmd.motion]
         _ = self.deploy(agent)
 
+    def move2(self):
+        # For now there are no velocity commands.
+        # print("COMMAND: ", self.mini_cmd.motion)
+        # self.mini_cmd.motion = "Forward"
+        agent = self.agents["Forward"]
+        agent.deploy()
+
 
 def main():
     """ The main() function. """
     mini_commander = MiniCommander()
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(200)
     while not rospy.is_shutdown():
         # This is called continuously. Has timeout functionality too
         mini_commander.move()

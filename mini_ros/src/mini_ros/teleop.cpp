@@ -16,7 +16,6 @@ namespace tele
 
 	void Teleop::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	{
-		geometry_msgs::Twist twist;
 		twist.linear.x = l_scale_*joy->axes[linear_];
 		twist.angular.z = a_scale_*joy->axes[angular_];
 		

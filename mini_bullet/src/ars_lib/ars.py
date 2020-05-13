@@ -210,6 +210,7 @@ class ARSAgent():
         self.flip = 0
         self.increment = 0
         self.scaledown = True
+        self.type = "Stop"
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
@@ -224,7 +225,6 @@ class ARSAgent():
             self.normalizer.observe(state)
             # Normalize State
             state = self.normalizer.normalize(state)
-            # print("STATE: ", state)
             action = self.policy.evaluate(state, delta, direction)
             # Clip action between +-1 for execution in env
             for a in range(len(action)):
@@ -232,6 +232,7 @@ class ARSAgent():
                                     self.max_action)
             # print("ACTION: ", action)
             state, reward, done, _ = self.env.step(action)
+            # print("STATE: ", state)
             # Clip reward between -1 and 1 to prevent outliers from
             # distorting weights
             reward = np.clip(reward, -self.max_action, self.max_action)

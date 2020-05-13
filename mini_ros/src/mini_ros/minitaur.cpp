@@ -14,6 +14,15 @@ namespace mini
 
 	void Minitaur::update_command(const double & v, const double & w)
 	{
+		// If Command is nearly zero, just give zero
+		if (almost_equal(cmd.velocity, 0.0, 1e-2))
+		{
+			cmd.velocity = 0.0;
+		} else if (almost_equal(cmd.rate, 0.0, 1e-2))
+		{
+			cmd.rate = 0.0;
+		}
+
 		if (!almost_equal(cmd.velocity, v) or !almost_equal(cmd.rate, w))
 		{
 			cmd.velocity = v;
