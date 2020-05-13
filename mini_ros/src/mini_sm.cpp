@@ -54,7 +54,7 @@ void estop_callback(const std_msgs::Bool &estop)
       ESTOP = true;
     } else
     {
-      ROS_INFO("DIS-ENGAGING MANUAL E-STOP!");
+      ROS_WARN("DIS-ENGAGING MANUAL E-STOP!");
       ESTOP = false;
     }
   }
