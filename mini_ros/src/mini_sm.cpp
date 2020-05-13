@@ -22,6 +22,7 @@
 mini::Minitaur minitaur = mini::Minitaur();
 bool teleop_flag = false;
 bool motion_flag = false;
+bool ESTOP = false;
 // Init Time
 ros::Time current_time;
 ros::Time last_time;
@@ -47,7 +48,15 @@ void estop_callback(const std_msgs::Bool &estop)
   {
     minitaur.update_command(0.0, 0.0);
     motion_flag = true;
-    ROS_ERROR("ENGAGING MANUAL E-STOP!");
+    if (!ESTOP)
+    {
+      ROS_ERROR("ENGAGING MANUAL E-STOP!");
+      ESTOP = true;
+    } else
+    {
+      ROS_INFO("DIS-ENGAGING MANUAL E-STOP!");
+      ESTOP = false;
+    }
   }
 
   last_time = ros::Time::now();
@@ -108,7 +117,7 @@ int main(int argc, char** argv)
         mini::MiniCommand cmd = minitaur.return_command();
 
         // Condition for sending non-stop command
-        if (!motion_flag and !(current_time.toSec() - last_time.toSec() > timeout))
+        if (!motion_flag and !(current_time.toSec() - last_time.toSec() > timeout) and !ESTOP)
         {
           mini_cmd.velocity = cmd.velocity;
           mini_cmd.rate = cmd.rate;

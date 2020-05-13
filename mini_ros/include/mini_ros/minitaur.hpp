@@ -19,7 +19,8 @@ namespace mini
     // constexpr are all define in .hpp
     // constexpr allows fcn to be run at compile time and interface with 
     // static_assert tests.
-    constexpr bool almost_equal(double d1, double d2, double epsilon=1.0e-12)
+    // Note high default epsilon since using controller
+    constexpr bool almost_equal(double d1, double d2, double epsilon=1.0e-3)
     {
         if (fabs(d1 - d2) < epsilon)
         {

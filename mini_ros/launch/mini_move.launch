@@ -1,28 +1,28 @@
 <launch>
  <!-- Minitaur State Machine Node-->
-  <!-- <node name="mini_sm" pkg="mini_ros" type="mini_sm" output="screen">
+  <node name="mini_sm" pkg="mini_ros" type="mini_sm" output="screen">
     <param name="frequency" value="50.0" type="double"/>
-  </node> -->
+  </node>
 
  <!-- Joystick Node -->
-  <!-- <node respawn="true" pkg="joy"
+  <node respawn="true" pkg="joy"
         type="joy_node" name="mini_joy" >
-    <param name="dev" type="string" value="/dev/input/jsX" />
-    <param name="deadzone" value="0.12" />
-  </node> -->
+    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="deadzone" value="0.005" />
+  </node>
 
  <!-- Teleop Node -->
- <!-- <node name="mini_teleop" pkg="mini_ros" type="teleop_node" output="screen">
+ <node name="mini_teleop" pkg="mini_ros" type="teleop_node" output="screen">
   <param name="frequency" value="10.0" type="double"/>
   <param name="axis_linear" value="1" type="int"/>
   <param name="axis_angular" value="0" type="int"/>
-  <param name="scale_linear" value="2" type="double"/>
-  <param name="scale_angular" value="2" type="double"/>
+  <param name="scale_linear" value="1.0" type="double"/>
+  <param name="scale_angular" value="-1.0" type="double"/>
   <param name="button_switch" value="0" type="int"/>
   <param name="button_estop" value="1" type="int"/>
-</node> -->
+</node>
 
 <!-- Policy Node -->
-<node name="policies" pkg="mini_ros" type="policies" output="screen"/>
+<!-- <node name="policies" pkg="mini_ros" type="policies" output="screen"/> -->
 
 </launch>

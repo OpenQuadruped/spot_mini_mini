@@ -71,6 +71,7 @@ class Minitaur(object):
     """
         # used to calculate minitaur acceleration
         self.prev_lin_twist = np.array([0, 0, 0])
+        self.prev_lin_acc = np.array([0, 0, 0])
 
         self.num_motors = 8
         self.num_legs = int(self.num_motors / 2)
@@ -380,6 +381,10 @@ class Minitaur(object):
         lin_twist = np.array([lt[0], lt[1], lt[2]])
         # Get linear accelerations
         lin_acc = self.prev_lin_twist - lin_twist
+        # if lin_acc.all() == 0.0:
+        #     lin_acc = self.prev_lin_acc
+        self.prev_lin_acc = lin_acc
+        # print("LIN ACC: ", lin_acc)
         self.prev_lin_twist = lin_twist
 
         # order: roll, pitch, acc(x,y,z), gyro(x,y,z)
