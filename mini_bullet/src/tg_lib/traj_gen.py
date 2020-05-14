@@ -35,13 +35,23 @@ class CyclicIntegrator():
             The speed of the phase depends on swing vs stance phase
             (phase > np.pi or phase < np.pi)  which has different speeds.
         """
-        self.progress_leg_phase(f_tg, dt)
+        # self.progress_leg_phase(f_tg, dt)
 
-        if self.phi_leg > 0.0 and self.phi_leg < 2.0 * np.pi * swing_stance_speed_ratio:
-            self.tprime = self.phi_leg / (2.0 * (1 - swing_stance_speed_ratio))
-        else:
-            self.tprime = 2.0 * np.pi - (2 * np.pi - self.phi_leg) / (
-                2.0 * swing_stance_speed_ratio)
+        # if self.phi_leg > 0.0 and self.phi_leg < 2.0 * np.pi * swing_stance_speed_ratio:
+        #     self.tprime = self.phi_leg / (2.0 * (1 - swing_stance_speed_ratio))
+        # else:
+        #     self.tprime = 2.0 * np.pi - (2 * np.pi - self.phi_leg) / (
+        #         2.0 * swing_stance_speed_ratio)
+
+        stance_speed_coef = (swing_stance_speed_ratio +
+                             1) * 0.5 / swing_stance_speed_ratio
+        swing_speed_coef = (swing_stance_speed_ratio + 1) * 0.5
+        if self.tprime < np.pi:  # Swing
+            delta_phase_multiplier = stance_speed_coef * 2.0 * np.pi
+            self.tprime += dt * delta_phase_multiplier
+        else:  # Stance
+            delta_phase_multiplier = swing_speed_coef * 2.0 * np.pi
+            self.tprime += dt * delta_phase_multiplier
 
 
 class TrajectoryGenerator():
