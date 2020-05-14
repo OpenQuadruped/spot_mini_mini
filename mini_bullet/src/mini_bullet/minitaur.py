@@ -522,7 +522,7 @@ class Minitaur(object):
     Args:
       actions: The theta, phi of the leg model.
       actions are of form = [phi, phi, phi, phi, theta, theta, theta, theta]
-      where phi = extension and theta = swing
+      where phi = swing and theta = extension
     Returns:
       The eight desired motor angles that can be used in ApplyActions().
     """

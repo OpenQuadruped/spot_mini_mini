@@ -47,8 +47,8 @@ class CyclicIntegrator():
 class TrajectoryGenerator():
     def __init__(self,
                  center_swing=0.0,
-                 amplitude_extension=.05,
-                 amplitude_lift=.08,
+                 amplitude_extension=1.0,
+                 amplitude_lift=1.0,
                  intensity=1.0,
                  dphi_leg=0.0,
                  swing_stance_speed_ratio=1.0 / 3.0):
@@ -64,7 +64,7 @@ class TrajectoryGenerator():
                 (np.sin(self.CI.tprime) + 1) / 2.0]
 
     def get_swing_extend_based_on_phase(self,
-                                        amplitude_swing=1.0,
+                                        amplitude_swing=0.0,
                                         center_extension=0.0,
                                         theta=0.0):
         """ Eqn 2 in paper appendix
