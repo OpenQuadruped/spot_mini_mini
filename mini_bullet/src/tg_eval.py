@@ -103,7 +103,7 @@ def main():
 
         # Increment phase
         for (key, tg) in TG_dict.items():
-            tg.CI.progress_tprime(dt, 1.0, 5.0)
+            tg.CI.progress_tprime(dt, 10.0, 5.0)
 
     env.close()
 
