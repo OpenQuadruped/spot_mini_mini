@@ -37,12 +37,25 @@ def main():
 
     dt = env._time_step
 
-    TG_dict = {}
+    movetype_dict = {
+        "walk": [0, 0.25, 0.5, 0.75],
+        "trot": [0, 0.5, 0.5, 0],
+        "bound": [0, 0.5, 0, 0.5],
+        "pace": [0, 0, 0.5, 0.5],
+        "pronk": [0, 0, 0, 0]
+    }
 
-    TG_LF = TrajectoryGenerator(dphi_leg=0.0)
-    TG_LB = TrajectoryGenerator(dphi_leg=0.0)
-    TG_RF = TrajectoryGenerator(dphi_leg=0.0)
-    TG_RB = TrajectoryGenerator(dphi_leg=0.0)
+    movetype = "walk"
+    movetype = "trot"
+    movetype = "bound"
+    movetype = "pace"
+    movetype = "pronk"
+
+    TG_dict = {}
+    TG_LF = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][0])
+    TG_LB = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][1])
+    TG_RF = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][2])
+    TG_RB = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][3])
 
     TG_dict["LF"] = TG_LF
     TG_dict["LB"] = TG_LB
@@ -93,8 +106,8 @@ def main():
         for i, (key, tg) in enumerate(TG_dict.items()):
             action_idx = i
             swing, extend = tg.get_swing_extend_based_on_phase()
-            print("LEG: {} \t SWING: {:.3f} \t EXTEND: {:.3f}".format(
-                action_idx, swing, extend))
+            # print("LEG: {} \t SWING: {:.3f} \t EXTEND: {:.3f}".format(
+            #     action_idx, swing, extend))
             action[action_idx] = swing
             action[action_idx + half_num_motors] = extend
 
@@ -103,7 +116,7 @@ def main():
 
         # Increment phase
         for (key, tg) in TG_dict.items():
-            tg.CI.progress_tprime(dt, 10.0, 5.0)
+            tg.CI.progress_tprime(dt, 1.0, 5.0)
 
     env.close()
 
