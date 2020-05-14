@@ -4,7 +4,7 @@ import numpy as np
 class CyclicIntegrator():
     def __init__(self, dphi_leg=0.0):
         # Phase
-        self.tprime = 0.0
+        self.tprime = 2 * np.pi * dphi_leg
 
     def progress_tprime(self, dt, f_tg, swing_stance_speed_ratio):
         """ swing_stance_speed_ratio is Beta in the paper
@@ -33,7 +33,7 @@ class CyclicIntegrator():
 class TrajectoryGenerator():
     def __init__(self,
                  center_swing=0.0,
-                 amplitude_extension=1.0,
+                 amplitude_extension=0.5,
                  amplitude_lift=1.0,
                  intensity=1.0,
                  dphi_leg=0.0,
