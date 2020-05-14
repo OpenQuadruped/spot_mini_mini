@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+np.random.seed(0)
 
 # Multiprocessing package for python
 # Parallelization improvements based on:
@@ -79,7 +80,7 @@ class Policy():
             # used to update weights, sorted by highest rwrd
             num_best_deltas=16,
             # number of timesteps per episode per rollout
-            episode_steps=2000,
+            episode_steps=1000,
             # weight of sampled exploration noise
             expl_noise=0.01,
             # for seed gen
@@ -204,26 +205,12 @@ class ARSAgent():
         self.successes = 0
         self.last_reward = 0.0
         self.phase = 0
-        self.desired_velocity = -0.2
+        self.desired_velocity = -0.3
         self.desired_rate = 0.0
         self.flip = 0
         self.increment = 0
         self.scaledown = True
-
-    def deployOnce(self, state, direction=None, delta=None):
-        # print("dt: {}".format(timesteps))
-        self.normalizer.observe(state)
-        # Normalize State
-        state = self.normalizer.normalize(state)
-        action = self.policy.evaluate(state, delta, direction)
-        # Clip action between +-1 for execution in env
-        for a in range(len(action)):
-            action[a] = np.clip(action[a], -self.max_action, self.max_action)
-        state, reward, done, _ = self.env.step(action)
-        # Clip reward between -1 and 1 to prevent outliers from
-        # distorting weights
-        reward = np.clip(reward, -self.max_action, self.max_action)
-        return state, reward
+        self.type = "Stop"
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
@@ -233,6 +220,7 @@ class ARSAgent():
         timesteps = 0
         done = False
         while not done and timesteps < self.policy.episode_steps:
+            # print("STATE: ", state)
             # print("dt: {}".format(timesteps))
             self.normalizer.observe(state)
             # Normalize State
@@ -242,7 +230,9 @@ class ARSAgent():
             for a in range(len(action)):
                 action[a] = np.clip(action[a], -self.max_action,
                                     self.max_action)
+            # print("ACTION: ", action)
             state, reward, done, _ = self.env.step(action)
+            # print("STATE: ", state)
             # Clip reward between -1 and 1 to prevent outliers from
             # distorting weights
             reward = np.clip(reward, -self.max_action, self.max_action)

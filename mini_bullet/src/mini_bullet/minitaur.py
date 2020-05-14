@@ -521,6 +521,8 @@ class Minitaur(object):
         """Convert the actions that use leg model to the real motor actions.
     Args:
       actions: The theta, phi of the leg model.
+      actions are of form = [phi, phi, phi, phi, theta, theta, theta, theta]
+      where phi = extension and theta = swing
     Returns:
       The eight desired motor angles that can be used in ApplyActions().
     """
