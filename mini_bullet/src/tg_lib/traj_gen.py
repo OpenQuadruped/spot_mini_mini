@@ -1,10 +1,12 @@
 import numpy as np
 
+PHASE_PERIOD = 2.0 * np.pi
+
 
 class CyclicIntegrator():
     def __init__(self, dphi_leg=0.0):
-        # Phase
-        self.tprime = 2 * np.pi * dphi_leg
+        # Phase starts with offset
+        self.tprime = PHASE_PERIOD * dphi_leg
 
     def progress_tprime(self, dt, f_tg, swing_stance_speed_ratio):
         """ swing_stance_speed_ratio is Beta in the paper
@@ -20,24 +22,24 @@ class CyclicIntegrator():
         stance_speed_coef = (swing_stance_speed_ratio +
                              1) * 0.5 / swing_stance_speed_ratio
         swing_speed_coef = (swing_stance_speed_ratio + 1) * 0.5
-        if self.tprime < np.pi:  # Swing
-            delta_phase_multiplier = stance_speed_coef * 2.0 * np.pi
+        if self.tprime < PHASE_PERIOD / 2.0:  # Swing
+            delta_phase_multiplier = stance_speed_coef * PHASE_PERIOD
             self.tprime += time_mult * delta_phase_multiplier
         else:  # Stance
-            delta_phase_multiplier = swing_speed_coef * 2.0 * np.pi
+            delta_phase_multiplier = swing_speed_coef * PHASE_PERIOD
             self.tprime += time_mult * delta_phase_multiplier
 
-        self.tprime = np.fmod(self.tprime, 2.0 * np.pi)
+        self.tprime = np.fmod(self.tprime, PHASE_PERIOD)
 
 
 class TrajectoryGenerator():
     def __init__(self,
                  center_swing=0.0,
-                 amplitude_extension=0.5,
-                 amplitude_lift=1.0,
+                 amplitude_extension=0.2,
+                 amplitude_lift=0.4,
                  intensity=1.0,
                  dphi_leg=0.0,
-                 swing_stance_speed_ratio=1.0 / 3.0):
+                 swing_stance_speed_ratio=3.0):
         # Cyclic Integrator
         self.CI = CyclicIntegrator(dphi_leg)
         self.center_swing = center_swing
@@ -60,12 +62,12 @@ class TrajectoryGenerator():
             theta: extention difference between end of swing and stance (good for climbing)
 
             POLICY PARAMS:
-                h_tg = center_extension
-                alpha_th = amplitude_swing
+                h_tg = center_extension --> walking height (+short/-tall)
+                alpha_th = amplitude_swing --> swing fwd (-) or bwd (+)
         """
         # Set amplitude_extension
         amplitude_extension = self.amplitude_extension
-        if self.CI.tprime > np.pi:
+        if self.CI.tprime > PHASE_PERIOD / 2.0:
             amplitude_extension = self.amplitude_lift
 
         # E(t)

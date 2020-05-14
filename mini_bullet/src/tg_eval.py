@@ -105,7 +105,7 @@ def main():
         half_num_motors = int(env.minitaur.num_motors / 2)
         for i, (key, tg) in enumerate(TG_dict.items()):
             action_idx = i
-            swing, extend = tg.get_swing_extend_based_on_phase()
+            swing, extend = tg.get_swing_extend_based_on_phase(-.3, 0.5)
             # print("LEG: {} \t SWING: {:.3f} \t EXTEND: {:.3f}".format(
             #     action_idx, swing, extend))
             action[action_idx] = swing
@@ -116,7 +116,7 @@ def main():
 
         # Increment phase
         for (key, tg) in TG_dict.items():
-            tg.CI.progress_tprime(dt, 1.0, 5.0)
+            tg.CI.progress_tprime(dt, 10.0, 3.0)
 
     env.close()
 
