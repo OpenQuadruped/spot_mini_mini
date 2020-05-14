@@ -16,15 +16,16 @@ class CyclicIntegrator():
             The speed of the phase depends on swing vs stance phase
             (phase > np.pi or phase < np.pi)  which has different speeds.
         """
+        time_mult = dt * f_tg
         stance_speed_coef = (swing_stance_speed_ratio +
-                             1) * f_tg / swing_stance_speed_ratio
-        swing_speed_coef = (swing_stance_speed_ratio + 1) * f_tg
+                             1) * 0.5 / swing_stance_speed_ratio
+        swing_speed_coef = (swing_stance_speed_ratio + 1) * 0.5
         if self.tprime < np.pi:  # Swing
             delta_phase_multiplier = stance_speed_coef * 2.0 * np.pi
-            self.tprime += dt * delta_phase_multiplier
+            self.tprime += time_mult * delta_phase_multiplier
         else:  # Stance
             delta_phase_multiplier = swing_speed_coef * 2.0 * np.pi
-            self.tprime += dt * delta_phase_multiplier
+            self.tprime += time_mult * delta_phase_multiplier
 
         self.tprime = np.fmod(self.tprime, 2.0 * np.pi)
 
