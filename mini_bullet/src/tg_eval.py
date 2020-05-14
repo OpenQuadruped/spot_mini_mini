@@ -39,10 +39,10 @@ def main():
 
     TG_dict = {}
 
-    TG_LF = TrajectoryGenerator(dphi_leg=0.0)
-    TG_LB = TrajectoryGenerator(dphi_leg=0.25)
-    TG_RF = TrajectoryGenerator(dphi_leg=0.5)
-    TG_RB = TrajectoryGenerator(dphi_leg=0.75)
+    TG_LF = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
+    TG_LB = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
+    TG_RF = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
+    TG_RB = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
 
     TG_dict["LF"] = TG_LF
     TG_dict["LB"] = TG_LB
@@ -62,21 +62,21 @@ def main():
 
     print("RECORDED MAX ACTION: {}".format(max_action))
 
-    # Initialize Normalizer
-    normalizer = Normalizer(state_dim)
+    # # Initialize Normalizer
+    # normalizer = Normalizer(state_dim)
 
-    # Initialize Policy
-    policy = Policy(state_dim, action_dim)
+    # # Initialize Policy
+    # policy = Policy(state_dim, action_dim)
 
-    # Initialize Agent with normalizer, policy and gym env
-    agent = ARSAgent(normalizer, policy, env)
-    agent_num = raw_input("Policy Number: ")
-    if os.path.exists(models_path + "/" + file_name + str(agent_num) +
-                      "_policy"):
-        print("Loading Existing agent")
-        agent.load(models_path + "/" + file_name + str(agent_num))
-        agent.policy.episode_steps = 3000
-        policy = agent.policy
+    # # Initialize Agent with normalizer, policy and gym env
+    # agent = ARSAgent(normalizer, policy, env)
+    # agent_num = raw_input("Policy Number: ")
+    # if os.path.exists(models_path + "/" + file_name + str(agent_num) +
+    #                   "_policy"):
+    #     print("Loading Existing agent")
+    #     agent.load(models_path + "/" + file_name + str(agent_num))
+    #     agent.policy.episode_steps = 3000
+    #     policy = agent.policy
 
     env.reset()
 
@@ -93,16 +93,17 @@ def main():
         for i, (key, tg) in enumerate(TG_dict.items()):
             action_idx = i
             swing, extend = tg.get_swing_extend_based_on_phase()
-            print("LEG: {} \t SWING: {:.3f} \t EXTEND: {:.3f}".format(action_idx, swing, extend))
-            action[action_idx] = extend
-            action[action_idx + half_num_motors] = swing
+            print("LEG: {} \t SWING: {:.3f} \t EXTEND: {:.3f}".format(
+                action_idx, swing, extend))
+            action[action_idx] = swing
+            action[action_idx + half_num_motors] = extend
 
         # Perform action
         next_state, reward, done, _ = env.step(action)
 
         # Increment phase
         for (key, tg) in TG_dict.items():
-            tg.CI.progress_tprime(dt)
+            tg.CI.progress_tprime(dt, 5.0)
 
     env.close()
 
