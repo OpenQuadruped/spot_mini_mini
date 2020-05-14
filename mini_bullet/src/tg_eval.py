@@ -39,10 +39,10 @@ def main():
 
     TG_dict = {}
 
-    TG_LF = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
-    TG_LB = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
-    TG_RF = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
-    TG_RB = TrajectoryGenerator(dphi_leg=0.0, swing_stance_speed_ratio=3.0)
+    TG_LF = TrajectoryGenerator(dphi_leg=0.0)
+    TG_LB = TrajectoryGenerator(dphi_leg=0.0)
+    TG_RF = TrajectoryGenerator(dphi_leg=0.0)
+    TG_RB = TrajectoryGenerator(dphi_leg=0.0)
 
     TG_dict["LF"] = TG_LF
     TG_dict["LB"] = TG_LB
@@ -103,7 +103,7 @@ def main():
 
         # Increment phase
         for (key, tg) in TG_dict.items():
-            tg.CI.progress_tprime(dt, 5.0, 5.0)
+            tg.CI.progress_tprime(dt, 1.0, 5.0)
 
     env.close()
 
