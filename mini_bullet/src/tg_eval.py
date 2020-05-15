@@ -38,11 +38,11 @@ def main():
     dt = env._time_step
 
     movetype_dict = {
-        "walk": [0, 0.25, 0.5, 0.75],
-        "trot": [0, 0.5, 0.5, 0],
-        "bound": [0, 0.5, 0, 0.5],
-        "pace": [0, 0, 0.5, 0.5],
-        "pronk": [0, 0, 0, 0]
+        "walk": [0, 0.25, 0.5, 0.75],  # LF | LB | RF | RB
+        "trot": [0, 0.5, 0.5, 0],      # LF + RB | LB + RF
+        "bound": [0, 0.5, 0, 0.5],     # LF + RF | LB + RB
+        "pace": [0, 0, 0.5, 0.5],      # LF + LB | RF + RB
+        "pronk": [0, 0, 0, 0]          # LF + LB + RF + RB
     }
 
     movetype = "walk"
@@ -98,6 +98,12 @@ def main():
     # Just to store correct action space
     action = env.action_space.sample()
 
+    # ELEMENTS PROVIDED BY POLICY
+    f_tg = 10.0
+    Beta = 1.0
+    h_tg = 0.5
+    alpha_tg = 0.0
+
     t = 0
     while t < (int(max_timesteps)):
 
@@ -105,9 +111,7 @@ def main():
         half_num_motors = int(env.minitaur.num_motors / 2)
         for i, (key, tg) in enumerate(TG_dict.items()):
             action_idx = i
-            swing, extend = tg.get_swing_extend_based_on_phase(-.3, 0.5)
-            # print("LEG: {} \t SWING: {:.3f} \t EXTEND: {:.3f}".format(
-            #     action_idx, swing, extend))
+            swing, extend = tg.get_swing_extend_based_on_phase(alpha_tg, h_tg)
             action[action_idx] = swing
             action[action_idx + half_num_motors] = extend
 
@@ -116,7 +120,7 @@ def main():
 
         # Increment phase
         for (key, tg) in TG_dict.items():
-            tg.CI.progress_tprime(dt, 10.0, 3.0)
+            tg.CI.progress_tprime(dt, f_tg, Beta)
 
     env.close()
 
