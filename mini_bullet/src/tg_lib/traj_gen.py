@@ -37,15 +37,12 @@ class TrajectoryGenerator():
                  center_swing=0.0,
                  amplitude_extension=0.2,
                  amplitude_lift=0.4,
-                 intensity=1.0,
-                 dphi_leg=0.0,
-                 swing_stance_speed_ratio=3.0):
+                 dphi_leg=0.0):
         # Cyclic Integrator
         self.CI = CyclicIntegrator(dphi_leg)
         self.center_swing = center_swing
         self.amplitude_extension = amplitude_extension
         self.amplitude_lift = amplitude_lift
-        self.intensity = intensity
 
     def get_state_base_on_phase(self):
         return [(np.cos(self.CI.tprime) + 1) / 2.0,
@@ -54,6 +51,7 @@ class TrajectoryGenerator():
     def get_swing_extend_based_on_phase(self,
                                         amplitude_swing=0.0,
                                         center_extension=0.0,
+                                        intensity=1.0,
                                         theta=0.0):
         """ Eqn 2 in paper appendix
 
@@ -72,8 +70,8 @@ class TrajectoryGenerator():
 
         # E(t)
         extend = center_extension + (amplitude_extension * np.sin(
-            self.CI.tprime)) * self.intensity + theta * np.cos(self.CI.tprime)
+            self.CI.tprime)) * intensity + theta * np.cos(self.CI.tprime)
         # S(t)
-        swing = self.center_swing + amplitude_swing * np.cos(self.CI.tprime)
-        swing *= self.intensity
+        swing = self.center_swing + amplitude_swing * np.cos(
+            self.CI.tprime) * intensity
         return swing, extend

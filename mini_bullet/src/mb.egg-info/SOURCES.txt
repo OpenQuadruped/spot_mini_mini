@@ -22,3 +22,6 @@ src/sac_lib/valuenetwork.py
 src/td3_lib/__init__.py
 src/td3_lib/plot_reward.py
 src/td3_lib/td3.py
+src/tg_lib/__init__.py
+src/tg_lib/tg_policy.py
+src/tg_lib/traj_gen.py
