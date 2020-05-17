@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from ars_lib.ars import ARSAgent, Normalizer, Policy, ParallelWorker
 from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
 
-from tg_lib.traj_gen import TrajectoryGenerator, CyclicIntegrator
+from tg_lib.tg_policy import TGPolicy
+import time
 
 import torch
 import os
@@ -19,7 +21,7 @@ def main():
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
-    max_timesteps = 4e6
+    max_timesteps = 1000
     file_name = "mini_ars_"
 
     # Find abs path to this file
@@ -37,30 +39,16 @@ def main():
 
     dt = env._time_step
 
-    movetype_dict = {
-        "walk": [0, 0.25, 0.5, 0.75],  # LF | LB | RF | RB
-        "trot": [0, 0.5, 0.5, 0],      # LF + RB | LB + RF
-        "bound": [0, 0.5, 0, 0.5],     # LF + RF | LB + RB
-        "pace": [0, 0, 0.5, 0.5],      # LF + LB | RF + RB
-        "pronk": [0, 0, 0, 0]          # LF + LB + RF + RB
-    }
-
     movetype = "walk"
     # movetype = "trot"
     # movetype = "bound"
     # movetype = "pace"
     # movetype = "pronk"
 
-    TG_dict = {}
-    TG_LF = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][0])
-    TG_LB = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][1])
-    TG_RF = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][2])
-    TG_RB = TrajectoryGenerator(dphi_leg=movetype_dict[movetype][3])
-
-    TG_dict["LF"] = TG_LF
-    TG_dict["LB"] = TG_LB
-    TG_dict["RF"] = TG_RF
-    TG_dict["RB"] = TG_RB
+    TG = TGPolicy(movetype=movetype,
+                  center_swing=0.0,
+                  amplitude_extension=0.2,
+                  amplitude_lift=0.4)
 
     # Set seeds
     env.seed(seed)
@@ -99,28 +87,60 @@ def main():
     action = env.action_space.sample()
 
     # ELEMENTS PROVIDED BY POLICY
-    f_tg = 10.0
+    f_tg = 2.0
     Beta = 1.0
     h_tg = 0.5
     alpha_tg = 0.0
 
+    # Record extends for plot
+    LF_ext = []
+    LB_ext = []
+    RF_ext = []
+    RB_ext = []
+
+    LF_tp = []
+    LB_tp = []
+    RF_tp = []
+    RB_tp = []
+
     t = 0
     while t < (int(max_timesteps)):
+        action[:] = 0.0
 
         # Get Action from TG [no policies here]
-        half_num_motors = int(env.minitaur.num_motors / 2)
-        for i, (key, tg) in enumerate(TG_dict.items()):
-            action_idx = i
-            swing, extend = tg.get_swing_extend_based_on_phase(alpha_tg, h_tg)
-            action[action_idx] = swing
-            action[action_idx + half_num_motors] = extend
+        action = TG.get_utg(action, alpha_tg, h_tg, 1.0,
+                            env.minitaur.num_motors)
 
+        LF_ext.append(action[env.minitaur.num_motors / 2])
+        LB_ext.append(action[1 + env.minitaur.num_motors / 2])
+        RF_ext.append(action[2 + env.minitaur.num_motors / 2])
+        RB_ext.append(action[3 + env.minitaur.num_motors / 2])
         # Perform action
         next_state, reward, done, _ = env.step(action)
 
+        obs = TG.get_TG_state()
+        LF_tp.append(obs[0])
+        LB_tp.append(obs[1])
+        RF_tp.append(obs[2])
+        RB_tp.append(obs[3])
+
         # Increment phase
-        for (key, tg) in TG_dict.items():
-            tg.CI.progress_tprime(dt, f_tg, Beta)
+        TG.increment(dt, f_tg, Beta)
+
+        # time.sleep(1.0)
+
+        t += 1
+
+    plt.plot(0)
+    plt.plot(LF_ext, label="LF")
+    plt.plot(LB_ext, label="LB")
+    plt.plot(RF_ext, label="RF")
+    plt.plot(RB_ext, label="RB")
+    plt.xlabel("t")
+    plt.ylabel("EXT")
+    plt.title("Leg Extensions")
+    plt.legend()
+    plt.show()
 
     env.close()
 
