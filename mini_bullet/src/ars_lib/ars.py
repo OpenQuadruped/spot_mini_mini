@@ -1,4 +1,4 @@
-from tg_lib.tg_policy import TGPolicy
+# from tg_lib.tg_policy import TGPolicy
 import pickle
 import numpy as np
 np.random.seed(0)
@@ -15,8 +15,8 @@ _EXPLORE_TG = 4
 
 
 def ParallelWorker(childPipe, env):
-    nb_states = env.observation_space.shape[0]
-    normalizer = Normalizer(nb_states)
+    # nb_states = env.observation_space.shape[0]
+    # normalizer = Normalizer(nb_states)
     max_action = float(env.action_space.high[0])
     _ = env.reset()
     n = 0
@@ -37,6 +37,7 @@ def ParallelWorker(childPipe, env):
             # Payloads received by parent in ARSAgent.train()
             # [0]: normalizer, [1]: policy, [2]: direction, [3]: delta
             # we use local normalizer so no need for [0] (optional)
+            normalizer = payload[0]
             policy = payload[1]
             direction = payload[2]
             delta = payload[3]
@@ -63,13 +64,18 @@ def ParallelWorker(childPipe, env):
         if message == _EXPLORE_TG:
             # Payloads received by parent in ARSAgent.train()
             # [0]: normalizer, [1]: policy, [2]: direction, [3]: delta
+            # [4]: desired_velocity, [5]: desired_rate, [6]: Trajectory Gen
             # we use local normalizer so no need for [0] (optional)
+            normalizer = payload[0]
             policy = payload[1]
             direction = payload[2]
             delta = payload[3]
             desired_velocity = payload[4]
             desired_rate = payload[5]
+            TGP = payload[6]
             state = env.reset(desired_velocity, desired_rate)
+            # APPEND PHASE OBS
+            state = np.append(state, TGP.get_TG_state())
             sum_rewards = 0.0
             timesteps = 0
             done = False
@@ -81,22 +87,25 @@ def ParallelWorker(childPipe, env):
                 # Extract TG information from action
                 alpha_tg = action[0]
                 h_tg = action[1]
-                intensity = action[2]
-                f_tg = action[3]
-                Beta = action[4]
+                # TAKE THE ABSOLUTE VALUE FOR THESE
+                intensity = abs(action[2])
+                f_tg = abs(action[3])
+                # ADD SMALL ELEMENT TO AVOID /0
+                Beta = abs(action[4])
+                if (Beta == 0):
+                    Beta += 1e-3
                 residuals = action[5:]
                 # GET ACTION FROM TG
-                action = policy.TGPolicy.get_utg(
-                    residuals, alpha_tg, h_tg, intensity,
-                    policy.env.minitaur.num_motors)
+                action = TGP.get_utg(residuals, alpha_tg, h_tg, intensity,
+                                     env.minitaur.num_motors)
                 # Clip action between +-1 for execution in env
                 for a in range(len(action)):
                     action[a] = np.clip(action[a], -max_action, max_action)
                 state, reward, done, _ = env.step(action)
                 # PROGRESS TG
-                policy.TGPolicy.increment(policy.env._time_step, f_tg, Beta)
+                TGP.increment(env._time_step, f_tg, Beta)
                 # APPEND PHASE OBS
-                state = np.append(state, policy.TGPolicy.get_TG_state())
+                state = np.append(state, TGP.get_TG_state())
                 # Clip reward between -1 and 1
                 reward = max(min(reward, 1), -1)
                 sum_rewards += reward
@@ -240,7 +249,7 @@ class Normalizer():
 
 
 class ARSAgent():
-    def __init__(self, normalizer, policy, env, TGPolicy=TGPolicy()):
+    def __init__(self, normalizer, policy, env, TGP=None):
         self.normalizer = normalizer
         self.policy = policy
         self.state_dim = self.policy.state_dim
@@ -256,7 +265,7 @@ class ARSAgent():
         self.increment = 0
         self.scaledown = True
         self.type = "Stop"
-        self.TGPolicy = TGPolicy
+        self.TGP = TGP
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
@@ -291,7 +300,7 @@ class ARSAgent():
     def deployTG(self, direction=None, delta=None):
         state = self.env.reset(self.desired_velocity, self.desired_rate)
         # APPEND PHASE OBS
-        state = np.append(state, self.TGPolicy.get_TG_state())
+        state = np.append(state, self.TGP.get_TG_state())
         sum_rewards = 0.0
         timesteps = 0
         done = False
@@ -305,23 +314,26 @@ class ARSAgent():
             # Extract TG information from action
             alpha_tg = action[0]
             h_tg = action[1]
-            intensity = action[2]
-            f_tg = action[3]
-            Beta = action[4]
+            # TAKE THE ABSOLUTE VALUE FOR THESE
+            intensity = abs(action[2])
+            f_tg = abs(action[3])
+            # ADD SMALL ELEMENT TO AVOID /0
+            Beta = abs(action[4])
+            if (Beta == 0):
+                Beta += 1e-3
             residuals = action[5:]
             # GET ACTION FROM TG
-            action = self.TGPolicy.get_utg(residuals, alpha_tg, h_tg,
-                                           intensity,
-                                           self.env.minitaur.num_motors)
+            action = self.TGP.get_utg(residuals, alpha_tg, h_tg, intensity,
+                                      self.env.minitaur.num_motors)
             # Clip action between +-1 for execution in env
             for a in range(len(action)):
                 action[a] = np.clip(action[a], -self.max_action,
                                     self.max_action)
             state, reward, done, _ = self.env.step(action)
             # PROGRESS TG
-            self.TGPolicy.increment(self.env._time_step, f_tg, Beta)
+            self.TGP.increment(self.env._time_step, f_tg, Beta)
             # APPEND PHASE OBS
-            state = np.append(state, self.TGPolicy.get_TG_state())
+            state = np.append(state, self.TGP.get_TG_state())
             # Clip reward between -1 and 1 to prevent outliers from
             # distorting weights
             reward = np.clip(reward, -self.max_action, self.max_action)
@@ -368,12 +380,12 @@ class ARSAgent():
         eval_reward = self.deploy()
         return eval_reward
 
-    def train_parallel(self, parentPipes, expl="vanilla"):
+    def train_parallel(self, parentPipes):
         """ Execute rollouts in parallel using multiprocessing library
             based on: # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/ARS/ars.py
         """
         # USE VANILLA OR TG POLICY
-        if expl == "vanilla":
+        if self.TGP is None:
             exploration = _EXPLORE
         else:
             exploration = _EXPLORE_TG
@@ -394,7 +406,7 @@ class ARSAgent():
                     exploration,
                     [
                         self.normalizer, self.policy, "+", deltas[i],
-                        self.desired_velocity, self.desired_rate
+                        self.desired_velocity, self.desired_rate, self.TGP
                     ]
                 ])
             for i in range(self.policy.num_deltas):
@@ -408,7 +420,7 @@ class ARSAgent():
                     exploration,
                     [
                         self.normalizer, self.policy, "-", deltas[i],
-                        self.desired_velocity, self.desired_rate
+                        self.desired_velocity, self.desired_rate, self.TGP
                     ]
                 ])
             for i in range(self.policy.num_deltas):
@@ -441,7 +453,7 @@ class ARSAgent():
         self.policy.update(rollouts, std_dev_rewards)
 
         # Execute Current Policy USING VANILLA OR TG
-        if expl == "vanilla":
+        if self.TGP is None:
             eval_reward = self.deploy()
         else:
             eval_reward = self.deployTG()

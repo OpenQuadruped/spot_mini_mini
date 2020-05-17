@@ -91,6 +91,7 @@ def main():
     Beta = 1.0
     h_tg = 0.5
     alpha_tg = 0.0
+    intensity = 1.0
 
     # Record extends for plot
     LF_ext = []
@@ -108,7 +109,7 @@ def main():
         action[:] = 0.0
 
         # Get Action from TG [no policies here]
-        action = TG.get_utg(action, alpha_tg, h_tg, 1.0,
+        action = TG.get_utg(action, alpha_tg, h_tg, intensity,
                             env.minitaur.num_motors)
 
         LF_ext.append(action[env.minitaur.num_motors / 2])

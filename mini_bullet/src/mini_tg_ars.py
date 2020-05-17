@@ -4,6 +4,7 @@ import numpy as np
 
 from ars_lib.ars import ARSAgent, Normalizer, Policy, ParallelWorker
 from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
+from tg_lib.tg_policy import TGPolicy
 
 import torch
 import os
@@ -54,9 +55,21 @@ def main():
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    state_dim = env.observation_space.shape[0]
+    # TRAJECTORY GENERATOR
+    movetype = "walk"
+    # movetype = "trot"
+    # movetype = "bound"
+    # movetype = "pace"
+    # movetype = "pronk"
+    TG = TGPolicy(movetype=movetype,
+                  center_swing=0.0,
+                  amplitude_extension=0.2,
+                  amplitude_lift=0.4)
+    TG_state_dim = len(TG.get_TG_state())
+    TG_action_dim = 5  # f_tg, Beta, alpha_tg, h_tg, intensity
+    state_dim = env.observation_space.shape[0] + TG_state_dim
     print("STATE DIM: {}".format(state_dim))
-    action_dim = env.action_space.shape[0]
+    action_dim = env.action_space.shape[0] + TG_action_dim
     print("ACTION DIM: {}".format(action_dim))
     max_action = float(env.action_space.high[0])
 
@@ -69,7 +82,7 @@ def main():
     policy = Policy(state_dim, action_dim)
 
     # Initialize Agent with normalizer, policy and gym env
-    agent = ARSAgent(normalizer, policy, env)
+    agent = ARSAgent(normalizer, policy, env, TGP=TG)
     agent_num = 0
     if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                       "_policy"):
