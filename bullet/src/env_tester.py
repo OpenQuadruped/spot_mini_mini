@@ -13,12 +13,12 @@ import os
 def main():
     """ The main() function. """
 
-    print("STARTING MINITAUR ARS")
+    print("STARTING SPOT TEST ENV")
 
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
-    max_timesteps = 2000
+    max_timesteps = 1e6
     file_name = "spot_ars_"
 
     # Find abs path to this file
@@ -65,7 +65,7 @@ def main():
 
     env.reset()
 
-    print("STARTED MINITAUR TEST SCRIPT")
+    print("STARTED SPOT TEST ENV")
 
     # Just to store correct action space
     action = env.action_space.sample()
