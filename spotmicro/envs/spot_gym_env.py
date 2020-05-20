@@ -10,8 +10,10 @@ from gym import spaces
 from gym.utils import seeding
 from pkg_resources import parse_version
 from ..model import spot, motor
-from ..util import bullet_client
+import pybullet_utils.bullet_client as bullet_client
+from gym.envs.registration import register
 
+NUM_SUBSTEPS = 5
 NUM_MOTORS = 12
 MOTOR_ANGLE_OBSERVATION_INDEX = 0
 MOTOR_VELOCITY_OBSERVATION_INDEX = MOTOR_ANGLE_OBSERVATION_INDEX + NUM_MOTORS
@@ -29,7 +31,7 @@ spot_URDF_VERSION_MAP = {DEFAULT_URDF_VERSION: spot.spot}
 
 # Register as OpenAI Gym Environment
 register(
-    id="SpotMicroEmv",
+    id="SpotMicroEnv",
     entry_point='mini_bullet.minitaur_gym_env:MinitaurBulletEnv',
     max_episode_steps=1000,
 )
@@ -88,7 +90,10 @@ class spotGymEnv(gym.Env):
                  env_randomizer=None,
                  forward_reward_cap=float("inf"),
                  reflection=True,
-                 log_path=None):
+                 log_path=None,
+                 desired_velocity=0.5,
+                 desired_rate=0.0,
+                 lateral=False):
         """Initialize the spot gym environment.
 
     Args:
@@ -150,24 +155,27 @@ class spotGymEnv(gym.Env):
         # Set up logging.
         self._log_path = log_path
         # @TODO fix logging
+
+        # NUM ITERS
+        self._time_step = 0.01
+        self._action_repeat = action_repeat
+        self._num_bullet_solver_iterations = 300
         self.logging = None
+        if pd_control_enabled or accurate_motor_model_enabled:
+            self._time_step /= NUM_SUBSTEPS
+            self._num_bullet_solver_iterations /= NUM_SUBSTEPS
+            self._action_repeat *= NUM_SUBSTEPS
         # PD control needs smaller time step for stability.
         if control_time_step is not None:
             self.control_time_step = control_time_step
-            self._action_repeat = action_repeat
-            self._time_step = control_time_step / action_repeat
         else:
-            # Default values for time step and action repeat
-            if accurate_motor_model_enabled or pd_control_enabled:
-                self._time_step = 0.002
-                self._action_repeat = 5
-            else:
-                self._time_step = 0.01
-                self._action_repeat = 1
+            # Get Control Timestep
             self.control_time_step = self._time_step * self._action_repeat
         # TODO: Fix the value of self._num_bullet_solver_iterations.
         self._num_bullet_solver_iterations = int(
             NUM_SIMULATION_ITERATION_STEPS / self._action_repeat)
+
+        # URDF
         self._urdf_root = urdf_root
         self._self_collision_enabled = self_collision_enabled
         self._motor_velocity_limit = motor_velocity_limit
@@ -223,9 +231,9 @@ class spotGymEnv(gym.Env):
         self._pybullet_client.setPhysicsEngineParameter(enableConeFriction=0)
         self.seed()
         self.reset()
-        observation_high = (self._get_observation_upper_bound() +
+        observation_high = (self.spot.GetObservationUpperBound() +
                             OBSERVATION_EPS)
-        observation_low = (self._get_observation_lower_bound() -
+        observation_low = (self.spot.GetObservationLowerBound() -
                            OBSERVATION_EPS)
         action_dim = NUM_MOTORS
         action_high = np.array([self._action_bound] * action_dim)
@@ -240,8 +248,11 @@ class spotGymEnv(gym.Env):
             self.logging.save_episode(self._episode_proto)
         self.spot.Terminate()
 
-    def add_env_randomizer(self, env_randomizer):
-        self._env_randomizers.append(env_randomizer)
+    def set_env_randomizer(self, env_randomizer):
+        self._env_randomizer = env_randomizer
+
+    def configure(self, args):
+        self._args = args
 
     def reset(self, initial_motor_angles=None, reset_duration=1.0):
         self._pybullet_client.configureDebugVisualizer(
@@ -291,12 +302,11 @@ class spotGymEnv(gym.Env):
                     motor_overheat_protection=motor_protect,
                     on_rack=self._on_rack))
         self.spot.Reset(reload_urdf=False,
-                       default_motor_angles=initial_motor_angles,
-                       reset_time=reset_duration)
+                        default_motor_angles=initial_motor_angles,
+                        reset_time=reset_duration)
 
-        # Loop over all env randomizers.
-        for env_randomizer in self._env_randomizers:
-            env_randomizer.randomize_env(self)
+        if self._env_randomizer is not None:
+            self._env_randomizer.randomize_env(self)
 
         self._pybullet_client.setPhysicsEngineParameter(enableConeFriction=0)
         self._env_step_counter = 0
@@ -365,13 +375,7 @@ class spotGymEnv(gym.Env):
         self.spot.Step(action)
         reward = self._reward()
         done = self._termination()
-        # @TODO fix logging
-        # if self._log_path is not None:
-        #     spot_logging.update_episode_proto(self._episode_proto, self.spot, action,
-        #                                      self._env_step_counter)
         self._env_step_counter += 1
-        if done:
-            self.spot.Terminate()
         return np.array(self._get_observation()), reward, done, {}
 
     def render(self, mode="rgb_array", close=False):
@@ -456,19 +460,9 @@ class spotGymEnv(gym.Env):
         return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85)
 
     def _termination(self):
-        position = self.spot.GetBasePosition()
-        # distance = math.sqrt(position[0] ** 2 + position[1] ** 2)
-        # print("POSITION")
-        # print(position)
-        if self.is_fallen():
-            print("IS FALLEN!")
-        o = self.spot.GetBaseOrientation()
-        if o[1] < -0.13:
-            print("IS ROTATING!")
-        # if position[2] <= 0.12:
-        #     print("LOW POSITION")
-        # or position[2] <= 0.12
-        return self.is_fallen() or o[1] < -0.13
+        position = self.minitaur.GetBasePosition()
+        distance = math.sqrt(position[0]**2 + position[1]**2)
+        return self.is_fallen() or distance > self._distance_limit
 
     def _reward(self):
         current_base_position = self.spot.GetBasePosition()
@@ -530,15 +524,10 @@ class spotGymEnv(gym.Env):
       The noisy observation with latency.
     """
 
-        observation = []
-        observation.extend(self.spot.GetMotorAngles().tolist())
-        observation.extend(self.spot.GetMotorVelocities().tolist())
-        observation.extend(self.spot.GetMotorTorques().tolist())
-        observation.extend(list(self.spot.GetBaseOrientation()))
-        self._observation = observation
+        self._observation = self.minitaur.GetObservation()
         return self._observation
 
-    def _get_true_observation(self):
+    def _get_realistic_observation(self):
         """Get the observations of this environment.
 
     It includes the angles, velocities, torques and the orientation of the base.
@@ -548,43 +537,8 @@ class spotGymEnv(gym.Env):
       are motor velocities, observation[16:24] are motor torques.
       observation[24:28] is the orientation of the base, in quaternion form.
     """
-        observation = []
-        observation.extend(self.spot.GetTrueMotorAngles().tolist())
-        observation.extend(self.spot.GetTrueMotorVelocities().tolist())
-        observation.extend(self.spot.GetTrueMotorTorques().tolist())
-        observation.extend(list(self.spot.GetTrueBaseOrientation()))
-
-        self._true_observation = observation
-        return self._true_observation
-
-    def _get_observation_upper_bound(self):
-        """Get the upper bound of the observation.
-
-    Returns:
-      The upper bound of an observation. See GetObservation() for the details
-        of each element of an observation.
-    """
-        upper_bound = np.zeros(self._get_observation_dimension())
-        num_motors = self.spot.num_motors
-        upper_bound[0:num_motors] = math.pi  # Joint angle.
-        upper_bound[num_motors:2 * num_motors] = (motor.MOTOR_SPEED_LIMIT
-                                                  )  # Joint velocity.
-        upper_bound[2 * num_motors:3 * num_motors] = (
-            motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
-        upper_bound[3 * num_motors:] = 1.0  # Quaternion of base orientation.
-        return upper_bound
-
-    def _get_observation_lower_bound(self):
-        """Get the lower bound of the observation."""
-        return -self._get_observation_upper_bound()
-
-    def _get_observation_dimension(self):
-        """Get the length of the observation list.
-
-    Returns:
-      The length of the observation list.
-    """
-        return len(self._get_observation())
+        self._observation = self.minitaur.RealisticObservation()
+        return self._observation
 
     if parse_version(gym.__version__) < parse_version('0.9.6'):
         _render = render
@@ -617,7 +571,7 @@ class spotGymEnv(gym.Env):
             numSolverIterations=self._num_bullet_solver_iterations)
         self._pybullet_client.setTimeStep(self._time_step)
         self.spot.SetTimeSteps(action_repeat=self._action_repeat,
-                              simulation_step=self._time_step)
+                               simulation_step=self._time_step)
 
     @property
     def pybullet_client(self):

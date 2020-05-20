@@ -315,17 +315,17 @@ class Rex(object):
         # Nothing is performed if in torque control mode for now.
         self._observation_history.clear()
         if reset_time > 0.0 and default_motor_angles is not None:
-            self.ReceiveObservation()
+            self.RealisticObservation()
             for _ in range(100):
                 self.ApplyAction(self.initial_pose)
                 self._pybullet_client.stepSimulation()
-                self.ReceiveObservation()
+                self.RealisticObservation()
             num_steps_to_reset = int(reset_time / self.time_step)
             for _ in range(num_steps_to_reset):
                 self.ApplyAction(default_motor_angles)
                 self._pybullet_client.stepSimulation()
-                self.ReceiveObservation()
-        self.ReceiveObservation()
+                self.RealisticObservation()
+        self.RealisticObservation()
 
     def _RemoveDefaultJointDamping(self):
         num_joints = self._pybullet_client.getNumJoints(self.quadruped)
@@ -655,8 +655,11 @@ class Rex(object):
         for _ in range(self._action_repeat):
             self.ApplyAction(action)
             self._pybullet_client.stepSimulation()
-            self.ReceiveObservation()
+            self.RealisticObservation()
             self._step_counter += 1
+
+    def GetTimeSinceReset(self):
+        return self._step_counter * self.time_step
 
     def GetMotorAngles(self):
         """Gets the eight motor angles at the current moment, mapped to [-pi, pi].
