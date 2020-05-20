@@ -24,10 +24,12 @@ class CyclicIntegrator():
         swing_speed_coef = (swing_stance_speed_ratio + 1) * 0.5
         if self.tprime < PHASE_PERIOD / 2.0:  # Swing
             delta_phase_multiplier = stance_speed_coef * PHASE_PERIOD
-            self.tprime += time_mult * delta_phase_multiplier
+            self.tprime += np.fmod(time_mult * delta_phase_multiplier,
+                                   PHASE_PERIOD)
         else:  # Stance
             delta_phase_multiplier = swing_speed_coef * PHASE_PERIOD
-            self.tprime += time_mult * delta_phase_multiplier
+            self.tprime += np.fmod(time_mult * delta_phase_multiplier,
+                                   PHASE_PERIOD)
 
         self.tprime = np.fmod(self.tprime, PHASE_PERIOD)
 
@@ -44,9 +46,9 @@ class TrajectoryGenerator():
         self.amplitude_extension = amplitude_extension
         self.amplitude_lift = amplitude_lift
 
-    def get_state_base_on_phase(self):
-        return [(np.cos(self.CI.tprime) + 1) / 2.0,
-                (np.sin(self.CI.tprime) + 1) / 2.0]
+    def get_state_based_on_phase(self):
+        return np.array([(np.cos(self.CI.tprime) + 1) / 2.0,
+                         (np.sin(self.CI.tprime) + 1) / 2.0])
 
     def get_swing_extend_based_on_phase(self,
                                         amplitude_swing=0.0,

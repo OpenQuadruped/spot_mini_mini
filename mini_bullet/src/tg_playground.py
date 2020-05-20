@@ -21,7 +21,7 @@ def main():
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
-    max_timesteps = 1000
+    max_timesteps = 2000
     file_name = "mini_ars_"
 
     # Find abs path to this file
@@ -35,7 +35,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = MinitaurBulletEnv(render=True, on_rack=True)
+    env = MinitaurBulletEnv(render=True, on_rack=False)
 
     dt = env._time_step
 
@@ -48,7 +48,7 @@ def main():
     TG = TGPolicy(movetype=movetype,
                   center_swing=0.0,
                   amplitude_extension=0.2,
-                  amplitude_lift=0.4)
+                  amplitude_lift=0.2)
 
     # Set seeds
     env.seed(seed)
@@ -87,10 +87,10 @@ def main():
     action = env.action_space.sample()
 
     # ELEMENTS PROVIDED BY POLICY
-    f_tg = 2.0
-    Beta = 1.0
+    f_tg = 8.0
+    Beta = 5.0
     h_tg = 0.5
-    alpha_tg = 0.0
+    alpha_tg = 0.5
     intensity = 1.0
 
     # Record extends for plot
@@ -120,10 +120,10 @@ def main():
         next_state, reward, done, _ = env.step(action)
 
         obs = TG.get_TG_state()
-        LF_tp.append(obs[0])
-        LB_tp.append(obs[1])
-        RF_tp.append(obs[2])
-        RB_tp.append(obs[3])
+        # LF_tp.append(obs[0])
+        # LB_tp.append(obs[1])
+        # RF_tp.append(obs[2])
+        # RB_tp.append(obs[3])
 
         # Increment phase
         TG.increment(dt, f_tg, Beta)
