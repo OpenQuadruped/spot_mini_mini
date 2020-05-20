@@ -9,7 +9,7 @@ import pybullet_data
 from gym import spaces
 from gym.utils import seeding
 from pkg_resources import parse_version
-from ..model import spot, motor
+from spotmicro.spot import spot
 import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
 
@@ -32,7 +32,7 @@ spot_URDF_VERSION_MAP = {DEFAULT_URDF_VERSION: spot.spot}
 # Register as OpenAI Gym Environment
 register(
     id="SpotMicroEnv",
-    entry_point='mini_bullet.minitaur_gym_env:MinitaurBulletEnv',
+    entry_point='spot.spot_gym_env:spotGymEnv',
     max_episode_steps=1000,
 )
 

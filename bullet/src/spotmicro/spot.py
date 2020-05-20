@@ -1,4 +1,4 @@
-"""This file models a rex using pybullet.
+"""This file models a spot using pybullet.
 
 """
 
@@ -8,7 +8,7 @@ import math
 import re
 import numpy as np
 from . import motor
-from ..util import pybullet_data
+from spotmicro.util import pybullet_data
 
 INIT_POSITION = [0, 0, 0.21]
 INIT_RACK_POSITION = [0, 0, 1]
@@ -50,8 +50,8 @@ def MapToMinusPiToPi(angles):
     return mapped_angles
 
 
-class Rex(object):
-    """The Rex class that simulates a quadruped robot.
+class spot(object):
+    """The spot class that simulates a quadruped robot.
 
   """
     INIT_POSES = {
@@ -89,7 +89,7 @@ class Rex(object):
                  on_rack=False,
                  kd_for_pd_controllers=0.3,
                  pose_id='stand_low'):
-        """Constructs a Rex and reset it to the initial states.
+        """Constructs a spot and reset it to the initial states.
 
     Args:
       pybullet_client: The instance of BulletClient to manage different
@@ -118,10 +118,10 @@ class Rex(object):
         False, pose control will be used.
       motor_overheat_protection: Whether to shutdown the motor that has exerted
         large torque (OVERHEAT_SHUTDOWN_TORQUE) for an extended amount of time
-        (OVERHEAT_SHUTDOWN_TIME). See ApplyAction() in rex.py for more
+        (OVERHEAT_SHUTDOWN_TIME). See ApplyAction() in spot.py for more
         details.
-      on_rack: Whether to place the Rex on rack. This is only used to debug
-        the walking gait. In this mode, the Rex's base is hanged midair so
+      on_rack: Whether to place the spot on rack. This is only used to debug
+        the walking gait. In this mode, the spot's base is hanged midair so
         that its walking gait is clearer to visualize.
     """
         self.num_motors = 12
@@ -261,12 +261,12 @@ class Rex(object):
               reload_urdf=True,
               default_motor_angles=None,
               reset_time=3.0):
-        """Reset the Rex to its initial states.
+        """Reset the spot to its initial states.
 
     Args:
       reload_urdf: Whether to reload the urdf file. If not, Reset() just place
-        the Rex back to its starting position.
-      default_motor_angles: The default motor angles. If it is None, Rex
+        the spot back to its starting position.
+      default_motor_angles: The default motor angles. If it is None, spot
         will hold a default pose for 100 steps. In
         torque control mode, the phase of holding the default pose is skipped.
       reset_time: The duration (in seconds) to hold the default motor angles. If
@@ -281,14 +281,14 @@ class Rex(object):
         if reload_urdf:
             if self._self_collision_enabled:
                 self.quadruped = self._pybullet_client.loadURDF(
-                    pybullet_data.getDataPath() + "/assets/urdf/rex.urdf",
+                    pybullet_data.getDataPath() + "/assets/urdf/spot.urdf",
                     init_position,
                     INIT_ORIENTATION,
                     useFixedBase=self._on_rack,
                     flags=self._pybullet_client.URDF_USE_SELF_COLLISION)
             else:
                 self.quadruped = self._pybullet_client.loadURDF(
-                    pybullet_data.getDataPath() + "/assets/urdf/rex.urdf",
+                    pybullet_data.getDataPath() + "/assets/urdf/spot.urdf",
                     init_position,
                     INIT_ORIENTATION,
                     useFixedBase=self._on_rack)
@@ -358,7 +358,7 @@ class Rex(object):
                                        desired_angle)
 
     def ResetPose(self, add_constraint):
-        """Reset the pose of the Rex.
+        """Reset the pose of the spot.
 
     Args:
       add_constraint: Whether to add a constraint at the joints of two feet.
@@ -419,40 +419,40 @@ class Rex(object):
                 force=knee_friction_force)
 
     def GetBasePosition(self):
-        """Get the position of Rex's base.
+        """Get the position of spot's base.
 
     Returns:
-      The position of Rex's base.
+      The position of spot's base.
     """
         position, _ = (self._pybullet_client.getBasePositionAndOrientation(
             self.quadruped))
         return position
 
     def GetBaseOrientation(self):
-        """Get the orientation of Rex's base, represented as quaternion.
+        """Get the orientation of spot's base, represented as quaternion.
 
     Returns:
-      The orientation of Rex's base.
+      The orientation of spot's base.
     """
         _, orientation = (self._pybullet_client.getBasePositionAndOrientation(
             self.quadruped))
         return orientation
 
     def GetBaseRollPitchYaw(self):
-        """Get the rate of orientation change of the Rex's base in euler angle.
+        """Get the rate of orientation change of the spot's base in euler angle.
 
     Returns:
-      rate of (roll, pitch, yaw) change of the Rex's base.
+      rate of (roll, pitch, yaw) change of the spot's base.
     """
         vel = self._pybullet_client.getBaseVelocity(self.quadruped)
         return np.asarray([vel[1][0], vel[1][1], vel[1][2]])
 
     def GetBaseRollPitchYawRate(self):
-        """Get the rate of orientation change of the Rex's base in euler angle.
+        """Get the rate of orientation change of the spot's base in euler angle.
 
     This function mimicks the noisy sensor reading and adds latency.
     Returns:
-      rate of (roll, pitch, yaw) change of the Rex's base polluted by noise
+      rate of (roll, pitch, yaw) change of the spot's base polluted by noise
       and latency.
     """
         return self._AddSensorNoise(
@@ -568,7 +568,7 @@ class Rex(object):
         return observation
 
     def ApplyAction(self, motor_commands, motor_kps=None, motor_kds=None):
-        """Set the desired motor angles to the motors of the Rex.
+        """Set the desired motor angles to the motors of the spot.
 
     The desired motor angles are clipped based on the maximum allowed velocity.
     If the pd_control_enabled is True, a torque is calculated according to
@@ -579,9 +579,9 @@ class Rex(object):
     Args:
       motor_commands: The eight desired motor angles.
       motor_kps: Proportional gains for the motor model. If not provided, it
-        uses the default kp of the Rex for all the motors.
+        uses the default kp of the spot for all the motors.
       motor_kds: Derivative gains for the motor model. If not provided, it
-        uses the default kd of the Rex for all the motors.
+        uses the default kd of the spot for all the motors.
     """
         if self._motor_velocity_limit < np.inf:
             current_motor_angle = self.GetMotorAngles()
@@ -721,7 +721,7 @@ class Rex(object):
         return self._leg_inertia_urdf
 
     def SetBaseMasses(self, base_mass):
-        """Set the mass of Rex's base.
+        """Set the mass of spot's base.
 
     Args:
       base_mass: A list of masses of each body link in CHASIS_LINK_IDS. The
@@ -767,7 +767,7 @@ class Rex(object):
                                                  mass=motor_mass)
 
     def SetBaseInertias(self, base_inertias):
-        """Set the inertias of Rex's base.
+        """Set the inertias of spot's base.
 
     Args:
       base_inertias: A list of inertias of each body link in CHASIS_LINK_IDS.
