@@ -15,6 +15,10 @@ INIT_RACK_POSITION = [0, 0, 1]
 INIT_ORIENTATION = [0, 0, 0, 1]
 OVERHEAT_SHUTDOWN_TORQUE = 2.45
 OVERHEAT_SHUTDOWN_TIME = 1.0
+# -math.pi / 5
+INIT_LEG_POS = -0.658319
+# math.pi / 3
+INIT_FOOT_POS = 1.0472
 
 LEG_POSITION = ["front_left", "front_right", "rear_left", "rear_right"]
 MOTOR_NAMES = [
@@ -126,6 +130,8 @@ class Spot(object):
         that its walking gait is clearer to visualize.
     """
         # used to calculate minitaur acceleration
+        self.init_leg = INIT_LEG_POS
+        self.init_foot = INIT_FOOT_POS
         self.prev_lin_twist = np.array([0, 0, 0])
         self.prev_lin_acc = np.array([0, 0, 0])
         self.num_motors = 12
@@ -571,6 +577,31 @@ class Spot(object):
         # observation.extend(self.GetMotorTorques().tolist())
         # observation.extend(list(self.GetBaseOrientation()))
         return observation
+
+    def ConvertFromLegModel(self, leg_pose):
+        motor_pose = np.zeros(self.num_motors)
+        for i in range(self.num_legs):
+            motor_pose[int(3 * i)] = 0
+            if i == 0 or i == 1:
+                leg_action = self.init_leg + leg_pose[0]
+                motor_pose[int(3 * i + 1)] = max(
+                    min(leg_action, self.init_leg + 0.60),
+                    self.init_leg - 0.60)
+                foot_pose = self.init_foot + leg_pose[1]
+                motor_pose[int(3 * i + 2)] = max(
+                    min(foot_pose, self.init_foot + 0.60),
+                    self.init_foot - 0.60)
+            else:
+                leg_action = self.init_leg + leg_pose[2]
+                motor_pose[int(3 * i + 1)] = max(
+                    min(leg_action, self.init_leg + 0.60),
+                    self.init_leg - 0.60)
+                foot_pose = self.init_foot + leg_pose[3]
+                motor_pose[int(3 * i + 2)] = max(
+                    min(foot_pose, self.init_foot + 0.60),
+                    self.init_foot - 0.60)
+
+        return motor_pose
 
     def ApplyAction(self, motor_commands, motor_kps=None, motor_kds=None):
         """Set the desired motor angles to the motors of the spot.

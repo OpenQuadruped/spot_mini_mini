@@ -72,7 +72,7 @@ class spotGymEnv(gym.Env):
                  self_collision_enabled=True,
                  motor_velocity_limit=np.inf,
                  pd_control_enabled=False,
-                 leg_model_enabled=False,
+                 leg_model_enabled=True,
                  accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
                  motor_kp=1.0,
@@ -241,11 +241,6 @@ class spotGymEnv(gym.Env):
         self.viewer = None
         self._hard_reset = hard_reset  # This assignment need to be after reset()
         self.goal_reached = False
-
-    def close(self):
-        # if self._env_step_counter > 0:
-            # self.logging.save_episode(self._episode_proto)
-        self.spot.Terminate()
 
     def set_env_randomizer(self, env_randomizer):
         self._env_randomizer = env_randomizer
