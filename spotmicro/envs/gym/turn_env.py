@@ -1,4 +1,4 @@
-"""This file implements the gym environment of rex alternating legs.
+"""This file implements the gym environment of spot alternating legs.
 
 """
 import math
@@ -6,7 +6,7 @@ import random
 
 from gym import spaces
 import numpy as np
-from .. import rex_gym_env
+from .. import spot_gym_env
 
 NUM_LEGS = 4
 NUM_MOTORS = 3 * NUM_LEGS
@@ -14,17 +14,20 @@ STEP_PERIOD = 1.0 / 10.0  # 10 steps per second.
 TARGET_POSITION = [0.0, 0.0, 0.21]
 
 
-class RexTurnEnv(rex_gym_env.RexGymEnv):
-    """The gym environment for the rex.
+class spotTurnEnv(spot_gym_env.spotGymEnv):
+    """The gym environment for the spot.
 
-  It simulates the locomotion of a rex, a quadruped robot. The state space
+  It simulates the locomotion of a spot, a quadruped robot. The state space
   include the angles, velocities and torques for all the motors and the action
   space is the desired motor angle for each motor. The reward function is based
-  on how far the rex walks in 1000 steps and penalizes the energy
+  on how far the spot walks in 1000 steps and penalizes the energy
   expenditure.
 
   """
-    metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": 66}
+    metadata = {
+        "render.modes": ["human", "rgb_array"],
+        "video.frames_per_second": 66
+    }
 
     def __init__(self,
                  urdf_version=None,
@@ -40,20 +43,20 @@ class RexTurnEnv(rex_gym_env.RexGymEnv):
                  num_steps_to_log=1000,
                  env_randomizer=None,
                  log_path=None):
-        """Initialize the rex alternating legs gym environment.
+        """Initialize the spot alternating legs gym environment.
 
     Args:
       urdf_version: [DEFAULT_URDF_VERSION, DERPY_V0_URDF_VERSION] are allowable
         versions. If None, DEFAULT_URDF_VERSION is used. Refer to
-        rex_gym_env for more details.
+        spot_gym_env for more details.
       control_time_step: The time step between two successive control signals.
       action_repeat: The number of simulation steps that an action is repeated.
       control_latency: The latency between get_observation() and the actual
         observation. See minituar.py for more details.
       pd_latency: The latency used to get motor angles/velocities used to
-        compute PD controllers. See rex.py for more details.
-      on_rack: Whether to place the rex on rack. This is only used to debug
-        the walking gait. In this mode, the rex's base is hung midair so
+        compute PD controllers. See spot.py for more details.
+      on_rack: Whether to place the spot on rack. This is only used to debug
+        the walking gait. In this mode, the spot's base is hung midair so
         that its walking gait is clearer to visualize.
       motor_kp: The P gain of the motor.
       motor_kd: The D gain of the motor.
@@ -66,25 +69,25 @@ class RexTurnEnv(rex_gym_env.RexGymEnv):
         randomize the environment during when env.reset() is called and add
         perturbations when env.step() is called.
       log_path: The path to write out logs. For the details of logging, refer to
-        rex_logging.proto.
+        spot_logging.proto.
     """
-        super(RexTurnEnv,
-              self).__init__(urdf_version=urdf_version,
-                             accurate_motor_model_enabled=True,
-                             motor_overheat_protection=True,
-                             hard_reset=False,
-                             motor_kp=motor_kp,
-                             motor_kd=motor_kd,
-                             remove_default_joint_damping=remove_default_joint_damping,
-                             control_latency=control_latency,
-                             pd_latency=pd_latency,
-                             on_rack=on_rack,
-                             render=render,
-                             num_steps_to_log=num_steps_to_log,
-                             env_randomizer=env_randomizer,
-                             log_path=log_path,
-                             control_time_step=control_time_step,
-                             action_repeat=action_repeat)
+        super(spotTurnEnv, self).__init__(
+            urdf_version=urdf_version,
+            accurate_motor_model_enabled=True,
+            motor_overheat_protection=True,
+            hard_reset=False,
+            motor_kp=motor_kp,
+            motor_kd=motor_kd,
+            remove_default_joint_damping=remove_default_joint_damping,
+            control_latency=control_latency,
+            pd_latency=pd_latency,
+            on_rack=on_rack,
+            render=render,
+            num_steps_to_log=num_steps_to_log,
+            env_randomizer=env_randomizer,
+            log_path=log_path,
+            control_time_step=control_time_step,
+            action_repeat=action_repeat)
 
         action_dim = 12
         action_high = np.array([0.1] * action_dim)
@@ -102,19 +105,21 @@ class RexTurnEnv(rex_gym_env.RexGymEnv):
         self.desired_pitch = 0
         self.goal_reached = False
         self.stand = False
-        super(RexTurnEnv, self).reset()
-        position = self.rex.init_position
+        super(spotTurnEnv, self).reset()
+        position = self.spot.init_position
         if not self._on_rack:
             self.random_start_angle = random.uniform(0.2, 5.8)
         else:
             self.random_start_angle = 2.1
-            position = self.rex.init_on_rack_position
-        q = self.pybullet_client.getQuaternionFromEuler([0, 0, self.random_start_angle])
-        self.pybullet_client.resetBasePositionAndOrientation(self.rex.quadruped, position, q)
+            position = self.spot.init_on_rack_position
+        q = self.pybullet_client.getQuaternionFromEuler(
+            [0, 0, self.random_start_angle])
+        self.pybullet_client.resetBasePositionAndOrientation(
+            self.spot.quadruped, position, q)
         return self._get_observation()
 
     def _signal(self, t):
-        initial_pose = self.rex.INIT_POSES['stand_high']
+        initial_pose = self.spot.INIT_POSES['stand_high']
         period = STEP_PERIOD
         extension = 0.1
         swing = 0.2
@@ -122,22 +127,26 @@ class RexTurnEnv(rex_gym_env.RexGymEnv):
         ith_leg = int(t / period) % 2
 
         pose = {
-            'left_0': np.array([swipe, extension, -swing,
-                                -swipe, extension, swing,
-                                swipe, -extension, swing,
-                                -swipe, -extension, -swing]),
-            'left_1': np.array([-swipe, 0, swing,
-                                swipe, 0, -swing,
-                                -swipe, 0, -swing,
-                                swipe, 0, swing]),
-            'right_0': np.array([-swipe, extension, -swing,
-                                 swipe, -extension, swing,
-                                 -swipe, -extension, swing,
-                                 swipe, -extension, -swing]),
-            'right_1': np.array([swipe, 0, swing,
-                                 -swipe, 0, -swing,
-                                 swipe, 0, -swing,
-                                 -swipe, 0, swing])
+            'left_0':
+            np.array([
+                swipe, extension, -swing, -swipe, extension, swing, swipe,
+                -extension, swing, -swipe, -extension, -swing
+            ]),
+            'left_1':
+            np.array([
+                -swipe, 0, swing, swipe, 0, -swing, -swipe, 0, -swing, swipe,
+                0, swing
+            ]),
+            'right_0':
+            np.array([
+                -swipe, extension, -swing, swipe, -extension, swing, -swipe,
+                -extension, swing, swipe, -extension, -swing
+            ]),
+            'right_1':
+            np.array([
+                swipe, 0, swing, -swipe, 0, -swing, swipe, 0, -swing, -swipe,
+                0, swing
+            ])
         }
 
         if self.random_start_angle > 3:
@@ -158,11 +167,11 @@ class RexTurnEnv(rex_gym_env.RexGymEnv):
     def _convert_from_leg_model(self, leg_pose, t):
         if t < .4:
             # set init position
-            return self.rex.INIT_POSES['stand_high']
+            return self.spot.INIT_POSES['stand_high']
         motor_pose = np.zeros(NUM_MOTORS)
         for i in range(NUM_LEGS):
             if self.goal_reached:
-                return self.rex.initial_pose
+                return self.spot.initial_pose
             else:
                 motor_pose[3 * i] = leg_pose[3 * i]
                 motor_pose[3 * i + 1] = leg_pose[3 * i + 1]
@@ -170,29 +179,30 @@ class RexTurnEnv(rex_gym_env.RexGymEnv):
         return motor_pose
 
     def _transform_action_to_motor_command(self, action):
-        t = self.rex.GetTimeSinceReset()
+        t = self.spot.GetTimeSinceReset()
         action += self._signal(t)
         action = self._convert_from_leg_model(action, t)
         return action
 
     def is_fallen(self):
-        """Decide whether the rex has fallen.
+        """Decide whether the spot has fallen.
 
     If the up directions between the base and the world is large (the dot
-    product is smaller than 0.85), the rex is considered fallen.
+    product is smaller than 0.85), the spot is considered fallen.
 
     Returns:
-      Boolean value that indicates whether the rex has fallen.
+      Boolean value that indicates whether the spot has fallen.
     """
-        orientation = self.rex.GetBaseOrientation()
+        orientation = self.spot.GetBaseOrientation()
         rot_mat = self._pybullet_client.getMatrixFromQuaternion(orientation)
         local_up = rot_mat[6:]
         return np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85
 
     def _reward(self):
         t_orient = [0.0, 0.0, 0.0]
-        current_base_position = self.rex.GetBasePosition()
-        current_base_orientation = self.pybullet_client.getEulerFromQuaternion(self.rex.GetBaseOrientation())
+        current_base_position = self.spot.GetBasePosition()
+        current_base_orientation = self.pybullet_client.getEulerFromQuaternion(
+            self.spot.GetBaseOrientation())
         proximity_reward = abs(t_orient[0] - current_base_orientation[0]) + \
                            abs(t_orient[1] - current_base_orientation[1]) + \
                            abs(t_orient[2] - current_base_orientation[2])
@@ -217,53 +227,11 @@ class RexTurnEnv(rex_gym_env.RexGymEnv):
 
         if is_pos and is_oriented:
             self.goal_reached = True
-            self.goal_t = self.rex.GetTimeSinceReset()
+            self.goal_t = self.spot.GetTimeSinceReset()
 
         reward = position_reward + proximity_reward
         # print(reward)
         return reward
-
-    def _get_true_observation(self):
-        """Get the true observations of this environment.
-
-    It includes the roll, the error between current pitch and desired pitch,
-    roll dot and pitch dot of the base.
-
-    Returns:
-      The observation list.
-    """
-        observation = []
-        roll, pitch, _ = self.rex.GetTrueBaseRollPitchYaw()
-        roll_rate, pitch_rate, _ = self.rex.GetTrueBaseRollPitchYawRate()
-        observation.extend([roll, pitch, roll_rate, pitch_rate])
-        observation[1] -= self.desired_pitch  # observation[1] is the pitch
-        self._true_observation = np.array(observation)
-        return self._true_observation
-
-    def _get_observation(self):
-        observation = []
-        roll, pitch, _ = self.rex.GetBaseRollPitchYaw()
-        roll_rate, pitch_rate, _ = self.rex.GetBaseRollPitchYawRate()
-        observation.extend([roll, pitch, roll_rate, pitch_rate])
-        observation[1] -= self.desired_pitch  # observation[1] is the pitch
-        self._observation = np.array(observation)
-        return self._observation
-
-    def _get_observation_upper_bound(self):
-        """Get the upper bound of the observation.
-
-    Returns:
-      The upper bound of an observation. See GetObservation() for the details
-        of each element of an observation.
-    """
-        upper_bound = np.zeros(self._get_observation_dimension())
-        upper_bound[0:2] = 2 * math.pi  # Roll, pitch, yaw of the base.
-        upper_bound[2:4] = 2 * math.pi / self._time_step  # Roll, pitch, yaw rate.
-        return upper_bound
-
-    def _get_observation_lower_bound(self):
-        lower_bound = -self._get_observation_upper_bound()
-        return lower_bound
 
     def set_swing_offset(self, value):
         """Set the swing offset of each leg.
