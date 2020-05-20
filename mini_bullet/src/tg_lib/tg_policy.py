@@ -8,9 +8,14 @@ class TGPolicy():
     def __init__(
             self,
             movetype="walk",
+            # offset for leg swing.
+            # mostly useless except walking up/down hill
+            # Might be good to make it a policy param
             center_swing=0.0,
-            amplitude_extension=0.2,
-            amplitude_lift=0.4,
+            # push legs towards body
+            amplitude_extension=0.0,
+            # push legs away from body
+            amplitude_lift=0.0,
     ):
         """ movetype decides which type of
             TG we are training for
@@ -27,10 +32,10 @@ class TGPolicy():
         self.TG_dict = {}
 
         movetype_dict = {
-            "walk": [0, 0.25, 0.5, 0.75],  # LF | LB | RF | RB
-            "trot": [0, 0.5, 0.5, 0],  # LF + RB | LB + RF
-            "bound": [0, 0.5, 0, 0.5],  # LF + RF | LB + RB
-            "pace": [0, 0, 0.5, 0.5],  # LF + LB | RF + RB
+            "walk": [0, 0.25, 0.5, 0.75],  # ORDER: RF | LF | RB | LB
+            "trot": [0, 0.5, 0.5, 0],      # ORDER: LF + RB | LB + RF
+            "bound": [0, 0.5, 0, 0.5],     # ORDER: LF + LB | RF + RB
+            "pace": [0, 0, 0.5, 0.5],      # ORDER: LF + RF | LB + RB
             "pronk": [0, 0, 0, 0]  # LF + LB + RF + RB
         }
         TG_LF = TrajectoryGenerator(center_swing, amplitude_extension,
@@ -63,12 +68,16 @@ class TGPolicy():
         # return obs
 
         # OR just return phase, not sure why sin and cos is relevant...
-        obs = np.array([])
-        for i, (key, tg) in enumerate(self.TG_dict.items()):
-            obs = np.append(obs, tg.CI.tprime)
+        # obs = np.array([])
+        # for i, (key, tg) in enumerate(self.TG_dict.items()):
+        #     obs = np.append(obs, tg.CI.tprime)
+
+        # Return MASTER phase
+        obs = self.TG_dict["LF"].get_state_based_on_phase()
         return obs
 
-    def get_utg(self, action, alpha_tg, h_tg, intensity, num_motors):
+    def get_utg(self, action, alpha_tg, h_tg, intensity, num_motors,
+                theta=0.0):
         """ INPUTS:
                 action: residuals for each motor
                         from Policy
@@ -88,7 +97,7 @@ class TGPolicy():
         for i, (key, tg) in enumerate(self.TG_dict.items()):
             action_idx = i
             swing, extend = tg.get_swing_extend_based_on_phase(
-                alpha_tg, h_tg, intensity)
+                alpha_tg, h_tg, intensity, theta)
             # NOTE: ADDING to residuals
             action[action_idx] += swing
             action[action_idx + half_num_motors] += extend

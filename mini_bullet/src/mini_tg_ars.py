@@ -35,7 +35,7 @@ def main():
     max_timesteps = 4e6
     eval_freq = 1e1
     save_model = True
-    file_name = "mini_ars_"
+    file_name = "mini_tg_ars_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
@@ -63,10 +63,10 @@ def main():
     # movetype = "pronk"
     TG = TGPolicy(movetype=movetype,
                   center_swing=0.0,
-                  amplitude_extension=0.2,
+                  amplitude_extension=0.4,
                   amplitude_lift=0.4)
     TG_state_dim = len(TG.get_TG_state())
-    TG_action_dim = 5  # f_tg, Beta, alpha_tg, h_tg, intensity
+    TG_action_dim = 3  # f_tg, alpha_tg, h_tg
     state_dim = env.observation_space.shape[0] + TG_state_dim
     print("STATE DIM: {}".format(state_dim))
     action_dim = env.action_space.shape[0] + TG_action_dim
@@ -113,7 +113,8 @@ def main():
 
     # Start multiprocessing
     for proc_num in range(num_processes):
-        p = mp.Process(target=ParallelWorker, args=(childPipes[proc_num], env))
+        p = mp.Process(target=ParallelWorker,
+                       args=(childPipes[proc_num], env, state_dim))
         p.start()
         processes.append(p)
 

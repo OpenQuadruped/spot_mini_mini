@@ -1,6 +1,9 @@
 # from tg_lib.tg_policy import TGPolicy
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import butter, filtfilt
+
 np.random.seed(0)
 
 # Multiprocessing package for python
@@ -13,10 +16,29 @@ _CLOSE = 2
 _EXPLORE = 3
 _EXPLORE_TG = 4
 
+# Params for TG
+F_SCALE = 4.0
+HTG_MIN = 0.1
+HTG_MAX = 0.8
+AMP_MIN = 0.6
+AMP_MAX = 1.0
+RESIDUALS_ABS = 0.1
 
-def ParallelWorker(childPipe, env):
+
+def butter_lowpass_filter(data, cutoff, fs, order=2):
+    """ Pass two subsequent datapoints in here to be filtered
+    """
+    nyq = 0.5 * fs  # Nyquist Frequency
+    normal_cutoff = cutoff / nyq
+    # Get the filter coefficients
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    y = filtfilt(b, a, data)
+    return y
+
+
+def ParallelWorker(childPipe, env, nb_states):
     # nb_states = env.observation_space.shape[0]
-    # normalizer = Normalizer(nb_states)
+    normalizer = Normalizer(nb_states)
     max_action = float(env.action_space.high[0])
     _ = env.reset()
     n = 0
@@ -37,7 +59,7 @@ def ParallelWorker(childPipe, env):
             # Payloads received by parent in ARSAgent.train()
             # [0]: normalizer, [1]: policy, [2]: direction, [3]: delta
             # we use local normalizer so no need for [0] (optional)
-            normalizer = payload[0]
+            # normalizer = payload[0]
             policy = payload[1]
             direction = payload[2]
             delta = payload[3]
@@ -66,7 +88,7 @@ def ParallelWorker(childPipe, env):
             # [0]: normalizer, [1]: policy, [2]: direction, [3]: delta
             # [4]: desired_velocity, [5]: desired_rate, [6]: Trajectory Gen
             # we use local normalizer so no need for [0] (optional)
-            normalizer = payload[0]
+            # normalizer = payload[0]
             policy = payload[1]
             direction = payload[2]
             delta = payload[3]
@@ -86,15 +108,21 @@ def ParallelWorker(childPipe, env):
                 action = policy.evaluate(state, delta, direction)
                 # Extract TG information from action
                 alpha_tg = action[0]
+                # FORCE ALPHA > 0.5 < 1.0
+                alpha_tg = np.tanh(alpha_tg)
+                alpha_tg = np.clip(alpha_tg, AMP_MIN, AMP_MAX)
                 h_tg = action[1]
-                # TAKE THE ABSOLUTE VALUE FOR THESE
-                intensity = abs(action[2])
-                f_tg = abs(action[3])
-                # ADD SMALL ELEMENT TO AVOID /0
-                Beta = abs(action[4])
-                if (Beta == 0):
-                    Beta += 1e-3
-                residuals = action[5:]
+                h_tg = np.clip(h_tg, HTG_MIN, HTG_MAX)
+                intensity = 1.0
+                f_tg = action[2]
+                f_tg = np.tanh(f_tg) * F_SCALE
+                if f_tg < 2.0:
+                    f_tg = 2.0
+                Beta = 3.0
+                residuals = action[3:]
+                residuals = np.tanh(residuals)
+                # CAP RESIDUALS!!
+                residuals = np.clip(residuals, -RESIDUALS_ABS, RESIDUALS_ABS)
                 # GET ACTION FROM TG
                 action = TGP.get_utg(residuals, alpha_tg, h_tg, intensity,
                                      env.minitaur.num_motors)
@@ -126,7 +154,7 @@ class Policy():
             state_dim,
             action_dim,
             # how much weights are changed each step
-            learning_rate=0.02,
+            learning_rate=0.03,
             # number of random expl_noise variations generated
             # each step
             # each one will be run for 2 epochs, + and -
@@ -259,7 +287,7 @@ class ARSAgent():
         self.successes = 0
         self.last_reward = 0.0
         self.phase = 0
-        self.desired_velocity = -0.3
+        self.desired_velocity = 0.5
         self.desired_rate = 0.0
         self.flip = 0
         self.increment = 0
@@ -304,6 +332,9 @@ class ARSAgent():
         sum_rewards = 0.0
         timesteps = 0
         done = False
+        alpha = []
+        h = []
+        f = []
         while not done and timesteps < self.policy.episode_steps:
             # print("STATE: ", state)
             # print("dt: {}".format(timesteps))
@@ -313,15 +344,26 @@ class ARSAgent():
             action = self.policy.evaluate(state, delta, direction)
             # Extract TG information from action
             alpha_tg = action[0]
+            # FORCE ALPHA > 0.5 < 1.0
+            alpha_tg = np.tanh(alpha_tg)
+            alpha_tg = np.clip(alpha_tg, AMP_MIN, AMP_MAX)
+            alpha.append(alpha_tg)
+            # print("ALPHA_TG: {}".format(alpha_tg))
             h_tg = action[1]
-            # TAKE THE ABSOLUTE VALUE FOR THESE
-            intensity = abs(action[2])
-            f_tg = abs(action[3])
-            # ADD SMALL ELEMENT TO AVOID /0
-            Beta = abs(action[4])
-            if (Beta == 0):
-                Beta += 1e-3
-            residuals = action[5:]
+            h_tg = np.clip(h_tg, HTG_MIN, HTG_MAX)
+            h.append(h_tg)
+            # print("H_TG: {}".format(h_tg))
+            intensity = 1.0
+            f_tg = action[2]
+            f_tg = np.tanh(f_tg) * F_SCALE
+            if f_tg < 2.0:
+                f_tg = 2.0
+            f.append(f_tg)
+            Beta = 3.0
+            residuals = action[3:]
+            residuals = np.tanh(residuals)
+            # CAP RESIDUALS!!
+            residuals = np.clip(residuals, -RESIDUALS_ABS, RESIDUALS_ABS)
             # GET ACTION FROM TG
             action = self.TGP.get_utg(residuals, alpha_tg, h_tg, intensity,
                                       self.env.minitaur.num_motors)
@@ -339,6 +381,15 @@ class ARSAgent():
             reward = np.clip(reward, -self.max_action, self.max_action)
             sum_rewards += reward
             timesteps += 1
+        plt.plot(0)
+        plt.plot(alpha, label="alpha")
+        plt.plot(h, label="h")
+        plt.plot(f, label="f")
+        plt.xlabel("iter")
+        plt.ylabel("value")
+        plt.title("TG Parameters by Policy")
+        plt.legend()
+        plt.show()
         return sum_rewards
 
     def train(self):
