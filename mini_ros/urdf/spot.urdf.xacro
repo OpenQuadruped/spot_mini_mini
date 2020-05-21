@@ -11,9 +11,9 @@
   <!-- MAIN BODY -->
   <xacro:mesh_link name="base_link"
               origin_rpy="0 0 0" origin_xyz="-0.045 -0.060 -0.015"
-              i_rpy="0 0 0" i_xyz="-0.045 -0.060 -0.015"
+              i_rpy="0 0 0" i_xyz="0 0 0"
               mass="2.8"
-              c_xyz="-0.045 -0.060 -0.015"
+              c_xyz="0 0 0"
               length="0.14"
               width="0.11"
               height="0.07"
@@ -26,7 +26,7 @@
               i_rpy="0 0 0" i_xyz="-0.145 0 0"
               mass="0.2"
               c_xyz="-0.145 0 0"
-              length="0.14"
+              length="0.058"
               width="0.11"
               height="0.07"
               matname="yellow"
@@ -39,7 +39,7 @@
               i_rpy="0 0 0" i_xyz="0.135 0 0"
               mass="0.2"
               c_xyz="0.135 0 0"
-              length="0.14"
+              length="0.04"
               width="0.11"
               height="0.07"
               matname="yellow"
@@ -141,7 +141,7 @@
 
   <!-- LEG -->
   <xacro:mesh_link name="front_right_leg_link"
-              origin_rpy="0 0 0" origin_xyz="0.125 -0.15 -0.02"
+              origin_rpy="0 0 0" origin_xyz="-0.125 -0.15 -0.02"
               i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
               mass="0.15"
               c_xyz="0.0 0.0 -0.050"
@@ -273,7 +273,7 @@
 
   <!-- LEG -->
   <xacro:mesh_link name="rear_right_leg_link"
-              origin_rpy="0 0 0" origin_xyz="0.125 -0.15 -0.02"
+              origin_rpy="0 0 0" origin_xyz="-0.125 -0.15 -0.02"
               i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
               mass="0.15"
               c_xyz="0.0 0.0 -0.050"
@@ -348,8 +348,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-2.666"
+                    upper="1.548"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="front_left_leg_cover_joint" type="fixed"
@@ -364,8 +364,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-0.1"
+                    upper="2.59"/>
 
   <!-- FOOT TO TOE -->
   <xacro:frame_joint name="front_left_toe" type="fixed"
@@ -376,7 +376,7 @@
   <!-- SHOULDER TO BASE -->     
   <xacro:rev_joint name="motor_front_right_shoulder" number="0" type="revolute"
                     axis_xyz="1 0 0"
-                    origin_rpy="0 0 0" origin_xyz="-0.093 -0.036 0"
+                    origin_rpy="0 0 0" origin_xyz="-0.093 0.036 0"
                     parent="base_link" child="front_right_shoulder_link"
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
@@ -392,8 +392,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-2.666"
+                    upper="1.548"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="front_right_leg_cover_joint" type="fixed"
@@ -408,8 +408,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-0.1"
+                    upper="2.59"/>
 
   <!-- FOOT TO TOE -->
   <xacro:frame_joint name="front_right_toe" type="fixed"
@@ -437,8 +437,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-2.666"
+                    upper="1.548"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="rear_left_leg_cover_joint" type="fixed"
@@ -453,8 +453,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-0.1"
+                    upper="2.59"/>
 
   <!-- FOOT TO TOE -->
   <xacro:frame_joint name="rear_left_toe" type="fixed"
@@ -481,8 +481,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-2.666"
+                    upper="1.548"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="rear_right_leg_cover_joint" type="fixed"
@@ -497,8 +497,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-0.548"
-                    upper="0.548"/>
+                    lower="-0.1"
+                    upper="2.59"/>
 
   <!-- FOOT TO TOE -->
   <xacro:frame_joint name="rear_right_toe" type="fixed"
