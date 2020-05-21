@@ -18,7 +18,7 @@
               width="0.11"
               height="0.07"
               matname="black"
-              meshfile="stl/mainbody.stl"
+              meshfile="package://mini_ros/stl/mainbody.stl"
               meshscale="0.001 0.001 0.001" /> <!-- m to mm -->
   <!-- HEAD -->
   <xacro:mesh_link name="chassis_front_link"
@@ -30,7 +30,7 @@
               width="0.11"
               height="0.07"
               matname="yellow"
-              meshfile="stl/frontpart.stl"
+              meshfile="package://mini_ros/stl/frontpart.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- TAIL -->
@@ -43,7 +43,7 @@
               width="0.11"
               height="0.07"
               matname="yellow"
-              meshfile="stl/backpart.stl"
+              meshfile="package://mini_ros/stl/backpart.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- FRONT LEFT LEG -->
@@ -57,7 +57,7 @@
               width="0.038"
               height="0.07"
               matname="black"
-              meshfile="stl/lshoulder.stl"
+              meshfile="package://mini_ros/stl/lshoulder.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- COVER -->
@@ -70,7 +70,7 @@
               width="0.036"
               height="0.12"
               matname="yellow"
-              meshfile="stl/larm_cover.stl"
+              meshfile="package://mini_ros/stl/larm_cover.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- LEG -->
@@ -83,7 +83,7 @@
               width="0.036"
               height="0.12"
               matname="black"
-              meshfile="stl/larm.stl"
+              meshfile="package://mini_ros/stl/larm.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- FOOT -->
@@ -96,7 +96,7 @@
               width="0.02"
               height="0.115"
               matname="black"
-              meshfile="stl/lfoot.stl"
+              meshfile="package://mini_ros/stl/lfoot.stl"
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
@@ -109,7 +109,7 @@
               width="0.02"
               height="0.02"
               matname="grey"
-              meshfile="stl/foot.stl"
+              meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- FRONT RIGHT LEG -->
@@ -123,7 +123,7 @@
               width="0.038"
               height="0.07"
               matname="black"
-              meshfile="stl/rshoulder.stl"
+              meshfile="package://mini_ros/stl/rshoulder.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- COVER -->
@@ -136,7 +136,7 @@
               width="0.036"
               height="0.12"
               matname="yellow"
-              meshfile="stl/rarm_cover.stl"
+              meshfile="package://mini_ros/stl/rarm_cover.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- LEG -->
@@ -149,7 +149,7 @@
               width="0.036"
               height="0.12"
               matname="black"
-              meshfile="stl/rarm.stl"
+              meshfile="package://mini_ros/stl/rarm.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- FOOT -->
@@ -162,7 +162,7 @@
               width="0.02"
               height="0.115"
               matname="black"
-              meshfile="stl/rfoot.stl"
+              meshfile="package://mini_ros/stl/rfoot.stl"
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
@@ -175,7 +175,7 @@
               width="0.02"
               height="0.02"
               matname="grey"
-              meshfile="stl/foot.stl"
+              meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- REAR LEFT LEG -->
@@ -189,7 +189,7 @@
               width="0.038"
               height="0.07"
               matname="black"
-              meshfile="stl/lshoulder.stl"
+              meshfile="package://mini_ros/stl/lshoulder.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- COVER -->
@@ -202,7 +202,7 @@
               width="0.036"
               height="0.12"
               matname="yellow"
-              meshfile="stl/larm_cover.stl"
+              meshfile="package://mini_ros/stl/larm_cover.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- LEG -->
@@ -215,7 +215,7 @@
               width="0.036"
               height="0.12"
               matname="black"
-              meshfile="stl/larm.stl"
+              meshfile="package://mini_ros/stl/larm.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- FOOT -->
@@ -228,7 +228,7 @@
               width="0.02"
               height="0.115"
               matname="black"
-              meshfile="stl/lfoot.stl"
+              meshfile="package://mini_ros/stl/lfoot.stl"
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
@@ -241,7 +241,7 @@
               width="0.02"
               height="0.02"
               matname="grey"
-              meshfile="stl/foot.stl"
+              meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- REAR RIGHT LEG -->
@@ -255,7 +255,7 @@
               width="0.038"
               height="0.07"
               matname="black"
-              meshfile="stl/rshoulder.stl"
+              meshfile="package://mini_ros/stl/rshoulder.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- COVER -->
@@ -268,7 +268,7 @@
               width="0.036"
               height="0.12"
               matname="yellow"
-              meshfile="stl/rarm_cover.stl"
+              meshfile="package://mini_ros/stl/rarm_cover.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- LEG -->
@@ -281,7 +281,7 @@
               width="0.036"
               height="0.12"
               matname="black"
-              meshfile="stl/rarm.stl"
+              meshfile="package://mini_ros/stl/rarm.stl"
               meshscale="0.001 0.001 0.001" />
 
   <!-- FOOT -->
@@ -294,7 +294,7 @@
               width="0.02"
               height="0.115"
               matname="black"
-              meshfile="stl/rfoot.stl"
+              meshfile="package://mini_ros/stl/rfoot.stl"
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
@@ -307,7 +307,7 @@
               width="0.02"
               height="0.02"
               matname="grey"
-              meshfile="stl/foot.stl"
+              meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
 
   
