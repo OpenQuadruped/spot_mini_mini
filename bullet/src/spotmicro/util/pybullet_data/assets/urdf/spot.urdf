@@ -83,6 +83,7 @@
     <parent link="base_link"/>
     <child link="chassis_front_link"/>
   </joint>
+  
   <link name="chassis_rear_link">
     <visual>
       <geometry>

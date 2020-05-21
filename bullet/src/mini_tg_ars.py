@@ -63,8 +63,8 @@ def main():
     # movetype = "pronk"
     TG = TGPolicy(movetype=movetype,
                   center_swing=0.0,
-                  amplitude_extension=0.4,
-                  amplitude_lift=0.4)
+                  amplitude_extension=0.8,
+                  amplitude_lift=0.3)
     TG_state_dim = len(TG.get_TG_state())
     TG_action_dim = 3  # f_tg, alpha_tg, h_tg
     state_dim = env.observation_space.shape[0] + TG_state_dim
