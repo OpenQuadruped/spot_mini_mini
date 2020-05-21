@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <material name="yellow">
+    <color rgba="0.92 0.83 0.0 1"/>
+  </material>
+  <material name="black">
+    <color rgba="0.1 0.1 0.1 1"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.6 0.6 0.6 1"/>
+  </material>
+
+  <xacro:macro name="rev_joint" params="name number type axis_xyz origin_rpy origin_xyz parent child effort velocity damping friction upper lower">
+    <joint name="${name}" type="${type}">
+      <axis xyz="${axis_xyz}" />
+      <origin rpy="${origin_rpy}" xyz="${origin_xyz}" />
+      <parent link="${parent}" />
+      <child link="${child}" />
+      <limit effort="${effort}" velocity="${velocity}" lower="${lower}" upper="${upper}"/>
+      <joint_properties damping="${damping}" friction="${friction}" />
+    </joint>
+
+    <transmission name="tran${number}">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="${name}">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor${number}">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    </transmission>
+  </xacro:macro>
+
+  <xacro:macro name="frame_joint" params="name type origin_rpy origin_xyz parent child">
+    <joint name="${name}" type="${type}">
+      <origin rpy="${origin_rpy}" xyz="${origin_xyz}" />
+      <parent link="${parent}" />
+      <child link="${child}" />
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="mesh_link" params="name origin_xyz origin_rpy meshfile meshscale c_xyz matname mass i_xyz i_rpy length width height">
+    <link name="${name}">
+      <visual>
+        <origin rpy="${origin_rpy}" xyz="${origin_xyz}" />
+        <geometry>
+          <mesh filename="${meshfile}" scale="${meshscale}"/>
+        </geometry>
+        <material name="${matname}"/>
+      </visual>
+
+      <collision>
+        <origin rpy="${origin_rpy}" xyz="${c_xyz}" />
+        <geometry>
+          <box size="${length} ${width} ${height}" />
+        </geometry>
+      </collision>
+
+      <inertial>
+        <mass value="${mass}" />
+        <origin rpy="${i_rpy}" xyz="${i_xyz}" /> <!-- Inertial Axes -->
+        <inertia ixx="${mass * (length * length + height * height)/12}" ixy="${0}" ixz="${0}" iyx="${0}" iyy="${mass * (length * length + height * height)/12}" iyz="${0}" izx="${0}" izy="${0}" izz="${mass * (length * length + width * width)/12}" />
+      </inertial>
+    </link>
+  </xacro:macro>
+
+</robot>

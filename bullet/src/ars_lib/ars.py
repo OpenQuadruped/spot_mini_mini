@@ -17,7 +17,7 @@ _EXPLORE = 3
 _EXPLORE_TG = 4
 
 # Params for TG
-F_SCALE = 4.0
+F_SCALE = 5.0
 HTG_MIN = 0.1
 HTG_MAX = 0.8
 AMP_MIN = 0.6
@@ -381,15 +381,15 @@ class ARSAgent():
             reward = np.clip(reward, -self.max_action, self.max_action)
             sum_rewards += reward
             timesteps += 1
-        plt.plot(0)
-        plt.plot(alpha, label="alpha")
-        plt.plot(h, label="h")
-        plt.plot(f, label="f")
-        plt.xlabel("iter")
-        plt.ylabel("value")
-        plt.title("TG Parameters by Policy")
-        plt.legend()
-        plt.show()
+        # plt.plot(0)
+        # plt.plot(alpha, label="alpha")
+        # plt.plot(h, label="h")
+        # plt.plot(f, label="f")
+        # plt.xlabel("iter")
+        # plt.ylabel("value")
+        # plt.title("TG Parameters by Policy")
+        # plt.legend()
+        # plt.show()
         return sum_rewards
 
     def train(self):

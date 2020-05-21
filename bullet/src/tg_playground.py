@@ -47,7 +47,7 @@ def main():
 
     TG = TGPolicy(movetype=movetype,
                   center_swing=0.0,
-                  amplitude_extension=0.2,
+                  amplitude_extension=0.5,
                   amplitude_lift=0.2)
 
     # Set seeds
@@ -87,9 +87,9 @@ def main():
     action = env.action_space.sample()
 
     # ELEMENTS PROVIDED BY POLICY
-    f_tg = 8.0
-    Beta = 5.0
-    h_tg = 0.5
+    f_tg = 4.0
+    Beta = 3.0
+    h_tg = 0.0
     alpha_tg = 0.5
     intensity = 1.0
 

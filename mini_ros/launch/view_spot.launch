@@ -1,0 +1,21 @@
+<launch>
+  <!-- This launchfile loads a differential drive robot into RViz, whose parameters are set
+       and can be modified in diff_params.yaml -->
+
+  <!-- load the urdf into the parameter server from the xacro file-->
+  <param name="robot_description" command="xacro '$(find mini_ros)/urdf/spot.urdf.xacro'" />
+
+  <!-- The robot_state_publisher reads the urdf from /robot_description parameter
+       and listens to joint information on the /joint_states topic -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <!-- The joint state publisher will be launched with a gui, read the urdf from /robot_description
+       and publish the joint values on /joint_states. Optional launch using use_jsp_gui:=1 --> 
+  <arg name="use_jsp_gui" default="True" doc="Launch the joint_state_publisher gui to publish joint angles"/>
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
+  <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/> -->
+
+  <!-- rviz will enable us to see the robot. REQUIRED NODE - All other nodes terminate when RViz closes -->
+  <node name="rviz" pkg="rviz" type="rviz" required="True" args="-d $(find mini_ros)/rviz/spot.rviz"/>
+
+</launch>
