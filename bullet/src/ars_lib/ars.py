@@ -17,12 +17,15 @@ _EXPLORE = 3
 _EXPLORE_TG = 4
 
 # Params for TG
-F_SCALE = 5.0
-HTG_MIN = 0.1
+F_SCALE = 6.0
+HTG_MIN = 0.2
 HTG_MAX = 0.8
-AMP_MIN = 0.6
-AMP_MAX = 1.0
+AMP_MIN = 0.3
+AMP_MAX = 0.8
 RESIDUALS_ABS = 0.1
+INTENSITY_MIN = 1.0
+INTENSITY_MAX = 3.0
+BETA_SCALE = 6.0
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -113,13 +116,16 @@ def ParallelWorker(childPipe, env, nb_states):
                 alpha_tg = np.clip(alpha_tg, AMP_MIN, AMP_MAX)
                 h_tg = action[1]
                 h_tg = np.clip(h_tg, HTG_MIN, HTG_MAX)
+                intensity = np.clip(action[2], INTENSITY_MIN, INTENSITY_MAX)
                 intensity = 1.0
-                f_tg = action[2]
+                f_tg = action[3]
                 f_tg = np.tanh(f_tg) * F_SCALE
                 if f_tg < 2.0:
                     f_tg = 2.0
-                Beta = 3.0
-                residuals = action[3:]
+                Beta = np.tanh(action[4]) * BETA_SCALE
+                if Beta < 1.0:
+                    Beta = 1.0
+                residuals = action[5:]
                 residuals = np.tanh(residuals)
                 # CAP RESIDUALS!!
                 residuals = np.clip(residuals, -RESIDUALS_ABS, RESIDUALS_ABS)
@@ -344,23 +350,23 @@ class ARSAgent():
             action = self.policy.evaluate(state, delta, direction)
             # Extract TG information from action
             alpha_tg = action[0]
-            # FORCE ALPHA > 0.5 < 1.0
             alpha_tg = np.tanh(alpha_tg)
             alpha_tg = np.clip(alpha_tg, AMP_MIN, AMP_MAX)
             alpha.append(alpha_tg)
-            # print("ALPHA_TG: {}".format(alpha_tg))
             h_tg = action[1]
             h_tg = np.clip(h_tg, HTG_MIN, HTG_MAX)
             h.append(h_tg)
-            # print("H_TG: {}".format(h_tg))
+            intensity = np.clip(action[2], INTENSITY_MIN, INTENSITY_MAX)
             intensity = 1.0
-            f_tg = action[2]
+            f_tg = action[3]
             f_tg = np.tanh(f_tg) * F_SCALE
             if f_tg < 2.0:
                 f_tg = 2.0
             f.append(f_tg)
-            Beta = 3.0
-            residuals = action[3:]
+            Beta = np.tanh(action[4]) * BETA_SCALE
+            if Beta < 1.0:
+                Beta = 1.0
+            residuals = action[5:]
             residuals = np.tanh(residuals)
             # CAP RESIDUALS!!
             residuals = np.clip(residuals, -RESIDUALS_ABS, RESIDUALS_ABS)

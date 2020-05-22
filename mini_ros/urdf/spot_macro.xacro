@@ -65,4 +65,29 @@
     </link>
   </xacro:macro>
 
+  <xacro:macro name="mesh_link_sphere" params="name origin_xyz origin_rpy meshfile meshscale c_xyz matname mass i_xyz i_rpy length width height radius">
+    <link name="${name}">
+      <visual>
+        <origin rpy="${origin_rpy}" xyz="${origin_xyz}" />
+        <geometry>
+          <mesh filename="${meshfile}" scale="${meshscale}"/>
+        </geometry>
+        <material name="${matname}"/>
+      </visual>
+
+      <collision>
+        <origin rpy="${origin_rpy}" xyz="${c_xyz}" />
+        <geometry>
+          <sphere radius="${radius}"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <mass value="${mass}" />
+        <origin rpy="${i_rpy}" xyz="${i_xyz}" /> <!-- Inertial Axes -->
+        <inertia ixx="${mass * (length * length + height * height)/12}" ixy="${0}" ixz="${0}" iyx="${0}" iyy="${mass * (length * length + height * height)/12}" iyz="${0}" izx="${0}" izy="${0}" izz="${mass * (length * length + width * width)/12}" />
+      </inertial>
+    </link>
+  </xacro:macro>
+
 </robot>
