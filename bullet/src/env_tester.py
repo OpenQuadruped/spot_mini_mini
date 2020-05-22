@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from spotmicro.spot_gym_env import spotGymEnv
+from spotmicro.util.gui import GUI
 import time
 
 import torch
@@ -14,9 +15,6 @@ def main():
     """ The main() function. """
 
     print("STARTING SPOT TEST ENV")
-
-    # TRAINING PARAMETERS
-    # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 1e6
     file_name = "spot_ars_"
@@ -32,7 +30,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotGymEnv(render=True, on_rack=False)
+    env = spotGymEnv(render=True, on_rack=True)
 
     # Set seeds
     env.seed(seed)
@@ -45,25 +43,9 @@ def main():
     print("ACTION DIM: {}".format(action_dim))
     max_action = float(env.action_space.high[0])
 
-    print("RECORDED MAX ACTION: {}".format(max_action))
-
-    # # Initialize Normalizer
-    # normalizer = Normalizer(state_dim)
-
-    # # Initialize Policy
-    # policy = Policy(state_dim, action_dim)
-
-    # # Initialize Agent with normalizer, policy and gym env
-    # agent = ARSAgent(normalizer, policy, env)
-    # agent_num = raw_input("Policy Number: ")
-    # if os.path.exists(models_path + "/" + file_name + str(agent_num) +
-    #                   "_policy"):
-    #     print("Loading Existing agent")
-    #     agent.load(models_path + "/" + file_name + str(agent_num))
-    #     agent.policy.episode_steps = 3000
-    #     policy = agent.policy
-
     env.reset()
+
+    g_u_i = GUI()
 
     print("STARTED SPOT TEST ENV")
 
