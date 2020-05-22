@@ -100,7 +100,7 @@
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
-  <xacro:mesh_link name="front_left_toe_link"
+  <xacro:mesh_link_sphere name="front_left_toe_link"
               origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.05"
@@ -108,6 +108,7 @@
               length="0.02"
               width="0.02"
               height="0.02"
+              radius="0.02"
               matname="grey"
               meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
@@ -166,7 +167,7 @@
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
-  <xacro:mesh_link name="front_right_toe_link"
+  <xacro:mesh_link_sphere name="front_right_toe_link"
               origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.05"
@@ -174,6 +175,7 @@
               length="0.02"
               width="0.02"
               height="0.02"
+              radius="0.02"
               matname="grey"
               meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
@@ -232,7 +234,7 @@
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
-  <xacro:mesh_link name="rear_left_toe_link"
+  <xacro:mesh_link_sphere name="rear_left_toe_link"
               origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.05"
@@ -240,6 +242,7 @@
               length="0.02"
               width="0.02"
               height="0.02"
+              radius="0.02"
               matname="grey"
               meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
@@ -298,7 +301,7 @@
               meshscale="0.001 0.001 0.001" />
 
 <!-- TOE -->
-  <xacro:mesh_link name="rear_right_toe_link"
+  <xacro:mesh_link_sphere name="rear_right_toe_link"
               origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.05"
@@ -306,6 +309,7 @@
               length="0.02"
               width="0.02"
               height="0.02"
+              radius="0.02"
               matname="grey"
               meshfile="package://mini_ros/stl/foot.stl"
               meshscale="0.001 0.001 0.001" />
@@ -348,8 +352,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-2.666"
-                    upper="1.548"/>
+                    lower="-2.17"
+                    upper="0.97"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="front_left_leg_cover_joint" type="fixed"
@@ -392,8 +396,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-2.666"
-                    upper="1.548"/>
+                    lower="-2.17"
+                    upper="0.97"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="front_right_leg_cover_joint" type="fixed"
@@ -437,8 +441,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-2.666"
-                    upper="1.548"/>
+                    lower="-2.17"
+                    upper="0.97"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="rear_left_leg_cover_joint" type="fixed"
@@ -481,8 +485,8 @@
                     effort="1000.0" velocity="0.7"
                     damping="0.5"
                     friction="0.5"
-                    lower="-2.666"
-                    upper="1.548"/>
+                    lower="-2.17"
+                    upper="0.97"/>
 
   <!-- LEG TO COVER -->
   <xacro:frame_joint name="rear_right_leg_cover_joint" type="fixed"

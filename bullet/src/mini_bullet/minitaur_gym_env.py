@@ -74,7 +74,7 @@ class MinitaurBulletEnv(gym.Env):
             pd_control_enabled=False,  # not needed to be true if accurate motor model is enabled (has its own better PD)
             leg_model_enabled=True,
             accurate_motor_model_enabled=True,
-            motor_kp=1.0,
+            motor_kp=0.7,
             motor_kd=0.02,
             torque_control_enabled=False,
             motor_overheat_protection=True,
