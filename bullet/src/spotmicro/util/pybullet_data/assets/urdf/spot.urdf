@@ -15,7 +15,6 @@
   </material>
   <!-- Robot description -->
   <!-- Links -->
-  <link name="base_footprint"/>
   <link name="base_link">
     <visual>
       <origin rpy="0 0 0" xyz="-0.045 -0.060 -0.015"/>
@@ -499,11 +498,6 @@
       <inertia ixx="3.33333333333e-06" ixy="0" ixz="0" iyx="0" iyy="3.33333333333e-06" iyz="0" izx="0" izy="0" izz="3.33333333333e-06"/>
     </inertial>
   </link>
-  <joint name="base_base" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-    <parent link="base_footprint"/>
-    <child link="base_link"/>
-  </joint>
   <joint name="chassis_base_front" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="base_link"/>
