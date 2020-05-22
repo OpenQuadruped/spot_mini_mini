@@ -71,7 +71,10 @@ def main():
     action = env.action_space.sample()
     t = 0
     while t < (int(max_timesteps)):
-        action[:] = 0.0
+        # time.sleep()
+        # if (t % 100 == 0):
+        # action = env.action_space.sample()
+        # action[:] = 0.0
         # Perform action
         next_state, reward, done, _ = env.step(action)
 
