@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import numpy as np
-from LegKinematics import LegIK
-from LieAlgebra import RpToTrans, TransToRp, TransInv
+from spotmicro.LegKinematics import LegIK
+from spotmicro.LieAlgebra import RpToTrans, TransToRp, TransInv
 
 
 class SpotModel:
@@ -132,7 +132,7 @@ class SpotModel:
             _, p_bf = TransToRp(T_bf[key])
 
             # Step 1, get T_bh for each leg
-            T_bh = np.dot(TransInv(T_wb), T_wh)
+            T_bh = np.matmul(TransInv(T_wb), T_wh)
 
             # Step 2, get T_hf for each leg
 
@@ -141,7 +141,7 @@ class SpotModel:
             p_hf = p_bh + p_bf
 
             # TRANSFORM METHOD - UNCOMMENT TO USE
-            T_hf = np.dot(TransInv(T_bh), T_bf[key])
+            T_hf = np.matmul(TransInv(T_bh), T_bf)
             _, p_hf = TransToRp(T_hf)
 
             # Step 3, compute joint angles from T_hf for each leg

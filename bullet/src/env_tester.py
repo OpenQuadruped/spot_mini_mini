@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 from spotmicro.spot_gym_env import spotGymEnv
 from spotmicro.util.gui import GUI
+from spotmicro.Kinematics.SpotKinematics import SpotModel
 import time
 
 import torch
@@ -47,17 +48,19 @@ def main():
 
     g_u_i = GUI()
 
+    spot = SpotModel()
+    T_bf = spot.WorldToFoot
+
     print("STARTED SPOT TEST ENV")
 
     # Just to store correct action space
     action = env.action_space.sample()
     t = 0
     while t < (int(max_timesteps)):
-        # time.sleep()
-        # if (t % 100 == 0):
-        # action = env.action_space.sample()
-        # action[:] = 0.0
-        # Perform action
+
+        # GUI: x, y, z | r, p , y
+        pos, orn, _, _, _, _ = g_u_i.UserInput()
+        joint_angles = spot.IK(pos, orn, T_bf)
         next_state, reward, done, _ = env.step(action)
 
         # time.sleep(1.0)

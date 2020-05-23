@@ -28,9 +28,14 @@ src/spotmicro/spot_gym_env.py
 src/spotmicro/standup_env.py
 src/spotmicro/turn_env.py
 src/spotmicro/walk_env.py
+src/spotmicro/Kinematics/LegKinematics.py
+src/spotmicro/Kinematics/LieAlgebra.py
+src/spotmicro/Kinematics/SpotKinematics.py
+src/spotmicro/Kinematics/__init__.py
 src/spotmicro/util/__init__.py
 src/spotmicro/util/action_mapper.py
 src/spotmicro/util/bullet_client.py
+src/spotmicro/util/gui.py
 src/spotmicro/util/pybullet_data/__init__.py
 src/td3_lib/__init__.py
 src/td3_lib/plot_reward.py

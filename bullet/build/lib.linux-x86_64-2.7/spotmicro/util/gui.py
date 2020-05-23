@@ -27,7 +27,7 @@ class GUI:
         self.StepPeriodId = pb.addUserDebugParameter("Step Period", 0.1, 3.,
                                                      2.5)
 
-    def UserInput(self):
+    def UserInput(self, boxId):
 
         # Read Robot Transform from GUI
         pos = np.array([

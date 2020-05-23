@@ -36,7 +36,7 @@ class Minitaur(object):
                  motor_velocity_limit=np.inf,
                  pd_control_enabled=False,
                  accurate_motor_model_enabled=False,
-                 motor_kp=1.0,
+                 motor_kp=0.7,
                  motor_kd=0.02,
                  torque_control_enabled=False,
                  motor_overheat_protection=False,

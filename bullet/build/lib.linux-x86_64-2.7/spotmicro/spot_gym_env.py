@@ -9,7 +9,7 @@ import pybullet_data
 from gym import spaces
 from gym.utils import seeding
 from pkg_resources import parse_version
-from spotmicro.spot import spot
+from spotmicro import spot
 import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
 
@@ -27,12 +27,12 @@ SENSOR_NOISE_STDDEV = spot.SENSOR_NOISE_STDDEV
 DEFAULT_URDF_VERSION = "default"
 NUM_SIMULATION_ITERATION_STEPS = 1000
 
-spot_URDF_VERSION_MAP = {DEFAULT_URDF_VERSION: spot.spot}
+spot_URDF_VERSION_MAP = {DEFAULT_URDF_VERSION: spot.Spot}
 
 # Register as OpenAI Gym Environment
 register(
-    id="SpotMicroEnv",
-    entry_point='spot.spot_gym_env:spotGymEnv',
+    id="SpotMicroEnv-v0",
+    entry_point='spotmicro.spot_gym_env:spotGymEnv',
     max_episode_steps=1000,
 )
 
@@ -217,8 +217,7 @@ class spotGymEnv(gym.Env):
         self._urdf_version = urdf_version
         self._ground_id = None
         self._reflection = reflection
-        self._env_randomizers = convert_to_list(
-            env_randomizer) if env_randomizer else []
+        self._env_randomizer = env_randomizer
         # @TODO fix logging
         self._episode_proto = None
         if self._is_render:
@@ -242,11 +241,6 @@ class spotGymEnv(gym.Env):
         self.viewer = None
         self._hard_reset = hard_reset  # This assignment need to be after reset()
         self.goal_reached = False
-
-    def close(self):
-        if self._env_step_counter > 0:
-            self.logging.save_episode(self._episode_proto)
-        self.spot.Terminate()
 
     def set_env_randomizer(self, env_randomizer):
         self._env_randomizer = env_randomizer
@@ -300,7 +294,8 @@ class spotGymEnv(gym.Env):
                     observation_noise_stdev=self._observation_noise_stdev,
                     torque_control_enabled=self._torque_control_enabled,
                     motor_overheat_protection=motor_protect,
-                    on_rack=self._on_rack))
+                    on_rack=self._on_rack,
+                    np_random=self.np_random))
         self.spot.Reset(reload_urdf=False,
                         default_motor_angles=initial_motor_angles,
                         reset_time=reset_duration)
@@ -367,9 +362,6 @@ class spotGymEnv(gym.Env):
              dist] = self._pybullet_client.getDebugVisualizerCamera()[8:11]
             self._pybullet_client.resetDebugVisualizerCamera(
                 dist, yaw, pitch, base_pos)
-
-        for env_randomizer in self._env_randomizers:
-            env_randomizer.randomize_step(self)
 
         action = self._transform_action_to_motor_command(action)
         self.spot.Step(action)
@@ -460,7 +452,7 @@ class spotGymEnv(gym.Env):
         return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85)
 
     def _termination(self):
-        position = self.minitaur.GetBasePosition()
+        position = self.spot.GetBasePosition()
         distance = math.sqrt(position[0]**2 + position[1]**2)
         return self.is_fallen() or distance > self._distance_limit
 
@@ -524,7 +516,7 @@ class spotGymEnv(gym.Env):
       The noisy observation with latency.
     """
 
-        self._observation = self.minitaur.GetObservation()
+        self._observation = self.spot.GetObservation()
         return self._observation
 
     def _get_realistic_observation(self):
@@ -537,7 +529,7 @@ class spotGymEnv(gym.Env):
       are motor velocities, observation[16:24] are motor torques.
       observation[24:28] is the orientation of the base, in quaternion form.
     """
-        self._observation = self.minitaur.RealisticObservation()
+        self._observation = self.spot.RealisticObservation()
         return self._observation
 
     if parse_version(gym.__version__) < parse_version('0.9.6'):

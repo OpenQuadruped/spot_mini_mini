@@ -8,13 +8,17 @@ import math
 import re
 import numpy as np
 from . import motor
-from ..util import pybullet_data
+from spotmicro.util import pybullet_data
 
 INIT_POSITION = [0, 0, 0.21]
 INIT_RACK_POSITION = [0, 0, 1]
 INIT_ORIENTATION = [0, 0, 0, 1]
 OVERHEAT_SHUTDOWN_TORQUE = 2.45
 OVERHEAT_SHUTDOWN_TIME = 1.0
+# -math.pi / 5
+INIT_LEG_POS = -0.658319
+# math.pi / 3
+INIT_FOOT_POS = 1.0472
 
 LEG_POSITION = ["front_left", "front_right", "rear_left", "rear_right"]
 MOTOR_NAMES = [
@@ -50,7 +54,7 @@ def MapToMinusPiToPi(angles):
     return mapped_angles
 
 
-class spot(object):
+class Spot(object):
     """The spot class that simulates a quadruped robot.
 
   """
@@ -88,7 +92,8 @@ class spot(object):
                  motor_overheat_protection=False,
                  on_rack=False,
                  kd_for_pd_controllers=0.3,
-                 pose_id='stand_low'):
+                 pose_id='stand_low',
+                 np_random=np.random):
         """Constructs a spot and reset it to the initial states.
 
     Args:
@@ -124,6 +129,11 @@ class spot(object):
         the walking gait. In this mode, the spot's base is hanged midair so
         that its walking gait is clearer to visualize.
     """
+        # used to calculate minitaur acceleration
+        self.init_leg = INIT_LEG_POS
+        self.init_foot = INIT_FOOT_POS
+        self.prev_lin_twist = np.array([0, 0, 0])
+        self.prev_lin_acc = np.array([0, 0, 0])
         self.num_motors = 12
         self.num_legs = int(self.num_motors / 3)
         self._pybullet_client = pybullet_client
@@ -151,6 +161,7 @@ class spot(object):
         self._motor_overheat_protection = motor_overheat_protection
         self._on_rack = on_rack
         self._pose_id = pose_id
+        self.np_random = np_random
         if self._accurate_motor_model_enabled:
             self._kp = motor_kp
             self._kd = motor_kd
@@ -567,6 +578,31 @@ class spot(object):
         # observation.extend(list(self.GetBaseOrientation()))
         return observation
 
+    def ConvertFromLegModel(self, leg_pose):
+        motor_pose = np.zeros(self.num_motors)
+        for i in range(self.num_legs):
+            motor_pose[int(3 * i)] = 0
+            if i == 0 or i == 1:
+                leg_action = self.init_leg + leg_pose[0]
+                motor_pose[int(3 * i + 1)] = max(
+                    min(leg_action, self.init_leg + 0.60),
+                    self.init_leg - 0.60)
+                foot_pose = self.init_foot + leg_pose[1]
+                motor_pose[int(3 * i + 2)] = max(
+                    min(foot_pose, self.init_foot + 0.60),
+                    self.init_foot - 0.60)
+            else:
+                leg_action = self.init_leg + leg_pose[2]
+                motor_pose[int(3 * i + 1)] = max(
+                    min(leg_action, self.init_leg + 0.60),
+                    self.init_leg - 0.60)
+                foot_pose = self.init_foot + leg_pose[3]
+                motor_pose[int(3 * i + 2)] = max(
+                    min(foot_pose, self.init_foot + 0.60),
+                    self.init_foot - 0.60)
+
+        return motor_pose
+
     def ApplyAction(self, motor_commands, motor_kps=None, motor_kds=None):
         """Set the desired motor angles to the motors of the spot.
 
@@ -883,7 +919,7 @@ class spot(object):
         self._control_observation = self._GetDelayedObservation(
             self._control_latency)
         self._control_observation = self._AddSensorNoise(
-            self._control_observation)
+            self._control_observation, self._observation_noise_stdev)
         return self._control_observation
 
     def _GetDelayedObservation(self, latency):
@@ -916,10 +952,10 @@ class spot(object):
         return (np.array(q), np.array(qdot))
 
     def _AddSensorNoise(self, observation, noise_stdev):
-        if self._observation_noise_stdev > 0:
-            observation += (self.np_random.normal(scale=noise_stdev,
-                                                  size=observation.shape) *
-                            self.GetObservationUpperBound())
+        # if self._observation_noise_stdev > 0:
+        #     observation += (self.np_random.normal(scale=noise_stdev,
+        #                                           size=observation.shape) *
+        #                     self.GetObservationUpperBound())
         return observation
 
     def SetControlLatency(self, latency):
