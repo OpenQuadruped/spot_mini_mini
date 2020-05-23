@@ -48,10 +48,10 @@ class SpotModel:
         self.Legs["FL"] = LegIK("LEFT", self.hip_length, self.shoulder_length,
                                 self.leg_length, self.hip_lim,
                                 self.shoulder_lim, self.leg_lim)
-        self.Legs["BL"] = LegIK("LEFT", self.hip_length, self.shoulder_length,
+        self.Legs["FR"] = LegIK("RIGHT", self.hip_length, self.shoulder_length,
                                 self.leg_length, self.hip_lim,
                                 self.shoulder_lim, self.leg_lim)
-        self.Legs["FR"] = LegIK("RIGHT", self.hip_length, self.shoulder_length,
+        self.Legs["BL"] = LegIK("LEFT", self.hip_length, self.shoulder_length,
                                 self.leg_length, self.hip_lim,
                                 self.shoulder_lim, self.leg_lim)
         self.Legs["BR"] = LegIK("RIGHT", self.hip_length, self.shoulder_length,
@@ -69,13 +69,13 @@ class SpotModel:
             [self.hip_x / 2.0, self.hip_y / 2.0, 0])
         self.WorldToHip["FL"] = RpToTrans(Rwb, ph_FL)
 
-        ph_BL = np.array(
-            [-self.hip_x / 2.0, self.hip_y / 2.0, 0])
-        self.WorldToHip["BL"] = RpToTrans(Rwb, ph_BL)
-
         ph_FR = np.array(
             [self.hip_x / 2.0, -self.hip_y / 2.0, 0])
         self.WorldToHip["FR"] = RpToTrans(Rwb, ph_FR)
+
+        ph_BL = np.array(
+            [-self.hip_x / 2.0, self.hip_y / 2.0, 0])
+        self.WorldToHip["BL"] = RpToTrans(Rwb, ph_BL)
 
         ph_BR = np.array(
             [-self.hip_x / 2.0, -self.hip_y / 2.0, 0])
@@ -89,13 +89,13 @@ class SpotModel:
             [self.foot_x / 2.0, self.foot_y / 2.0, -self.height])
         self.WorldToFoot["FL"] = RpToTrans(Rwb, pf_FL)
 
-        pf_BL = np.array(
-            [-self.foot_x / 2.0, self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["BL"] = RpToTrans(Rwb, pf_BL)
-
         pf_FR = np.array(
             [self.foot_x / 2.0, -self.foot_y / 2.0, -self.height])
         self.WorldToFoot["FR"] = RpToTrans(Rwb, pf_FR)
+
+        pf_BL = np.array(
+            [-self.foot_x / 2.0, self.foot_y / 2.0, -self.height])
+        self.WorldToFoot["BL"] = RpToTrans(Rwb, pf_BL)
 
         pf_BR = np.array(
             [-self.foot_x / 2.0, -self.foot_y / 2.0, -self.height])
@@ -146,14 +146,19 @@ class SpotModel:
 
             # VECTOR ADDITION METHOD
             _, p_bh = TransToRp(T_bh)
-            p_hf = p_bf - p_bh
+            p_hf0 = p_bf - p_bh
             # print("p_hf: ", p_hf)
 
             # TRANSFORM METHOD - UNCOMMENT TO USE
             T_hf = np.dot(TransInv(T_bh), T_bf[key])
-            _, p_hf = TransToRp(T_hf)
+            _, p_hf1 = TransToRp(T_hf)
 
             # print("p_hf TRANSFORM: ", p_hf)
+
+            if p_hf1.all() != p_hf0.all():
+                print("NOT EQUAL")
+
+            p_hf = p_hf1
 
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)

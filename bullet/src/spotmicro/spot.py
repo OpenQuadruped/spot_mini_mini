@@ -9,6 +9,7 @@ import re
 import numpy as np
 from . import motor
 from spotmicro.util import pybullet_data
+from spotmicro.Kinematics.SpotKinematics import SpotModel
 
 INIT_POSITION = [0, 0, 0.21]
 INIT_RACK_POSITION = [0, 0, 1]
@@ -129,6 +130,8 @@ class Spot(object):
         the walking gait. In this mode, the spot's base is hanged midair so
         that its walking gait is clearer to visualize.
     """
+        # SPOT MODEL
+        self.spot = SpotModel()
         # used to calculate minitaur acceleration
         self.init_leg = INIT_LEG_POS
         self.init_foot = INIT_FOOT_POS
@@ -578,30 +581,10 @@ class Spot(object):
         # observation.extend(list(self.GetBaseOrientation()))
         return observation
 
-    def ConvertFromLegModel(self, leg_pose):
-        motor_pose = np.zeros(self.num_motors)
-        for i in range(self.num_legs):
-            motor_pose[int(3 * i)] = 0
-            if i == 0 or i == 1:
-                leg_action = self.init_leg + leg_pose[0]
-                motor_pose[int(3 * i + 1)] = max(
-                    min(leg_action, self.init_leg + 0.60),
-                    self.init_leg - 0.60)
-                foot_pose = self.init_foot + leg_pose[1]
-                motor_pose[int(3 * i + 2)] = max(
-                    min(foot_pose, self.init_foot + 0.60),
-                    self.init_foot - 0.60)
-            else:
-                leg_action = self.init_leg + leg_pose[2]
-                motor_pose[int(3 * i + 1)] = max(
-                    min(leg_action, self.init_leg + 0.60),
-                    self.init_leg - 0.60)
-                foot_pose = self.init_foot + leg_pose[3]
-                motor_pose[int(3 * i + 2)] = max(
-                    min(foot_pose, self.init_foot + 0.60),
-                    self.init_foot - 0.60)
+    def ConvertFromLegModel(self, action):
+        joint_angles = action
 
-        return motor_pose
+        return joint_angles
 
     def ApplyAction(self, motor_commands, motor_kps=None, motor_kds=None):
         """Set the desired motor angles to the motors of the spot.
