@@ -18,7 +18,7 @@ def main():
 
     print("STARTING SPOT TEST ENV")
     seed = 0
-    max_timesteps = 1e6
+    max_timesteps = 1
     file_name = "spot_ars_"
 
     # Find abs path to this file
@@ -64,6 +64,7 @@ def main():
         # Get Roll, Pitch, Yaw
         orn = RPY(orn[0], orn[1], orn[2])
         joint_angles = spot.IK(orn, pos, T_bf)
+        print("Joint Angles: ", joint_angles)
         next_state, reward, done, _ = env.step(action)
 
         # time.sleep(1.0)
