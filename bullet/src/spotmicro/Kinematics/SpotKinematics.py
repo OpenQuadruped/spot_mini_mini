@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import numpy as np
-from spotmicro.Kinematics import LegIK
-from spotmicro.LieAlgebra import RpToTrans, TransToRp, TransInv
+from LegKinematics import LegIK
+from LieAlgebra import RpToTrans, TransToRp, TransInv
 
 
-class SpotKinematics:
+class SpotModel:
     def __init__(self,
                  hip_length=0.04,
                  shoulder_length=0.1,
@@ -111,7 +111,7 @@ class SpotKinematics:
 
         :param orn: A 3x1 np.array([]) with Spot's Roll, Pitch, Yaw angles
         :param pos: A 3x1 np.array([]) with Spot's X, Y, Z coordinates
-        :param T_bf: The desired body-to-foot Transform.
+        :param T_bf: Dictionary of desired body-to-foot Transforms.
         :return: Joint angles for each of Spot's joints.
         """
 
@@ -125,14 +125,14 @@ class SpotKinematics:
         pb = pos
         T_wb = RpToTrans(Rb, pb)
 
-        # Extract vector component
-        _, p_bf = TransToRp(T_bf)
-
         for i, (key, T_wh) in enumerate(self.WorldToHip.items()):
             # ORDER: FL, BL, FR, BR
 
+            # Extract vector component
+            _, p_bf = TransToRp(T_bf[key])
+
             # Step 1, get T_bh for each leg
-            T_bh = np.matmul(TransInv(T_wb), T_wh)
+            T_bh = np.dot(TransInv(T_wb), T_wh)
 
             # Step 2, get T_hf for each leg
 
@@ -141,7 +141,7 @@ class SpotKinematics:
             p_hf = p_bh + p_bf
 
             # TRANSFORM METHOD - UNCOMMENT TO USE
-            T_hf = np.matmul(TransInv(T_bh), T_bf)
+            T_hf = np.dot(TransInv(T_bh), T_bf[key])
             _, p_hf = TransToRp(T_hf)
 
             # Step 3, compute joint angles from T_hf for each leg

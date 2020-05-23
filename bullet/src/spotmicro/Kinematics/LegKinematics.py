@@ -6,12 +6,12 @@ import numpy as np
 class LegIK():
     def __init__(self,
                  legtype="RIGHT",
-                 hip_length,
-                 shoulder_length,
-                 leg_length,
-                 hip_lim,
-                 shoulder_lim,
-                 leg_lim):
+                 hip_length=0.04,
+                 shoulder_length=0.1,
+                 leg_length=0.1,
+                 hip_lim=[-0.548, 0.548],
+                 shoulder_lim=[-2.17, 0.97],
+                 leg_lim=[-0.1, 2.59]):
         self.legtype = legtype
         self.hip_length = hip_length
         self.shoulder_length = shoulder_length
@@ -20,7 +20,10 @@ class LegIK():
         self.shoulder_lim = shoulder_lim
         self.leg_lim = leg_lim
 
-    def get_domain(xyz_coord):
+    def get_domain(self, xyz_coord):
+        x = xyz_coord[0]
+        y = xyz_coord[1]
+        z = xyz_coord[2]
         D = (y**2 + (-z)**2 - self.hip_length**2 +
              (-x)**2 - self.shoulder_length**2 -
              self.leg_length**2) / (2 * self.leg_length * self.shoulder_length)
@@ -37,9 +40,9 @@ class LegIK():
 
     def solve(self, xyz_coord):
         if self.legtype == "RIGHT":
-            return RightIK(xyz_coord)
+            return self.RightIK(xyz_coord)
         else:
-            return LeftIK(xyz_coord)
+            return self.LeftIK(xyz_coord)
 
     def RightIK(self, xyz_coord):
         D = self.get_domain(xyz_coord)
