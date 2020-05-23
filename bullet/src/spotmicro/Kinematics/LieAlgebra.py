@@ -72,3 +72,19 @@ def TransInv(T):
     R, p = TransToRp(T)
     Rt = np.array(R).T
     return np.r_[np.c_[Rt, -np.dot(Rt, p)], [[0, 0, 0, 1]]]
+
+
+def RPY(roll, pitch, yaw):
+    Roll = np.array([[1, 0, 0, 0],
+                    [0, np.cos(roll), -np.sin(roll), 0],
+                    [0, np.sin(roll), np.cos(roll), 0],
+                    [0, 0, 0, 1]])
+    Pitch = np.array([[np.cos(pitch), 0, np.sin(pitch), 0],
+                     [0, 1, 0, 0],
+                     [-np.sin(pitch), 0, np.cos(pitch), 0],
+                     [0, 0, 0, 1]])
+    Yaw = np.array([[np.cos(yaw), -np.sin(yaw), 0, 0],
+                    [np.sin(yaw), np.cos(yaw), 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]])
+    return np.dot(np.dot(Roll, Pitch), Yaw)

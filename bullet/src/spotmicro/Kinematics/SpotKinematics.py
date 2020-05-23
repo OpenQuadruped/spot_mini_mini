@@ -121,28 +121,30 @@ class SpotModel:
         # 4 legs, 3 joints per leg
         joint_angles = np.zeros((4, 3))
 
-        Rb = np.diag(orn)
+        # Only get Rot component
+        Rb, _ = TransToRp(orn)
+        # print("Rb: \n", Rb)
         pb = pos
+        # print("pb:", pb)
         T_wb = RpToTrans(Rb, pb)
+        # print("T_wb: \n", T_wb)
 
         for i, (key, T_wh) in enumerate(self.WorldToHip.items()):
             # ORDER: FL, BL, FR, BR
 
             # Extract vector component
             _, p_bf = TransToRp(T_bf[key])
+            # print("T_bf: \n", T_bf)
 
             # Step 1, get T_bh for each leg
             T_bh = np.dot(TransInv(T_wb), T_wh)
+            # print("T_bh: \n", T_bh)
 
             # Step 2, get T_hf for each leg
 
-            # VECTOR ADDITION METHOD - UNCOMMENT TO USE
+            # VECTOR ADDITION METHOD
             _, p_bh = TransToRp(T_bh)
             p_hf = p_bh + p_bf
-
-            # TRANSFORM METHOD - UNCOMMENT TO USE
-            T_hf = np.dot(TransInv(T_bh), T_bf[key])
-            _, p_hf = TransToRp(T_hf)
 
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)

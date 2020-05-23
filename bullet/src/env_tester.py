@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from spotmicro.spot_gym_env import spotGymEnv
 from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
+from spotmicro.Kinematics.LieAlgebra import RPY
 import time
 
 import torch
@@ -60,13 +61,16 @@ def main():
 
         # GUI: x, y, z | r, p , y
         pos, orn, _, _, _, _ = g_u_i.UserInput()
-        joint_angles = spot.IK(pos, orn, T_bf)
+        # Get Roll, Pitch, Yaw
+        orn = RPY(orn[0], orn[1], orn[2])
+        joint_angles = spot.IK(orn, pos, T_bf)
         next_state, reward, done, _ = env.step(action)
 
         # time.sleep(1.0)
 
         t += 1
     env.close()
+    print(joint_angles)
 
 
 if __name__ == '__main__':

@@ -20,10 +20,7 @@ class LegIK():
         self.shoulder_lim = shoulder_lim
         self.leg_lim = leg_lim
 
-    def get_domain(self, xyz_coord):
-        x = xyz_coord[0]
-        y = xyz_coord[1]
-        z = xyz_coord[2]
+    def get_domain(self, x, y, z):
         D = (y**2 + (-z)**2 - self.hip_length**2 +
              (-x)**2 - self.shoulder_length**2 -
              self.leg_length**2) / (2 * self.leg_length * self.shoulder_length)
@@ -39,16 +36,16 @@ class LegIK():
             return D
 
     def solve(self, xyz_coord):
-        if self.legtype == "RIGHT":
-            return self.RightIK(xyz_coord)
-        else:
-            return self.LeftIK(xyz_coord)
-
-    def RightIK(self, xyz_coord):
-        D = self.get_domain(xyz_coord)
         x = xyz_coord[0]
         y = xyz_coord[1]
         z = xyz_coord[2]
+        D = self.get_domain(x, y, z)
+        if self.legtype == "RIGHT":
+            return self.RightIK(x, y, z, D)
+        else:
+            return self.LeftIK(x, y, z, D)
+
+    def RightIK(self, x, y, z, D):
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
         hip_angle = -np.arctan2(z, y) - np.arctan2(
             np.sqrt(y**2 + (-z)**2 - self.hip_length**2), -self.hip_length)
@@ -59,11 +56,7 @@ class LegIK():
         joint_angles = np.array([-hip_angle, shoulder_angle, leg_angle])
         return joint_angles
 
-    def LeftIK(self, xyz_coord):
-        D = self.get_domain(xyz_coord)
-        x = xyz_coord[0]
-        y = xyz_coord[1]
-        z = xyz_coord[2]
+    def LeftIK(self, x, y, z, D):
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
         hip_angle = -np.arctan2(z, y) - np.arctan2(
             np.sqrt(y**2 + (-z)**2 - self.hip_length**2), self.hip_length)
