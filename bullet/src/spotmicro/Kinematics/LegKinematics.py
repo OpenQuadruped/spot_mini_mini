@@ -53,7 +53,7 @@ class LegIK():
             -x, np.sqrt(y**2 + (-z)**2 - self.hip_length**2)) - np.arctan2(
                 self.leg_length * np.sin(leg_angle),
                 self.shoulder_length + self.leg_length * np.cos(leg_angle))
-        joint_angles = np.array([-hip_angle, shoulder_angle, leg_angle])
+        joint_angles = np.array([-hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles
 
     def LeftIK(self, x, y, z, D):
@@ -64,5 +64,5 @@ class LegIK():
             -x, np.sqrt(y**2 + (-z)**2 - self.hip_length**2)) - np.arctan2(
                 self.leg_length * np.sin(leg_angle),
                 self.shoulder_length + self.leg_length * np.cos(leg_angle))
-        joint_angles = np.array([-hip_angle, shoulder_angle, leg_angle])
+        joint_angles = np.array([-hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles

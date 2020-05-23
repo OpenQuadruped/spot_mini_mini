@@ -3,6 +3,7 @@
 import numpy as np
 from LegKinematics import LegIK
 from LieAlgebra import RpToTrans, TransToRp, TransInv
+from collections import OrderedDict
 
 
 class SpotModel:
@@ -24,13 +25,13 @@ class SpotModel:
 
         # Distance Between Hips
         # Length
-        self.hip_x = 0.192
+        self.hip_x = 0.185
         # Width
-        self.hip_y = 0.075
+        self.hip_y = 0.08
 
         # Distance Between Feet
         # Length
-        self.foot_x = 0.192
+        self.foot_x = 0.185
         # Width
         self.foot_y = 0.11
 
@@ -43,7 +44,7 @@ class SpotModel:
         self.leg_lim = leg_lim
 
         # Dictionary to store Leg IK Solvers
-        self.Legs = {}
+        self.Legs = OrderedDict()
         self.Legs["FL"] = LegIK("LEFT", self.hip_length, self.shoulder_length,
                                 self.leg_length, self.hip_lim,
                                 self.shoulder_lim, self.leg_lim)
@@ -62,7 +63,7 @@ class SpotModel:
         # Transform of Hip relative to world frame
         # With Body Centroid also in world frame
         Rwb = np.eye(3)
-        self.WorldToHip = {}
+        self.WorldToHip = OrderedDict()
 
         ph_FL = np.array(
             [self.hip_x / 2.0, self.hip_y / 2.0, 0])
@@ -156,5 +157,7 @@ class SpotModel:
 
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)
+            # Ensure correct order: FL, BL, FR, BR
+            # print("KEY: ", key)
 
         return joint_angles
