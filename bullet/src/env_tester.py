@@ -59,10 +59,8 @@ def main():
         # GUI: x, y, z | r, p , y
         pos, orn, _, _, _, _ = g_u_i.UserInput()
         # Get Roll, Pitch, Yaw
-        orn = RPY(orn[0], orn[1], orn[2])
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
-        # print("Joint Angles: ", joint_angles)
         next_state, reward, done, _ = env.step(action)
 
         # time.sleep(1.0)

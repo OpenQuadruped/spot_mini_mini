@@ -11,7 +11,7 @@
     <color rgba="0.6 0.6 0.6 1"/>
   </material>
 
-  <xacro:macro name="rev_joint" params="name number type axis_xyz origin_rpy origin_xyz parent child effort velocity damping friction upper lower">
+  <xacro:macro name="rev_joint" params="name type axis_xyz origin_rpy origin_xyz parent child effort velocity damping friction upper lower">
     <joint name="${name}" type="${type}">
       <axis xyz="${axis_xyz}" />
       <origin rpy="${origin_rpy}" xyz="${origin_xyz}" />
@@ -20,16 +20,6 @@
       <limit effort="${effort}" velocity="${velocity}" lower="${lower}" upper="${upper}"/>
       <joint_properties damping="${damping}" friction="${friction}" />
     </joint>
-
-    <transmission name="tran${number}">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="${name}">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="motor${number}">
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-    </transmission>
   </xacro:macro>
 
   <xacro:macro name="frame_joint" params="name type origin_rpy origin_xyz parent child">
@@ -80,6 +70,7 @@
         <geometry>
           <sphere radius="${radius}"/>
         </geometry>
+        <contact_coefficients mu="10.1"/>
       </collision>
 
       <inertial>

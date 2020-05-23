@@ -32,6 +32,9 @@ src/spotmicro/Kinematics/LegKinematics.py
 src/spotmicro/Kinematics/LieAlgebra.py
 src/spotmicro/Kinematics/SpotKinematics.py
 src/spotmicro/Kinematics/__init__.py
+src/spotmicro/Kinematics/iks.py
+src/spotmicro/Kinematics/kine.py
+src/spotmicro/Kinematics/li.py
 src/spotmicro/util/__init__.py
 src/spotmicro/util/action_mapper.py
 src/spotmicro/util/bullet_client.py
