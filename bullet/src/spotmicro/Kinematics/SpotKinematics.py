@@ -7,9 +7,9 @@ from LieAlgebra import RpToTrans, TransToRp, TransInv
 
 class SpotModel:
     def __init__(self,
-                 hip_length=0.04,
-                 shoulder_length=0.1,
-                 leg_length=0.1,
+                 hip_length=0.044,
+                 shoulder_length=0.12,
+                 leg_length=0.115,
                  hip_lim=[-0.548, 0.548],
                  shoulder_lim=[-2.17, 0.97],
                  leg_lim=[-0.1, 2.59]):
