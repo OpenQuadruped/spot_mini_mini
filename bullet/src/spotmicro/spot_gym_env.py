@@ -72,7 +72,7 @@ class spotGymEnv(gym.Env):
                  self_collision_enabled=True,
                  motor_velocity_limit=np.inf,
                  pd_control_enabled=False,
-                 leg_model_enabled=True,
+                 leg_model_enabled=False,
                  accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
                  motor_kp=1.0,

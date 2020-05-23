@@ -18,7 +18,7 @@ def main():
 
     print("STARTING SPOT TEST ENV")
     seed = 0
-    max_timesteps = 1
+    max_timesteps = 4e6
     file_name = "spot_ars_"
 
     # Find abs path to this file
@@ -32,7 +32,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotGymEnv(render=True, on_rack=True)
+    env = spotGymEnv(render=True, on_rack=False)
 
     # Set seeds
     env.seed(seed)
@@ -53,9 +53,6 @@ def main():
     T_bf = spot.WorldToFoot
 
     print("STARTED SPOT TEST ENV")
-
-    # Just to store correct action space
-    action = env.action_space.sample()
     t = 0
     while t < (int(max_timesteps)):
 
@@ -64,7 +61,8 @@ def main():
         # Get Roll, Pitch, Yaw
         orn = RPY(orn[0], orn[1], orn[2])
         joint_angles = spot.IK(orn, pos, T_bf)
-        print("Joint Angles: ", joint_angles)
+        action = joint_angles.reshape(-1)
+        # print("Joint Angles: ", joint_angles)
         next_state, reward, done, _ = env.step(action)
 
         # time.sleep(1.0)
