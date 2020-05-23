@@ -2,15 +2,15 @@
 
 import numpy as np
 from LegKinematics import LegIK
-from LieAlgebra import RpToTrans, TransToRp, TransInv
+from LieAlgebra import RpToTrans, TransToRp, TransInv, RPY, TransformVector
 from collections import OrderedDict
 
 
 class SpotModel:
     def __init__(self,
-                 hip_length=0.044,
-                 shoulder_length=0.12,
-                 leg_length=0.115,
+                 hip_length=0.04,
+                 shoulder_length=0.1,
+                 leg_length=0.1,
                  hip_lim=[-0.548, 0.548],
                  shoulder_lim=[-2.17, 0.97],
                  leg_lim=[-0.1, 2.59]):
@@ -25,15 +25,15 @@ class SpotModel:
 
         # Distance Between Hips
         # Length
-        self.hip_x = 0.185
+        self.hip_x = 0.192
         # Width
-        self.hip_y = 0.08
+        self.hip_y = 0.075
 
         # Distance Between Feet
         # Length
-        self.foot_x = 0.185
+        self.foot_x = 0.21
         # Width
-        self.foot_y = 0.11
+        self.foot_y = 0.18
 
         # Body Height
         self.height = 0.15
@@ -65,41 +65,37 @@ class SpotModel:
         Rwb = np.eye(3)
         self.WorldToHip = OrderedDict()
 
-        ph_FL = np.array(
-            [self.hip_x / 2.0, self.hip_y / 2.0, 0])
-        self.WorldToHip["FL"] = RpToTrans(Rwb, ph_FL)
+        self.ph_FL = np.array([self.hip_x / 2.0, self.hip_y / 2.0, 0])
+        self.WorldToHip["FL"] = RpToTrans(Rwb, self.ph_FL)
 
-        ph_FR = np.array(
-            [self.hip_x / 2.0, -self.hip_y / 2.0, 0])
-        self.WorldToHip["FR"] = RpToTrans(Rwb, ph_FR)
+        self.ph_FR = np.array([self.hip_x / 2.0, -self.hip_y / 2.0, 0])
+        self.WorldToHip["FR"] = RpToTrans(Rwb, self.ph_FR)
 
-        ph_BL = np.array(
-            [-self.hip_x / 2.0, self.hip_y / 2.0, 0])
-        self.WorldToHip["BL"] = RpToTrans(Rwb, ph_BL)
+        self.ph_BL = np.array([-self.hip_x / 2.0, self.hip_y / 2.0, 0])
+        self.WorldToHip["BL"] = RpToTrans(Rwb, self.ph_BL)
 
-        ph_BR = np.array(
-            [-self.hip_x / 2.0, -self.hip_y / 2.0, 0])
-        self.WorldToHip["BR"] = RpToTrans(Rwb, ph_BR)
+        self.ph_BR = np.array([-self.hip_x / 2.0, -self.hip_y / 2.0, 0])
+        self.WorldToHip["BR"] = RpToTrans(Rwb, self.ph_BR)
 
         # Transform of Foot relative to world frame
         # With Body Centroid also in world frame
         self.WorldToFoot = {}
 
-        pf_FL = np.array(
+        self.pf_FL = np.array(
             [self.foot_x / 2.0, self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["FL"] = RpToTrans(Rwb, pf_FL)
+        self.WorldToFoot["FL"] = RpToTrans(Rwb, self.pf_FL)
 
-        pf_FR = np.array(
+        self.pf_FR = np.array(
             [self.foot_x / 2.0, -self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["FR"] = RpToTrans(Rwb, pf_FR)
+        self.WorldToFoot["FR"] = RpToTrans(Rwb, self.pf_FR)
 
-        pf_BL = np.array(
+        self.pf_BL = np.array(
             [-self.foot_x / 2.0, self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["BL"] = RpToTrans(Rwb, pf_BL)
+        self.WorldToFoot["BL"] = RpToTrans(Rwb, self.pf_BL)
 
-        pf_BR = np.array(
+        self.pf_BR = np.array(
             [-self.foot_x / 2.0, -self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["BR"] = RpToTrans(Rwb, pf_BR)
+        self.WorldToFoot["BR"] = RpToTrans(Rwb, self.pf_BR)
 
     def IK(self, orn, pos, T_bf):
         """ Converts a desired position and orientation wrt Spot's
@@ -123,7 +119,7 @@ class SpotModel:
         joint_angles = np.zeros((4, 3))
 
         # Only get Rot component
-        Rb, _ = TransToRp(orn)
+        Rb, _ = TransToRp(RPY(orn[0], orn[1], orn[2]))
         # print("Rb: ", Rb)
         pb = pos
         # print("pb:", pb)
@@ -131,38 +127,45 @@ class SpotModel:
         # print("T_wb: ", T_wb)
 
         for i, (key, T_wh) in enumerate(self.WorldToHip.items()):
-            # ORDER: FL, BL, FR, BR
-            # print("T_wh: ", T_wh)
+            # ORDER: FL, FR, FR, BL, BR
 
             # Extract vector component
             _, p_bf = TransToRp(T_bf[key])
-            # print("T_bf: ", T_bf[key])
 
             # Step 1, get T_bh for each leg
             T_bh = np.dot(TransInv(T_wb), T_wh)
-            # print("T_bh: ", T_bh)
 
             # Step 2, get T_hf for each leg
 
             # VECTOR ADDITION METHOD
             _, p_bh = TransToRp(T_bh)
             p_hf0 = p_bf - p_bh
-            # print("p_hf: ", p_hf)
 
             # TRANSFORM METHOD - UNCOMMENT TO USE
             T_hf = np.dot(TransInv(T_bh), T_bf[key])
             _, p_hf1 = TransToRp(T_hf)
-
-            # print("p_hf TRANSFORM: ", p_hf)
 
             if p_hf1.all() != p_hf0.all():
                 print("NOT EQUAL")
 
             p_hf = p_hf1
 
+            # OLD METHOD -  DONT USE
+            # Rb_T = RpToTrans(Rb, np.array([0, 0, 0]))
+            # _, bodytoFR4 = TransToRp(T_bf[key])
+            # # print("bodytoFR4", bodytoFR4)
+            # _, bodytoFR0 = TransToRp(T_wh)
+            # # print("bodytoFR0", bodytoFR0)
+            # _bodytoFR0 = TransformVector(bodytoFR0, Rb_T, pb)
+            # # print("_bodytoFR0", _bodytoFR0)
+
+            # FRcoord = bodytoFR4 - _bodytoFR0
+            # # print("FRcoord", FRcoord)
+            # neg_Rb = RPY(-orn[0], -orn[1], -orn[2])
+            # _FRcoord = TransformVector(FRcoord, neg_Rb, -pb)
+            # # print("_FRcoord", _FRcoord)
+
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)
-            # Ensure correct order: FL, BL, FR, BR
-            # print("KEY: ", key)
 
         return joint_angles

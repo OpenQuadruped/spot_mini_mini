@@ -62,8 +62,9 @@ class Spot(object):
     INIT_POSES = {
         'stand_low':
         np.array([
-            0.1, -0.82, 1.35, -0.1, -0.82, 1.35, 0.1, -0.87, 1.35, -0.1, -0.87,
-            1.35
+            -0.15192765, -0.7552236, 1.5104472, 0.15192765, -0.7552236,
+            1.5104472, -0.15192765, -0.7552236, 1.5104472, 0.15192765,
+            -0.7552236, 1.5104472
         ]),
         'stand_high':
         np.array([
@@ -145,7 +146,7 @@ class Spot(object):
         self._self_collision_enabled = self_collision_enabled
         self._motor_velocity_limit = motor_velocity_limit
         self._pd_control_enabled = pd_control_enabled
-        self._motor_direction = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self._motor_direction = np.ones(self.num_motors)
         self._observed_motor_torques = np.zeros(self.num_motors)
         self._applied_motor_torques = np.zeros(self.num_motors)
         self._max_force = 3.5
@@ -586,21 +587,15 @@ class Spot(object):
 
         return joint_angles
 
-    def ApplyAction(self, motor_commands, motor_kps=None, motor_kds=None):
-        """Set the desired motor angles to the motors of the spot.
-
+    def ApplyAction(self, motor_commands):
+        """Set the desired motor angles to the motors of the minitaur.
     The desired motor angles are clipped based on the maximum allowed velocity.
     If the pd_control_enabled is True, a torque is calculated according to
     the difference between current and desired joint angle, as well as the joint
     velocity. This torque is exerted to the motor. For more information about
     PD control, please refer to: https://en.wikipedia.org/wiki/PID_controller.
-
     Args:
       motor_commands: The eight desired motor angles.
-      motor_kps: Proportional gains for the motor model. If not provided, it
-        uses the default kp of the spot for all the motors.
-      motor_kds: Derivative gains for the motor model. If not provided, it
-        uses the default kd of the spot for all the motors.
     """
         if self._motor_velocity_limit < np.inf:
             current_motor_angle = self.GetMotorAngles()
@@ -610,26 +605,21 @@ class Spot(object):
                                   self.time_step * self._motor_velocity_limit)
             motor_commands = np.clip(motor_commands, motor_commands_min,
                                      motor_commands_max)
-        # Set the kp and kd for all the motors if not provided as an argument.
-        if motor_kps is None:
-            motor_kps = np.full(self.num_motors, self._kp)
-        if motor_kds is None:
-            motor_kds = np.full(self.num_motors, self._kd)
 
         if self._accurate_motor_model_enabled or self._pd_control_enabled:
-            q, qdot = self._GetPDObservation()
-            qdot_true = self.GetMotorVelocities()
+            q = self.GetMotorAngles()
+            qdot = self.GetMotorVelocities()
             if self._accurate_motor_model_enabled:
                 actual_torque, observed_torque = self._motor_model.convert_to_torque(
-                    motor_commands, q, qdot, qdot_true, motor_kps, motor_kds)
+                    motor_commands, q, qdot)
                 if self._motor_overheat_protection:
                     for i in range(self.num_motors):
                         if abs(actual_torque[i]) > OVERHEAT_SHUTDOWN_TORQUE:
                             self._overheat_counter[i] += 1
                         else:
                             self._overheat_counter[i] = 0
-                        if self._overheat_counter[
-                                i] > OVERHEAT_SHUTDOWN_TIME / self.time_step:
+                        if (self._overheat_counter[i] >
+                                OVERHEAT_SHUTDOWN_TIME / self.time_step):
                             self._motor_enabled_list[i] = False
 
                 # The torque is already in the observation space because we use
@@ -648,8 +638,8 @@ class Spot(object):
                     else:
                         self._SetMotorTorqueById(motor_id, 0)
             else:
-                torque_commands = -1 * motor_kps * (
-                    q - motor_commands) - motor_kds * qdot
+                torque_commands = -self._kp * (
+                    q - motor_commands) - self._kd * qdot
 
                 # The torque is already in the observation space because we use
                 # GetMotorAngles and GetMotorVelocities.

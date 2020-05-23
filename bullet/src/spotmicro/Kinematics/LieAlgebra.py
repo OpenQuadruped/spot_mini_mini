@@ -87,4 +87,24 @@ def RPY(roll, pitch, yaw):
                     [np.sin(yaw), np.cos(yaw), 0, 0],
                     [0, 0, 1, 0],
                     [0, 0, 0, 1]])
-    return np.dot(np.dot(Roll, Pitch), Yaw)
+    return np.matmul(np.matmul(Roll, Pitch), Yaw)
+
+
+def RotateTranslate(rotation, position):
+    x0 = position[0]
+    y0 = position[1]
+    z0 = position[2]
+
+    trans = np.eye(4)
+    trans[0, 3] = x0
+    trans[1, 3] = y0
+    trans[2, 3] = z0
+
+    return np.dot(rotation, trans)
+
+
+def TransformVector(xyz_coord, rotation, translation):
+    xyz_vec = np.append(xyz_coord, 1.0)
+
+    Transformed = np.dot(RotateTranslate(rotation, translation), xyz_vec)
+    return Transformed[:3]

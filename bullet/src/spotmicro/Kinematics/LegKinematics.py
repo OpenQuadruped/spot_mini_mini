@@ -6,9 +6,9 @@ import numpy as np
 class LegIK():
     def __init__(self,
                  legtype="RIGHT",
-                 hip_length=0.044,
-                 shoulder_length=0.12,
-                 leg_length=0.115,
+                 hip_length=0.04,
+                 shoulder_length=0.1,
+                 leg_length=0.1,
                  hip_lim=[-0.548, 0.548],
                  shoulder_lim=[-2.17, 0.97],
                  leg_lim=[-0.1, 2.59]):
@@ -26,6 +26,7 @@ class LegIK():
              self.leg_length**2) / (2 * self.leg_length * self.shoulder_length)
         if D > 1 or D < -1:
             # DOMAIN BREACHED
+            print("---------DOMAIN BREACH---------")
             if D > 1:
                 D = 0.99
                 return D
@@ -53,7 +54,7 @@ class LegIK():
             -x, np.sqrt(y**2 + (-z)**2 - self.hip_length**2)) - np.arctan2(
                 self.leg_length * np.sin(leg_angle),
                 self.shoulder_length + self.leg_length * np.cos(leg_angle))
-        joint_angles = np.array([-hip_angle, -shoulder_angle, -leg_angle])
+        joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles
 
     def LeftIK(self, x, y, z, D):
@@ -64,5 +65,5 @@ class LegIK():
             -x, np.sqrt(y**2 + (-z)**2 - self.hip_length**2)) - np.arctan2(
                 self.leg_length * np.sin(leg_angle),
                 self.shoulder_length + self.leg_length * np.cos(leg_angle))
-        joint_angles = np.array([-hip_angle, -shoulder_angle, -leg_angle])
+        joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles
