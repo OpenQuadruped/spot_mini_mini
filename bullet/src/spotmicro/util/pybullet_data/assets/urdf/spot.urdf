@@ -27,7 +27,7 @@
       <origin rpy="0 0 0" xyz="0 0 0"/>
     </collision>
     <inertial>
-      <mass value="2.80"/>
+      <mass value="1.20"/>
       <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
@@ -75,7 +75,7 @@
       <origin rpy="0 0 0" xyz="-0.145 0 0"/>
     </collision>
     <inertial>
-      <mass value="0.20"/>
+      <mass value="0.05"/>
       <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
@@ -98,7 +98,7 @@
       <origin rpy="0 0 0" xyz="0.135 0 0"/>
     </collision>
     <inertial>
-      <mass value="0.20"/>
+      <mass value="0.05"/>
       <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
@@ -151,7 +151,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.15"/>
+      <mass value="0.1"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>
@@ -187,10 +187,10 @@
         <sphere radius="0.02"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="1.1"/>
+      <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
-      <mass value="0.05"/>
+      <mass value="0.005"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>
@@ -272,7 +272,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.15"/>
+      <mass value="0.1"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>
@@ -308,10 +308,10 @@
         <sphere radius="0.02"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="1.1"/>
+      <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
-      <mass value="0.05"/>
+      <mass value="0.005"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>
@@ -393,7 +393,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.15"/>
+      <mass value="0.10"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>
@@ -429,10 +429,10 @@
         <sphere radius="0.02"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="1.1"/>
+      <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
-      <mass value="0.05"/>
+      <mass value="0.005"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>
@@ -514,7 +514,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.15"/>
+      <mass value="0.10"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>
@@ -550,10 +550,10 @@
         <sphere radius="0.02"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="1.1"/>
+      <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
-      <mass value="0.05"/>
+      <mass value="0.005"/>
       <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
     </inertial>
   </link>

@@ -60,13 +60,18 @@ class Spot(object):
 
   """
     INIT_POSES = {
-        'stand':
+        'stand_low':
         np.array([
             -0.15192765, -0.7552236, 1.5104472, 0.15192765, -0.7552236,
             1.5104472, -0.15192765, -0.7552236, 1.5104472, 0.15192765,
             -0.7552236, 1.5104472
         ]),
-        'liedown':
+        'stand_high':
+        np.array([
+            0, -0.658319, 1.0472, 0, -0.658319, 1.0472, 0, -0.658319, 1.0472,
+            0, -0.658319, 1.0472
+        ]),
+        'rest_position':
         np.array([-0.4, -1.5, 6, 0.4, -1.5, 6, -0.4, -1.5, 6, 0.4, -1.5, 6])
     }
 
@@ -76,7 +81,7 @@ class Spot(object):
                  time_step=0.01,
                  action_repeat=1,
                  self_collision_enabled=False,
-                 motor_velocity_limit=9.7,
+                 motor_velocity_limit=np.inf,
                  pd_control_enabled=False,
                  accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
@@ -89,7 +94,7 @@ class Spot(object):
                  motor_overheat_protection=False,
                  on_rack=False,
                  kd_for_pd_controllers=0.3,
-                 pose_id='stand',
+                 pose_id='stand_low',
                  np_random=np.random):
         """Constructs a spot and reset it to the initial states.
 
