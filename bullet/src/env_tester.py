@@ -63,6 +63,8 @@ def main():
         action = joint_angles.reshape(-1)
         # action = env.action_space.sample()
         next_state, reward, done, _ = env.step(action)
+        if done:
+            print("DONE")
 
         # time.sleep(1.0)
 
