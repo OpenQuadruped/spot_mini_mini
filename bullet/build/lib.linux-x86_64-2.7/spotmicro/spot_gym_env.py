@@ -73,10 +73,10 @@ class spotGymEnv(gym.Env):
                  motor_velocity_limit=np.inf,
                  pd_control_enabled=False,
                  leg_model_enabled=False,
-                 accurate_motor_model_enabled=False,
+                 accurate_motor_model_enabled=True,
                  remove_default_joint_damping=False,
-                 motor_kp=1.0,
-                 motor_kd=0.02,
+                 motor_kp=2.0,
+                 motor_kd=0.03,
                  control_latency=0.0,
                  pd_latency=0.0,
                  torque_control_enabled=False,
@@ -152,6 +152,11 @@ class spotGymEnv(gym.Env):
     Raises:
       ValueError: If the urdf_version is not supported.
     """
+        # CONTROL METRICS
+        self.desired_velocity = desired_velocity
+        self.desired_rate = desired_rate
+        self.lateral = lateral
+
         # Set up logging.
         self._log_path = log_path
         # @TODO fix logging
@@ -248,7 +253,11 @@ class spotGymEnv(gym.Env):
     def configure(self, args):
         self._args = args
 
-    def reset(self, initial_motor_angles=None, reset_duration=1.0):
+    def reset(self,
+              initial_motor_angles=None,
+              reset_duration=1.0,
+              desired_velocity=None,
+              desired_rate=None):
         self._pybullet_client.configureDebugVisualizer(
             self._pybullet_client.COV_ENABLE_RENDERING, 0)
         # @TODO fix logging
@@ -302,6 +311,11 @@ class spotGymEnv(gym.Env):
 
         if self._env_randomizer is not None:
             self._env_randomizer.randomize_env(self)
+
+        if self.desired_velocity is not None:
+            self.desired_velocity = desired_velocity
+        if self.desired_rate is not None:
+            self.desired_rate = desired_rate
 
         self._pybullet_client.setPhysicsEngineParameter(enableConeFriction=0)
         self._env_step_counter = 0
@@ -457,38 +471,90 @@ class spotGymEnv(gym.Env):
         return self.is_fallen() or distance > self._distance_limit
 
     def _reward(self):
+        """ NOTE: reward now consists of:
+        roll, pitch at desired 0
+        acc (y,z) = 0
+        FORWARD-BACKWARD: rate(x,y,z) = 0
+        --> HIDDEN REWARD: x(+-) velocity reference, not incl. in obs
+        SPIN: acc(x) = 0, rate(x,y) = 0, rate (z) = rate reference
+        Also include drift, energy vanilla rewards
+        """
         current_base_position = self.spot.GetBasePosition()
-        # side_penality = -abs(current_base_position[1])
-        # forward direction
-        forward_reward = -current_base_position[0] + self._last_base_position[0]
-        # target_reward = 0.0
-        # if forward_reward >0:
-        #     target_reward = (-current_base_position[0] / 3)
-        # Cap the forward reward if a cap is set.
-        forward_reward = min(forward_reward, self._forward_reward_cap)
-        # Penalty for sideways translation.
-        drift_reward = -abs(current_base_position[1] -
-                            self._last_base_position[1])
-        # Penalty for sideways rotation of the body.
-        orientation = self.spot.GetBaseOrientation()
-        rot_matrix = pybullet.getMatrixFromQuaternion(orientation)
-        local_up_vec = rot_matrix[6:]
-        shake_reward = -abs(
-            np.dot(np.asarray([1, 1, 0]), np.asarray(local_up_vec)))
+
+        # get observation
+        obs = self._get_observation()
+        # forward_reward = current_base_position[0] - self._last_base_position[0]
+
+        # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
+        fwd_speed = self.spot.prev_lin_twist[0]
+        lat_speed = self.spot.prev_lin_twist[1]
+        # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
+        #     fwd_speed, self.desired_velocity))
+        # self.desired_velocity = 0.4
+
+        # Modification for lateral/fwd rewards
+        reward_max = 1.0
+        # FORWARD
+        if not self.lateral:
+            # f(x)=-(x-desired))^(2)*((1/desired)^2)+1
+            # to make sure that at 0vel there is 0 reawrd.
+            # also squishes allowable tolerance
+            forward_reward = reward_max * np.exp(
+                -(fwd_speed - self.desired_velocity)**2 / (0.1))
+        # LATERAL
+        else:
+            forward_reward = reward_max * np.exp(
+                -(lat_speed - self.desired_velocity)**2 / (0.1))
+
+        yaw_rate = obs[7]
+
+        rot_reward = reward_max * np.exp(-(yaw_rate - self.desired_rate)**2 /
+                                         (0.1))
+
+        # Make sure that for forward-policy there is the appropriate rotation penalty
+        if self.desired_velocity != 0:
+            self._rotation_weight = self._rate_weight
+            rot_reward = -abs(obs[7])
+        elif self.desired_rate != 0:
+            forward_reward = 0.0
+
+        # penalty for nonzero roll, pitch
+        rp_reward = -(abs(obs[0]) + abs(obs[1]))
+        # print("ROLL: {} \t PITCH: {}".format(obs[0], obs[1]))
+
+        # penalty for nonzero acc(z)
+        shake_reward = -abs(obs[4])
+
+        # penalty for nonzero rate (x,y,z)
+        rate_reward = -(abs(obs[5]) + abs(obs[6]))
+
+        # drift_reward = -abs(current_base_position[1] -
+        #                     self._last_base_position[1])
+
+        # this penalizes absolute error, and does not penalize correction
+        # NOTE: for side-side, drift reward becomes in x instead
+        drift_reward = -abs(current_base_position[1])
+
+        # If Lateral, change drift reward
+        if self.lateral:
+            drift_reward = -abs(current_base_position[0])
+
+        # shake_reward = -abs(current_base_position[2] -
+        #                     self._last_base_position[2])
+        self._last_base_position = current_base_position
         energy_reward = -np.abs(
             np.dot(self.spot.GetMotorTorques(),
                    self.spot.GetMotorVelocities())) * self._time_step
-        objectives = [
-            forward_reward, energy_reward, drift_reward, shake_reward
-        ]
-        weighted_objectives = [
-            o * w for o, w in zip(objectives, self._objective_weights)
-        ]
-        reward = sum(weighted_objectives)
-        # - side_penality
-        self._objectives.append(objectives)
-        # print("REWARD:")
-        # print(reward)
+        reward = (self._distance_weight * forward_reward +
+                  self._rotation_weight * rot_reward +
+                  self._energy_weight * energy_reward +
+                  self._drift_weight * drift_reward +
+                  self._shake_weight * shake_reward +
+                  self._rp_weight * rp_reward +
+                  self._rate_weight * rate_reward)
+        self._objectives.append(
+            [forward_reward, energy_reward, drift_reward, shake_reward])
+        print("REWARD: ", reward)
         return reward
 
     def get_objectives(self):

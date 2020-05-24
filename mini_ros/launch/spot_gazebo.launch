@@ -1,0 +1,24 @@
+<launch>
+  <!-- Load the urdf into the parameter server from the xacro file-->
+  <param name="robot_description" command="xacro '$(find mini_ros)/urdf/spot.urdf.xacro'" />
+
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <!-- We reuse the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="true"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- Spawn the urdf -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 0.0 -y 0.0 -z 0.15 -model spot" respawn="false" output="screen"/>
+
+  <include file="$(find mini_ros)/launch/controller.launch"/>
+
+</launch>

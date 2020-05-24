@@ -60,18 +60,13 @@ class Spot(object):
 
   """
     INIT_POSES = {
-        'stand_low':
+        'stand':
         np.array([
             -0.15192765, -0.7552236, 1.5104472, 0.15192765, -0.7552236,
             1.5104472, -0.15192765, -0.7552236, 1.5104472, 0.15192765,
             -0.7552236, 1.5104472
         ]),
-        'stand_high':
-        np.array([
-            0, -0.658319, 1.0472, 0, -0.658319, 1.0472, 0, -0.658319, 1.0472,
-            0, -0.658319, 1.0472
-        ]),
-        'rest_position':
+        'liedown':
         np.array([-0.4, -1.5, 6, 0.4, -1.5, 6, -0.4, -1.5, 6, 0.4, -1.5, 6])
     }
 
@@ -81,7 +76,7 @@ class Spot(object):
                  time_step=0.01,
                  action_repeat=1,
                  self_collision_enabled=False,
-                 motor_velocity_limit=np.inf,
+                 motor_velocity_limit=9.7,
                  pd_control_enabled=False,
                  accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
@@ -94,7 +89,7 @@ class Spot(object):
                  motor_overheat_protection=False,
                  on_rack=False,
                  kd_for_pd_controllers=0.3,
-                 pose_id='stand_low',
+                 pose_id='stand',
                  np_random=np.random):
         """Constructs a spot and reset it to the initial states.
 
@@ -568,18 +563,7 @@ class Spot(object):
         # order: roll, pitch, acc(x,y,z), gyro(x,y,z)
         observation.append(roll)
         observation.append(pitch)
-        observation.extend(lin_acc.tolist())
         observation.extend(list(ang_twist))
-
-        # velocity and rate
-        # observation.append(self.desired_velocity)
-        # observation.append(self.desired_rate)
-
-        # NOTE: ORIGINAL BELOW
-        # observation.extend(self.GetMotorAngles().tolist())
-        # observation.extend(self.GetMotorVelocities().tolist())
-        # observation.extend(self.GetMotorTorques().tolist())
-        # observation.extend(list(self.GetBaseOrientation()))
         return observation
 
     def ConvertFromLegModel(self, action):
