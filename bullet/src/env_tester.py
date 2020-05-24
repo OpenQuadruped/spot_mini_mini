@@ -61,6 +61,7 @@ def main():
         # Get Roll, Pitch, Yaw
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
+        action = env.action_space.sample()
         next_state, reward, done, _ = env.step(action)
 
         # time.sleep(1.0)

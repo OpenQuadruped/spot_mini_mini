@@ -50,7 +50,7 @@
       <inertial>
         <mass value="${mass}" />
         <origin rpy="${i_rpy}" xyz="${i_xyz}" /> <!-- Inertial Axes -->
-        <inertia ixx="${mass * (length * length + height * height)/12}" ixy="${0}" ixz="${0}" iyx="${0}" iyy="${mass * (length * length + height * height)/12}" iyz="${0}" izx="${0}" izy="${0}" izz="${mass * (length * length + width * width)/12}" />
+        <inertia ixx="${mass * (width * width + height * height)/12.0}" ixy="${0}" ixz="${0}" iyx="${0}" iyy="${mass * (length * length + height * height)/12.0}" iyz="${0}" izx="${0}" izy="${0}" izz="${mass * (length * length + width * width)/12.0}" />
       </inertial>
     </link>
   </xacro:macro>
@@ -76,7 +76,7 @@
       <inertial>
         <mass value="${mass}" />
         <origin rpy="${i_rpy}" xyz="${i_xyz}" /> <!-- Inertial Axes -->
-        <inertia ixx="${mass * (length * length + height * height)/12}" ixy="${0}" ixz="${0}" iyx="${0}" iyy="${mass * (length * length + height * height)/12}" iyz="${0}" izx="${0}" izy="${0}" izz="${mass * (length * length + width * width)/12}" />
+        <inertia ixx="${mass * (width * width + height * height)/12.0}" ixy="${0}" ixz="${0}" iyx="${0}" iyy="${mass * (length * length + height * height)/12.0}" iyz="${0}" izx="${0}" izy="${0}" izz="${mass * (length * length + width * width)/12.0}" />
       </inertial>
     </link>
   </xacro:macro>

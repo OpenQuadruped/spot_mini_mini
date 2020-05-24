@@ -2,4 +2,5 @@
 /.idea/
 *.egg-info
 *.DS_Store
-/dist
+/dist/
+/build/
