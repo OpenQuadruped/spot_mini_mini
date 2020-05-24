@@ -47,7 +47,7 @@ def main():
 
     env.reset()
 
-    g_u_i = GUI()
+    g_u_i = GUI(env.spot.quadruped)
 
     spot = SpotModel()
     T_bf = spot.WorldToFoot
@@ -61,7 +61,7 @@ def main():
         # Get Roll, Pitch, Yaw
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
-        action = env.action_space.sample()
+        # action = env.action_space.sample()
         next_state, reward, done, _ = env.step(action)
 
         # time.sleep(1.0)

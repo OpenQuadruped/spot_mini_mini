@@ -1,0 +1,55 @@
+plen:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+
+  # Position Controllers ---------------------------------------
+  j1_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_front_left_shoulder
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j2_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_front_left_leg
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j3_pc:
+    type: effort_controllers/JointPositionController
+    joint: foot_motor_front_left
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j4_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_front_right_shoulder
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j5_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_front_right_leg
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j6_pc:
+    type: effort_controllers/JointPositionController
+    joint: foot_motor_front_right
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j7_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_rear_left_shoulder
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j8_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_rear_left_leg
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j9_pc:
+    type: effort_controllers/JointPositionController
+    joint: foot_motor_rear_left
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j10_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_rear_right_shoulder
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j11_pc:
+    type: effort_controllers/JointPositionController
+    joint: motor_rear_right_leg
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
+  j12_pc:
+    type: effort_controllers/JointPositionController
+    joint: foot_motor_rear_right
+    pid: {p: 4.0, i: 0.001, d: 0.0023}
