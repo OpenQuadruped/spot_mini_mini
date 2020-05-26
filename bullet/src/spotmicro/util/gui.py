@@ -23,15 +23,15 @@ class GUI:
         self.pitchId = pb.addUserDebugParameter("pitch", -np.pi / 4, np.pi / 4,
                                                 0.)
         self.yawId = pb.addUserDebugParameter("yaw", -np.pi / 4, np.pi / 4, 0.)
-        self.StepLengthID = pb.addUserDebugParameter("Step Length", -0.5, 1.5,
-                                                     0.)
+        self.StepLengthID = pb.addUserDebugParameter("Step Length", -0.1, 0.1,
+                                                     0.0)
         self.StepRotationId = pb.addUserDebugParameter("Step Rotation",
                                                        -np.pi / 2.0,
                                                        np.pi / 2.0, 0.)
         self.LateralFractionId = pb.addUserDebugParameter(
             "Lateral Fraction", -np.pi / 2.0, np.pi / 2.0, 0.)
         self.StepVelocityId = pb.addUserDebugParameter("Step Velocity", 0.1,
-                                                       3., 2.5)
+                                                       3., 0.5)
 
         self.quadruped = quadruped
 
