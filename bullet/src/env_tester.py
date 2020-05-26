@@ -33,7 +33,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotGymEnv(render=True, on_rack=False)
+    env = spotGymEnv(render=True, on_rack=True)
 
     # Set seeds
     env.seed(seed)
