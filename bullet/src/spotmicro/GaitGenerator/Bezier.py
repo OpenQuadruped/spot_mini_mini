@@ -38,30 +38,34 @@ class BezierGait():
         self.Tstance = Tstance
 
     def GetPhase(self, index, Tstance, Tswing):
+        StanceSwing = STANCE
         Sw_phase = 0.0
         Tstride = Tstance + Tswing
         ti = self.Get_ti(index, Tstride)
         # STANCE
         if ti >= 0.0 and ti <= Tstance:
-            self.StanceSwing = STANCE
-            return ti / Tstance
+            StanceSwing = STANCE
+            if index == 0:
+                self.StanceSwing = StanceSwing
+            return ti / Tstance, StanceSwing
         # SWING
         elif ti >= -Tswing and ti < 0.0:
-            self.StanceSwing = SWING
+            StanceSwing = SWING
             Sw_phase = (ti + Tswing) / Tswing
         elif ti > Tstance and ti <= Tstride:
-            self.StanceSwing = SWING
+            StanceSwing = SWING
             Sw_phase = (ti - Tstance) / Tswing
         # Touchdown at End of Swing
         if Sw_phase >= 1.0:
             Sw_phase = 1.0
         if index == 0:
+            self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
             # REF Touchdown at End of Swing
-            if self.SwRef >= 0.998:
+            if self.SwRef >= 0.999:
                 self.TD = True
                 # print("TOUCHDOWN")
-        return Sw_phase
+        return Sw_phase, StanceSwing
 
     def Get_ti(self, index, Tstride):
         return self.time_since_last_TD - self.dSref[index] * Tstride
@@ -186,7 +190,7 @@ class BezierGait():
 
         return stepX, stepY, stepZ
 
-    def SineStance(self, phase, L, LateralFraction, penetration_depth=0.006):
+    def SineStance(self, phase, L, LateralFraction, penetration_depth=0.00):
         X_POLAR = np.cos(LateralFraction)
         Y_POLAR = np.sin(LateralFraction)
         # moves from +L to -L
@@ -278,11 +282,11 @@ class BezierGait():
 
     def GetFootStep(self, L, LateralFraction, Lrot, clearance_height,
                     penetration_depth, Tswing, T_bf, index):
-        phase = self.GetPhase(index, self.Tstance, Tswing)
-        if self.StanceSwing == STANCE:
+        phase, StanceSwing = self.GetPhase(index, self.Tstance, Tswing)
+        if StanceSwing == STANCE:
             return self.StanceStep(phase, L, LateralFraction, Lrot,
                                    penetration_depth, T_bf)
-        elif self.StanceSwing == SWING:
+        elif StanceSwing == SWING:
             return self.SwingStep(phase, L, LateralFraction, Lrot,
                                   clearance_height, T_bf)
 
@@ -292,8 +296,8 @@ class BezierGait():
                            Lrot,
                            vel,
                            T_bf_,
-                           clearance_height=0.04,
-                           penetration_depth=0.000,
+                           clearance_height=0.02,
+                           penetration_depth=0.01,
                            dt=None):
         # First, get Tswing from desired speed and stride length
         # NOTE: L is HALF of stride length
@@ -320,13 +324,13 @@ class BezierGait():
             step_coord = self.GetFootStep(L, LateralFraction, Lrot,
                                           clearance_height, penetration_depth,
                                           Tswing, p_bf, i)
-            # if key == "FL":
-            #     print("FL IS IN PASE: {}".format(self.StanceSwing))
-            #     print("TIME: {}".format(self.time))
-            #     print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
-            #     print("SWING REF: {}".format(self.SwRef))
-            #     print("TSWING: {}".format(Tswing))
-            #     print("-----------------------------------")
+            if key == "FL":
+                print("FL IS IN PASE: {}".format(self.StanceSwing))
+                print("TIME: {}".format(self.time))
+                print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
+                print("SWING REF: {}".format(self.SwRef))
+                print("TSWING: {}".format(Tswing))
+                print("-----------------------------------")
             T_bf[key][0, 3] = Tbf_in[0, 3] + step_coord[0]
             T_bf[key][1, 3] = Tbf_in[1, 3] + step_coord[1]
             T_bf[key][2, 3] = Tbf_in[2, 3] + step_coord[2]

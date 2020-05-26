@@ -8,7 +8,7 @@ SWING = 1
 
 
 class BezierGait():
-    def __init__(self):
+    def __init__(self, dt=0.01):
         self.phi = 0.0
         self.lastTime = 0.0
         self.alpha = 0.0
@@ -54,13 +54,15 @@ class BezierGait():
         # Brezier Curve Points (6 pts)
         # FORWARD
         X = np.array([
-            0., -X_POLAR * L * 0.1, -X_POLAR * L * 0.05, X_POLAR * L * 0.15,
-            X_POLAR * L * 0.05, X_POLAR * L * 0.1, 0.
+            0., -X_POLAR * L * (2.0 / 3.0), -X_POLAR * L * (1.0 / 3.0),
+            X_POLAR * L, X_POLAR * L * (1.0 / 3.0), X_POLAR * L * (2.0 / 3.0),
+            0.
         ])
         # LATERAL
         Y = np.array([
-            0., -Y_POLAR * L * 0.1, -Y_POLAR * L * 0.05, Y_POLAR * L * 0.15,
-            Y_POLAR * L * 0.05, Y_POLAR * L * 0.1, 0.
+            0., -Y_POLAR * L * (2.0 / 3.0), -Y_POLAR * L * (1.0 / 3.0),
+            Y_POLAR * L, Y_POLAR * L * (1.0 / 3.0), Y_POLAR * L * (2.0 / 3.0),
+            0.
         ])
         # VERTICAL
         Z = np.array([
@@ -69,8 +71,7 @@ class BezierGait():
             np.abs(L) * height,
             np.abs(L) * height,
             np.abs(L) * height,
-            np.abs(L) * height * (2.0 / 3.0),
-            0.
+            np.abs(L) * height * (2.0 / 3.0), 0.
         ])
         stepX = 0.
         stepY = 0.
@@ -118,7 +119,8 @@ class BezierGait():
 
         return coord, s
 
-    def GenerateTrajectory(self, L, LateralFraction, Lrot, T, offset, T_bf_):
+    def GenerateTrajectory(self, L, LateralFraction, Lrot, T, T_bf_):
+        offset = np.array([0.5, 0.5, 0., 0.0])
         if (self.phi >= 0.99):
             self.lastTime = time.time()
         self.phi = (time.time() - self.lastTime) / T
@@ -143,4 +145,4 @@ class BezierGait():
             #     step_coord[0], step_coord[1], step_coord[2]))
 
             # print("FINAL LEG COORDS: \n {}".format(T_bf[key]))
-        return T_bf, S
+        return T_bf
