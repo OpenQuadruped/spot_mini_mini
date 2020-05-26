@@ -23,6 +23,9 @@ src/spotmicro/__init__.py
 src/spotmicro/motor.py
 src/spotmicro/spot.py
 src/spotmicro/spot_gym_env.py
+src/spotmicro/GaitGenerator/Bezier.py
+src/spotmicro/GaitGenerator/Raibert.py
+src/spotmicro/GaitGenerator/__init__.py
 src/spotmicro/Kinematics/LegKinematics.py
 src/spotmicro/Kinematics/LieAlgebra.py
 src/spotmicro/Kinematics/SpotKinematics.py

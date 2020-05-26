@@ -11,7 +11,7 @@ class GUI:
 
         time.sleep(0.5)
 
-        self.cyaw = 90
+        self.cyaw = 0
         self.cpitch = -7
         self.cdist = 0.66
 
@@ -25,22 +25,23 @@ class GUI:
         self.yawId = pb.addUserDebugParameter("yaw", -np.pi / 4, np.pi / 4, 0.)
         self.StepLengthID = pb.addUserDebugParameter("Step Length", -0.5, 1.5,
                                                      0.)
-        self.StepRotationId = pb.addUserDebugParameter("Step Rotation", -1.5,
-                                                       1.5, 0.)
-        self.StepDirectionId = pb.addUserDebugParameter(
-            "Step Direction", -180., 180., 0.)
-        self.StepPeriodId = pb.addUserDebugParameter("Step Period", 0.1, 3.,
-                                                     2.5)
+        self.StepRotationId = pb.addUserDebugParameter("Step Rotation",
+                                                       -np.pi / 2.0,
+                                                       np.pi / 2.0, 0.)
+        self.LateralFractionId = pb.addUserDebugParameter(
+            "Lateral Fraction", -np.pi / 2.0, np.pi / 2.0, 0.)
+        self.StepVelocityId = pb.addUserDebugParameter("Step Velocity", 0.1,
+                                                       3., 2.5)
 
         self.quadruped = quadruped
 
     def UserInput(self):
 
-        cubePos, cubeOrn = pb.getBasePositionAndOrientation(self.quadruped)
+        quadruped_pos, _ = pb.getBasePositionAndOrientation(self.quadruped)
         pb.resetDebugVisualizerCamera(cameraDistance=self.cdist,
                                       cameraYaw=self.cyaw,
                                       cameraPitch=self.cpitch,
-                                      cameraTargetPosition=cubePos)
+                                      cameraTargetPosition=quadruped_pos)
         keys = pb.getKeyboardEvents()
         # Keys to change camera
         if keys.get(100):  # D
@@ -72,7 +73,7 @@ class GUI:
         ])
         StepLength = pb.readUserDebugParameter(self.StepLengthID)
         StepRotation = pb.readUserDebugParameter(self.StepRotationId)
-        StepDirection = pb.readUserDebugParameter(self.StepDirectionId)
-        StepPeriod = pb.readUserDebugParameter(self.StepPeriodId)
+        LateralFraction = pb.readUserDebugParameter(self.LateralFractionId)
+        StepVelocity = pb.readUserDebugParameter(self.StepVelocityId)
 
-        return pos, orn, StepLength, StepDirection, StepRotation, StepPeriod
+        return pos, orn, StepLength, LateralFraction, StepRotation, StepVelocity
