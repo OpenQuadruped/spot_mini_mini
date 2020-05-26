@@ -8,7 +8,10 @@ SWING = 1
 
 
 class BezierGait():
-    def __init__(self, dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tstance=0.5):
+    def __init__(self,
+                 dSref=[0.0, 0.0, 0.5, 0.5],
+                 dt=0.01,
+                 Tstance=0.5):
         # Phase Lag Per Leg: FL, FR, BL, BR
         # Reference Leg is FL, always 0
         self.dSref = dSref
@@ -57,7 +60,7 @@ class BezierGait():
             # REF Touchdown at End of Swing
             if self.SwRef >= 0.998:
                 self.TD = True
-                print("TOUCHDOWN")
+                # print("TOUCHDOWN")
         return Sw_phase
 
     def Get_ti(self, index, Tstride):
@@ -71,7 +74,7 @@ class BezierGait():
         self.time_since_last_TD = self.time - self.TD_time
         if self.time_since_last_TD > Tstride:
             self.time_since_last_TD = Tstride
-        print("T STRIDE: {}".format(Tstride))
+        # print("T STRIDE: {}".format(Tstride))
         # Increment Time at the end in case TD just happened
         # So that we get time_since_last_TD = 0.0
         self.time += dt
@@ -290,7 +293,7 @@ class BezierGait():
                            vel,
                            T_bf_,
                            clearance_height=0.04,
-                           penetration_depth=0.005,
+                           penetration_depth=0.000,
                            dt=None):
         # First, get Tswing from desired speed and stride length
         # NOTE: L is HALF of stride length
@@ -317,13 +320,13 @@ class BezierGait():
             step_coord = self.GetFootStep(L, LateralFraction, Lrot,
                                           clearance_height, penetration_depth,
                                           Tswing, p_bf, i)
-            if key == "FL":
-                print("FL IS IN PASE: {}".format(self.StanceSwing))
-                print("TIME: {}".format(self.time))
-                print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
-                print("SWING REF: {}".format(self.SwRef))
-                print("TSWING: {}".format(Tswing))
-                print("-----------------------------------")
+            # if key == "FL":
+            #     print("FL IS IN PASE: {}".format(self.StanceSwing))
+            #     print("TIME: {}".format(self.time))
+            #     print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
+            #     print("SWING REF: {}".format(self.SwRef))
+            #     print("TSWING: {}".format(Tswing))
+            #     print("-----------------------------------")
             T_bf[key][0, 3] = Tbf_in[0, 3] + step_coord[0]
             T_bf[key][1, 3] = Tbf_in[1, 3] + step_coord[1]
             T_bf[key][2, 3] = Tbf_in[2, 3] + step_coord[2]

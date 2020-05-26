@@ -96,7 +96,8 @@ class spotGymEnv(gym.Env):
                  log_path=None,
                  desired_velocity=0.5,
                  desired_rate=0.0,
-                 lateral=False):
+                 lateral=False,
+                 draw_foot_path=True):
         """Initialize the spot gym environment.
 
     Args:
@@ -155,6 +156,11 @@ class spotGymEnv(gym.Env):
     Raises:
       ValueError: If the urdf_version is not supported.
     """
+        self.draw_foot_path = draw_foot_path
+        # DRAWING FEET PATH
+        self.prev_feet_path = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0],
+                                        [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+
         # CONTROL METRICS
         self.desired_velocity = desired_velocity
         self.desired_rate = desired_rate
@@ -388,6 +394,10 @@ class spotGymEnv(gym.Env):
         reward = self._reward()
         done = self._termination()
         self._env_step_counter += 1
+
+        # DRAW FOOT PATH
+        if self.draw_foot_path:
+            self.DrawFootPath()
         return np.array(self._get_observation()), reward, done, {}
 
     def render(self, mode="rgb_array", close=False):
@@ -415,6 +425,36 @@ class spotGymEnv(gym.Env):
         rgb_array = np.array(px)
         rgb_array = rgb_array[:, :, :3]
         return rgb_array
+
+    def DrawFootPath(self):
+        # Get Foot Positions
+        FL = self._pybullet_client.getLinkState(self.spot.quadruped,
+                                                self.spot._foot_id_list[0])[0]
+        FR = self._pybullet_client.getLinkState(self.spot.quadruped,
+                                                self.spot._foot_id_list[1])[0]
+        BL = self._pybullet_client.getLinkState(self.spot.quadruped,
+                                                self.spot._foot_id_list[2])[0]
+        BR = self._pybullet_client.getLinkState(self.spot.quadruped,
+                                                self.spot._foot_id_list[3])[0]
+
+        lifetime = 3.0  # sec
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[0], FL,
+                                               [1, 0, 0],
+                                               lifeTime=lifetime)
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[1], FR,
+                                               [0, 1, 0],
+                                               lifeTime=lifetime)
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[2], BL,
+                                               [0, 0, 1],
+                                               lifeTime=lifetime)
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[3], BR,
+                                               [1, 1, 0],
+                                               lifeTime=lifetime)
+
+        self.prev_feet_path[0] = FL
+        self.prev_feet_path[1] = FR
+        self.prev_feet_path[2] = BL
+        self.prev_feet_path[3] = BR
 
     def get_spot_motor_angles(self):
         """Get the spot's motor angles.
