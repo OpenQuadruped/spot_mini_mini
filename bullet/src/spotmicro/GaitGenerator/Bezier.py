@@ -11,7 +11,7 @@ class BezierGait():
     def __init__(self,
                  dSref=[0.0, 0.0, 0.5, 0.5],
                  dt=0.01,
-                 Tstance=0.5):
+                 Tstance=0.25):
         # Phase Lag Per Leg: FL, FR, BL, BR
         # Reference Leg is FL, always 0
         self.dSref = dSref
@@ -340,9 +340,9 @@ class BezierGait():
             if key == "FR":
                 self.dSref[i] = 0.5
             if key == "BL":
-                self.dSref[i] = 0.0
-            if key == "BR":
                 self.dSref[i] = 0.5
+            if key == "BR":
+                self.dSref[i] = 0.0
             _, p_bf = TransToRp(Tbf_in)
             step_coord = self.GetFootStep(L, LateralFraction, Lrot,
                                           clearance_height, penetration_depth,
