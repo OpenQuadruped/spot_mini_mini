@@ -8,7 +8,7 @@ SWING = 1
 
 
 class BezierGait():
-    def __init__(self, dSref=[0.0, 0.5, 0.0, 0.5], dt=0.01, Tstance=0.25):
+    def __init__(self, dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tstance=0.5):
         # Phase Lag Per Leg: FL, FR, BL, BR
         # Reference Leg is FL, always 0
         self.dSref = dSref
@@ -55,7 +55,7 @@ class BezierGait():
         if index == 0:
             self.SwRef = Sw_phase
             # REF Touchdown at End of Swing
-            if self.SwRef >= 1.0:
+            if self.SwRef >= 0.998:
                 self.TD = True
                 print("TOUCHDOWN")
         return Sw_phase
@@ -71,6 +71,7 @@ class BezierGait():
         self.time_since_last_TD = self.time - self.TD_time
         if self.time_since_last_TD > Tstride:
             self.time_since_last_TD = Tstride
+        print("T STRIDE: {}".format(Tstride))
         # Increment Time at the end in case TD just happened
         # So that we get time_since_last_TD = 0.0
         self.time += dt
@@ -185,6 +186,7 @@ class BezierGait():
     def SineStance(self, phase, L, LateralFraction, penetration_depth=0.006):
         X_POLAR = np.cos(LateralFraction)
         Y_POLAR = np.sin(LateralFraction)
+        # moves from +L to -L
         step = L * (1.0 - 2.0 * phase)
         stepX = step * X_POLAR
         stepY = step * Y_POLAR
@@ -288,7 +290,7 @@ class BezierGait():
                            vel,
                            T_bf_,
                            clearance_height=0.04,
-                           penetration_depth=0.02,
+                           penetration_depth=0.005,
                            dt=None):
         # First, get Tswing from desired speed and stride length
         # NOTE: L is HALF of stride length
@@ -296,9 +298,17 @@ class BezierGait():
             Tswing = 2.0 * abs(L) / abs(vel)
         else:
             Tswing = 0.0
+            L = 0.0
+
         # Then, get time since last Touchdown and increment time counter
         if dt is None:
             dt = self.dt
+
+        # Catch infeasible timesteps
+        if Tswing < dt:
+            Tswing = 0.0
+            L = 0.0
+
         self.Increment(dt, Tswing + self.Tstance)
 
         T_bf = copy.deepcopy(T_bf_)
@@ -312,6 +322,7 @@ class BezierGait():
                 print("TIME: {}".format(self.time))
                 print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
                 print("SWING REF: {}".format(self.SwRef))
+                print("TSWING: {}".format(Tswing))
                 print("-----------------------------------")
             T_bf[key][0, 3] = Tbf_in[0, 3] + step_coord[0]
             T_bf[key][1, 3] = Tbf_in[1, 3] + step_coord[1]
