@@ -31,23 +31,33 @@ class BezierGait():
         self.StanceSwing = SWING
         # Swing Phase value [0, 1] of Reference Foot
         self.SwRef = 0.0
+        self.Stref = 0.0
         # Whether Reference Foot has Touched Down
         self.TD = False
 
         # Stance Time
         self.Tstance = Tstance
 
+        # Reference Leg
+        self.ref_idx = 0
+
     def GetPhase(self, index, Tstance, Tswing):
         StanceSwing = STANCE
         Sw_phase = 0.0
         Tstride = Tstance + Tswing
         ti = self.Get_ti(index, Tstride)
+        if ti < - Tswing:
+            ti = Tstance
+        if index == self.ref_idx:
+            print("ti: {}".format(ti))
         # STANCE
         if ti >= 0.0 and ti <= Tstance:
             StanceSwing = STANCE
-            if index == 0:
+            Stnphase = ti / Tstance
+            if index == self.ref_idx:
+                print("STANCE REF: {}".format(Stnphase))
                 self.StanceSwing = StanceSwing
-            return ti / Tstance, StanceSwing
+            return Stnphase, StanceSwing
         # SWING
         elif ti >= -Tswing and ti < 0.0:
             StanceSwing = SWING
@@ -58,12 +68,15 @@ class BezierGait():
         # Touchdown at End of Swing
         if Sw_phase >= 1.0:
             Sw_phase = 1.0
-        if index == 0:
+        if index == self.ref_idx:
             self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
+            print("SWING REF: {}".format(Sw_phase))
             # REF Touchdown at End of Swing
             if self.SwRef >= 0.999:
                 self.TD = True
+            else:
+                self.TD = False
                 # print("TOUCHDOWN")
         return Sw_phase, StanceSwing
 
@@ -320,16 +333,29 @@ class BezierGait():
 
         T_bf = copy.deepcopy(T_bf_)
         for i, (key, Tbf_in) in enumerate(T_bf_.items()):
+            # TODO: MAKE THIS MORE ELEGANT
+            if key == "FL":
+                self.ref_idx = i
+                self.dSref[i] = 0.0
+            if key == "FR":
+                self.dSref[i] = 0.5
+            if key == "BL":
+                self.dSref[i] = 0.0
+            if key == "BR":
+                self.dSref[i] = 0.5
             _, p_bf = TransToRp(Tbf_in)
             step_coord = self.GetFootStep(L, LateralFraction, Lrot,
                                           clearance_height, penetration_depth,
                                           Tswing, p_bf, i)
             if key == "FL":
+                print("INDEX: {}".format(self.ref_idx))
                 print("FL IS IN PASE: {}".format(self.StanceSwing))
                 print("TIME: {}".format(self.time))
                 print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
-                print("SWING REF: {}".format(self.SwRef))
+                # print("SWING REF: {}".format(self.SwRef))
                 print("TSWING: {}".format(Tswing))
+                if self.TD:
+                    print("TOUCHDOWN")
                 print("-----------------------------------")
             T_bf[key][0, 3] = Tbf_in[0, 3] + step_coord[0]
             T_bf[key][1, 3] = Tbf_in[1, 3] + step_coord[1]
