@@ -52,9 +52,12 @@ class BezierGait():
         # Touchdown at End of Swing
         if Sw_phase >= 1.0:
             Sw_phase = 1.0
-            self.TD = True
         if index == 0:
             self.SwRef = Sw_phase
+            # REF Touchdown at End of Swing
+            if self.SwRef >= 1.0:
+                self.TD = True
+                print("TOUCHDOWN")
         return Sw_phase
 
     def Get_ti(self, index, Tstride):
@@ -71,6 +74,14 @@ class BezierGait():
         # Increment Time at the end in case TD just happened
         # So that we get time_since_last_TD = 0.0
         self.time += dt
+
+        # If Tstride = Tstance, Tswing = 0
+        # RESET ALL
+        if Tstride == self.Tstance:
+            self.time = 0.0
+            self.time_since_last_TD = 0.0
+            self.TD_time = 0.0
+            self.SwRef = 0.0
 
     def CheckTouchDown(self):
         if self.SwRef >= 0.9 and self.TD:
@@ -269,9 +280,6 @@ class BezierGait():
         elif self.StanceSwing == SWING:
             return self.SwingStep(phase, L, LateralFraction, Lrot,
                                   clearance_height, T_bf)
-        else:
-            print("UNDEFINED PHASE")
-            return np.array([0.0, 0.0, 0.0])
 
     def GenerateTrajectory(self,
                            L,
@@ -279,12 +287,15 @@ class BezierGait():
                            Lrot,
                            vel,
                            T_bf_,
-                           clearance_height=0.08,
-                           penetration_depth=0.05,
+                           clearance_height=0.04,
+                           penetration_depth=0.02,
                            dt=None):
         # First, get Tswing from desired speed and stride length
         # NOTE: L is HALF of stride length
-        Tswing = 2.0 * abs(L) / vel
+        if vel != 0.0:
+            Tswing = 2.0 * abs(L) / abs(vel)
+        else:
+            Tswing = 0.0
         # Then, get time since last Touchdown and increment time counter
         if dt is None:
             dt = self.dt
@@ -301,6 +312,7 @@ class BezierGait():
                 print("TIME: {}".format(self.time))
                 print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
                 print("SWING REF: {}".format(self.SwRef))
+                print("-----------------------------------")
             T_bf[key][0, 3] = Tbf_in[0, 3] + step_coord[0]
             T_bf[key][1, 3] = Tbf_in[1, 3] + step_coord[1]
             T_bf[key][2, 3] = Tbf_in[2, 3] + step_coord[2]
