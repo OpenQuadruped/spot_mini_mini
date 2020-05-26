@@ -364,14 +364,22 @@ class Spot(object):
             force=torque)
 
     def _SetDesiredMotorAngleById(self, motor_id, desired_angle):
-        self._pybullet_client.setJointMotorControl2(
-            bodyIndex=self.quadruped,
-            jointIndex=motor_id,
-            controlMode=self._pybullet_client.POSITION_CONTROL,
-            targetPosition=desired_angle,
-            positionGain=self._kp,
-            velocityGain=self._kd,
-            force=self._max_force)
+        if self._pd_control_enabled or self._accurate_motor_model_enabled:
+            self._pybullet_client.setJointMotorControl2(
+                bodyIndex=self.quadruped,
+                jointIndex=motor_id,
+                controlMode=self._pybullet_client.POSITION_CONTROL,
+                targetPosition=desired_angle,
+                positionGain=self._kp,
+                velocityGain=self._kd,
+                force=self._max_force)
+        # Pybullet has a 'perfect' joint controller with its default p,d
+        else:
+            self._pybullet_client.setJointMotorControl2(
+                bodyIndex=self.quadruped,
+                jointIndex=motor_id,
+                controlMode=self._pybullet_client.POSITION_CONTROL,
+                targetPosition=desired_angle)
 
     def _SetDesiredMotorAngleByName(self, motor_name, desired_angle):
         self._SetDesiredMotorAngleById(self._joint_name_to_id[motor_name],

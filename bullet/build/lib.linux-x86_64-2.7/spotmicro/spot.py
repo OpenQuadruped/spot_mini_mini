@@ -30,6 +30,16 @@ MOTOR_NAMES = [
     "motor_rear_right_shoulder", "motor_rear_right_leg",
     "foot_motor_rear_right"
 ]
+
+MOTOR_LIMITS_BY_NAME = {}
+for name in MOTOR_NAMES:
+    if "shoulder" in name:
+        MOTOR_LIMITS_BY_NAME[name] = [-1.0, 1.0]
+    elif "leg" in name:
+        MOTOR_LIMITS_BY_NAME[name] = [-2.17, 0.97]
+    elif "foot" in name:
+        MOTOR_LIMITS_BY_NAME[name] = [-0.1, 2.59]
+
 _CHASSIS_NAME_PATTERN = re.compile(r"chassis\D*")
 _MOTOR_NAME_PATTERN = re.compile(r"motor\D*")
 _FOOT_NAME_PATTERN = re.compile(r"foot_motor\D*")
@@ -560,15 +570,26 @@ class Spot(object):
         # print("LIN ACC: ", lin_acc)
         self.prev_lin_twist = lin_twist
 
-        # order: roll, pitch, acc(x,y,z), gyro(x,y,z)
+        # order: roll, pitch, gyro(x,y,z)
         observation.append(roll)
         observation.append(pitch)
         observation.extend(list(ang_twist))
         return observation
 
     def ConvertFromLegModel(self, action):
+        # TODO
         joint_angles = action
 
+        return joint_angles
+
+    def ApplyMotorLimits(self, joint_angles):
+        eps = 0.001
+        for i in range(len(joint_angles)):
+            # print("JA IN: {}".format(joint_angles[i]))
+            LIM = MOTOR_LIMITS_BY_NAME[MOTOR_NAMES[i]]
+            joint_angles[i] = np.clip(joint_angles[i], LIM[0] + eps,
+                                      LIM[1] - eps)
+            # print("JA OUT: {}".format(joint_angles[i]))
         return joint_angles
 
     def ApplyAction(self, motor_commands):
@@ -581,6 +602,10 @@ class Spot(object):
     Args:
       motor_commands: The eight desired motor angles.
     """
+        # FIRST, APPLY MOTOR LIMITS:
+
+        motor_commands = self.ApplyMotorLimits(motor_commands)
+
         if self._motor_velocity_limit < np.inf:
             current_motor_angle = self.GetMotorAngles()
             motor_commands_max = (current_motor_angle +

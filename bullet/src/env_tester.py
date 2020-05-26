@@ -7,6 +7,7 @@ from spotmicro.spot_gym_env import spotGymEnv
 from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import RPY
+from spotmicro.GaitGenerator.Bezier import BezierGait
 import time
 
 import torch
@@ -50,15 +51,21 @@ def main():
     g_u_i = GUI(env.spot.quadruped)
 
     spot = SpotModel()
-    T_bf = spot.WorldToFoot
+    T_bf0 = spot.WorldToFoot
+
+    bzg = BezierGait()
 
     print("STARTED SPOT TEST ENV")
     t = 0
     while t < (int(max_timesteps)):
 
         # GUI: x, y, z | r, p , y
-        pos, orn, _, _, _, _ = g_u_i.UserInput()
-        # Get Roll, Pitch, Yaw
+        pos, orn, StepLength, LateralFraction, StepRotation, StepVelocity = g_u_i.UserInput(
+        )
+
+        # Get Desired Foot Poses
+        T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction,
+                                         StepRotation, StepVelocity, T_bf0)
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
         # action = env.action_space.sample()

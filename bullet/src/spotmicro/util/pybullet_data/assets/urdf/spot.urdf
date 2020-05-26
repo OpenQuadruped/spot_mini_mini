@@ -184,10 +184,10 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="10.1"/>
+      <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
+      <contact_coefficients mu="1000.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
@@ -305,10 +305,10 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="10.1"/>
+      <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
+      <contact_coefficients mu="1000.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
@@ -426,10 +426,10 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="10.1"/>
+      <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
+      <contact_coefficients mu="1000.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
@@ -547,10 +547,10 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <contact_coefficients mu="10.1"/>
+      <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
+      <contact_coefficients mu="1000.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>

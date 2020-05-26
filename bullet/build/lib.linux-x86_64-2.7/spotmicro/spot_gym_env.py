@@ -61,19 +61,22 @@ class spotGymEnv(gym.Env):
     }
 
     def __init__(self,
+                 distance_weight=1.0,
+                 rotation_weight=1.0,
+                 energy_weight=0.0005,
+                 shake_weight=0.005,
+                 drift_weight=2.0,
+                 rp_weight=0.1,
+                 rate_weight=0.1,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
-                 distance_weight=1.0,
-                 energy_weight=0.005,
-                 shake_weight=0.0,
-                 drift_weight=2.0,
                  distance_limit=float("inf"),
                  observation_noise_stdev=SENSOR_NOISE_STDDEV,
                  self_collision_enabled=True,
                  motor_velocity_limit=np.inf,
                  pd_control_enabled=False,
                  leg_model_enabled=False,
-                 accurate_motor_model_enabled=True,
+                 accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
                  motor_kp=2.0,
                  motor_kd=0.03,
@@ -81,7 +84,7 @@ class spotGymEnv(gym.Env):
                  pd_latency=0.0,
                  torque_control_enabled=False,
                  motor_overheat_protection=False,
-                 hard_reset=True,
+                 hard_reset=False,
                  on_rack=False,
                  render=True,
                  num_steps_to_log=1000,
@@ -196,9 +199,12 @@ class spotGymEnv(gym.Env):
         self._last_base_position = [0, 0, 0]
         self._last_base_orientation = [0, 0, 0, 1]
         self._distance_weight = distance_weight
+        self._rotation_weight = rotation_weight
         self._energy_weight = energy_weight
         self._drift_weight = drift_weight
         self._shake_weight = shake_weight
+        self._rp_weight = rp_weight
+        self._rate_weight = rate_weight
         self._distance_limit = distance_limit
         self._observation_noise_stdev = observation_noise_stdev
         self._action_bound = 1
@@ -312,9 +318,9 @@ class spotGymEnv(gym.Env):
         if self._env_randomizer is not None:
             self._env_randomizer.randomize_env(self)
 
-        if self.desired_velocity is not None:
+        if desired_velocity is not None:
             self.desired_velocity = desired_velocity
-        if self.desired_rate is not None:
+        if desired_rate is not None:
             self.desired_rate = desired_rate
 
         self._pybullet_client.setPhysicsEngineParameter(enableConeFriction=0)
@@ -506,7 +512,7 @@ class spotGymEnv(gym.Env):
             forward_reward = reward_max * np.exp(
                 -(lat_speed - self.desired_velocity)**2 / (0.1))
 
-        yaw_rate = obs[7]
+        yaw_rate = obs[4]
 
         rot_reward = reward_max * np.exp(-(yaw_rate - self.desired_rate)**2 /
                                          (0.1))
@@ -514,7 +520,7 @@ class spotGymEnv(gym.Env):
         # Make sure that for forward-policy there is the appropriate rotation penalty
         if self.desired_velocity != 0:
             self._rotation_weight = self._rate_weight
-            rot_reward = -abs(obs[7])
+            rot_reward = -abs(obs[4])
         elif self.desired_rate != 0:
             forward_reward = 0.0
 
@@ -526,7 +532,7 @@ class spotGymEnv(gym.Env):
         shake_reward = -abs(obs[4])
 
         # penalty for nonzero rate (x,y,z)
-        rate_reward = -(abs(obs[5]) + abs(obs[6]))
+        rate_reward = -(abs(obs[2]) + abs(obs[3]))
 
         # drift_reward = -abs(current_base_position[1] -
         #                     self._last_base_position[1])
@@ -554,7 +560,7 @@ class spotGymEnv(gym.Env):
                   self._rate_weight * rate_reward)
         self._objectives.append(
             [forward_reward, energy_reward, drift_reward, shake_reward])
-        print("REWARD: ", reward)
+        # print("REWARD: ", reward)
         return reward
 
     def get_objectives(self):

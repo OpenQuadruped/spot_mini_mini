@@ -25,10 +25,11 @@ class GUI:
         self.yawId = pb.addUserDebugParameter("yaw", -np.pi / 4, np.pi / 4, 0.)
         self.StepLengthID = pb.addUserDebugParameter("Step Length", -0.5, 1.5,
                                                      0.)
-        self.StepRotationId = pb.addUserDebugParameter("Step Rotation", -1.5,
-                                                       1.5, 0.)
+        self.StepRotationId = pb.addUserDebugParameter("Step Rotation",
+                                                       -np.pi / 2.0,
+                                                       np.pi / 2.0, 0.)
         self.StepDirectionId = pb.addUserDebugParameter(
-            "Step Direction", -180., 180., 0.)
+            "Step Direction", -np.pi / 2.0, np.pi / 2.0, 0.)
         self.StepPeriodId = pb.addUserDebugParameter("Step Period", 0.1, 3.,
                                                      2.5)
 

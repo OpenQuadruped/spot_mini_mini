@@ -31,7 +31,7 @@ class SpotModel:
 
         # Distance Between Feet
         # Length
-        self.foot_x = 0.21
+        self.foot_x = 0.192
         # Width
         self.foot_y = 0.18
 
@@ -149,21 +149,6 @@ class SpotModel:
                 print("NOT EQUAL")
 
             p_hf = p_hf1
-
-            # OLD METHOD -  DONT USE
-            # Rb_T = RpToTrans(Rb, np.array([0, 0, 0]))
-            # _, bodytoFR4 = TransToRp(T_bf[key])
-            # # print("bodytoFR4", bodytoFR4)
-            # _, bodytoFR0 = TransToRp(T_wh)
-            # # print("bodytoFR0", bodytoFR0)
-            # _bodytoFR0 = TransformVector(bodytoFR0, Rb_T, pb)
-            # # print("_bodytoFR0", _bodytoFR0)
-
-            # FRcoord = bodytoFR4 - _bodytoFR0
-            # # print("FRcoord", FRcoord)
-            # neg_Rb = RPY(-orn[0], -orn[1], -orn[2])
-            # _FRcoord = TransformVector(FRcoord, neg_Rb, -pb)
-            # # print("_FRcoord", _FRcoord)
 
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)
