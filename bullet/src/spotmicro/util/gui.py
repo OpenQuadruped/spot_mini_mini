@@ -31,7 +31,7 @@ class GUI:
         self.LateralFractionId = pb.addUserDebugParameter(
             "Lateral Fraction", -np.pi / 2.0, np.pi / 2.0, 0.)
         self.StepVelocityId = pb.addUserDebugParameter("Step Velocity", 0.1,
-                                                       3., 0.5)
+                                                       3., 0.1)
 
         self.quadruped = quadruped
 
