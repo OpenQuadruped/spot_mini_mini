@@ -79,7 +79,7 @@ class SpotModel:
 
         # Transform of Foot relative to world frame
         # With Body Centroid also in world frame
-        self.WorldToFoot = {}
+        self.WorldToFoot = OrderedDict()
 
         self.pf_FL = np.array(
             [self.foot_x / 2.0, self.foot_y / 2.0, -self.height])

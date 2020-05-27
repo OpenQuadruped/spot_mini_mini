@@ -91,14 +91,10 @@ def RPY(roll, pitch, yaw):
 
 
 def RotateTranslate(rotation, position):
-    x0 = position[0]
-    y0 = position[1]
-    z0 = position[2]
-
     trans = np.eye(4)
-    trans[0, 3] = x0
-    trans[1, 3] = y0
-    trans[2, 3] = z0
+    trans[0, 3] = position[0]
+    trans[1, 3] = position[1]
+    trans[2, 3] = position[2]
 
     return np.dot(rotation, trans)
 
