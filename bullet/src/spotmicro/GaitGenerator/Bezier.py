@@ -1,10 +1,12 @@
 import numpy as np
-import time
 from spotmicro.Kinematics.LieAlgebra import TransToRp
 import copy
 
 STANCE = 0
 SWING = 1
+
+# Bezier Curves from: https://dspace.mit.edu/handle/1721.1/98270
+# Rotation Logic from: http://www.inase.org/library/2014/santorini/bypaper/ROBCIRC/ROBCIRC-54.pdf
 
 
 class BezierGait():
@@ -43,10 +45,11 @@ class BezierGait():
         Sw_phase = 0.0
         Tstride = Tstance + Tswing
         ti = self.Get_ti(index, Tstride)
+
+        # NOTE: PAPER WAS MISSING THIS LOGIC!!
         if ti < -Tswing:
             ti = Tstance
-        # if index == self.ref_idx:
-        #     print("ti: {}".format(ti))
+
         # STANCE
         if ti >= 0.0 and ti <= Tstance:
             StanceSwing = STANCE
