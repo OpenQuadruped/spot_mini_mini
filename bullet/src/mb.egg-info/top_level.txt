@@ -1,6 +1,0 @@
-ars_lib
-mini_bullet
-sac_lib
-spotmicro
-td3_lib
-tg_lib
