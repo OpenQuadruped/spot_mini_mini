@@ -8,14 +8,11 @@ SWING = 1
 
 
 class BezierGait():
-    def __init__(self,
-                 dSref=[0.0, 0.0, 0.5, 0.5],
-                 dt=0.01,
-                 Tstance=0.25):
+    def __init__(self, dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tstance=0.25):
         # Phase Lag Per Leg: FL, FR, BL, BR
         # Reference Leg is FL, always 0
         self.dSref = dSref
-        self.alpha = 0.0
+        self.PhasedRotation = [0.0, 0.0, 0.0, 0.0]
         # Number of control points is n + 1 = 11 + 1 = 12
         self.NumBezierPoints = 11
         # Timestep
@@ -46,16 +43,16 @@ class BezierGait():
         Sw_phase = 0.0
         Tstride = Tstance + Tswing
         ti = self.Get_ti(index, Tstride)
-        if ti < - Tswing:
+        if ti < -Tswing:
             ti = Tstance
-        if index == self.ref_idx:
-            print("ti: {}".format(ti))
+        # if index == self.ref_idx:
+        #     print("ti: {}".format(ti))
         # STANCE
         if ti >= 0.0 and ti <= Tstance:
             StanceSwing = STANCE
             Stnphase = ti / Tstance
             if index == self.ref_idx:
-                print("STANCE REF: {}".format(Stnphase))
+                # print("STANCE REF: {}".format(Stnphase))
                 self.StanceSwing = StanceSwing
             return Stnphase, StanceSwing
         # SWING
@@ -71,7 +68,7 @@ class BezierGait():
         if index == self.ref_idx:
             self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
-            print("SWING REF: {}".format(Sw_phase))
+            # print("SWING REF: {}".format(Sw_phase))
             # REF Touchdown at End of Swing
             if self.SwRef >= 0.999:
                 self.TD = True
@@ -138,7 +135,7 @@ class BezierGait():
         # Bezier Curve Points (12 pts)
         # NOTE: L is HALF of STEP LENGTH
         # Forward Component
-        X = np.array([
+        STEP = np.array([
             -L,  # Ctrl Point 0, half of stride len
             -L * 1.4,  # Ctrl Point 1 diff btwn 1 and 0 = x Lift vel
             -L * 1.5,  # Ctrl Pts 2, 3, 4 are overlapped for
@@ -155,27 +152,12 @@ class BezierGait():
         # Account for lateral movements by multiplying with polar coord.
         # LateralFraction switches leg movements from X over to Y+ or Y-
         # As it tends away from zero
-        X *= X_POLAR
+        X = STEP * X_POLAR
 
-        # Same as X but Lateral
-        Y = np.array([
-            -L,  # Ctrl Point 0, half of stride len
-            -L * 1.4,  # Ctrl Point 1 diff btwn 1 and 0 = x Lift vel
-            -L * 1.5,  # Ctrl Pts 2, 3, 4 are overlapped for
-            -L * 1.5,  # Direction change after
-            -L * 1.5,  # Follow Through
-            0.0,  # Change acceleration during Protraction
-            0.0,  # So we include three
-            0.0,  # Overlapped Ctrl Pts: 5, 6, 7
-            L * 1.5,  # Changing direction for swing-leg retraction
-            L * 1.5,  # requires double overlapped Ctrl Pts: 8, 9
-            L * 1.4,  # Swing Leg Retraction Velocity = Ctrl 11 - 10
-            L
-        ])
         # Account for lateral movements by multiplying with polar coord.
         # LateralFraction switches leg movements from X over to Y+ or Y-
         # As it tends away from zero
-        Y *= Y_POLAR
+        Y = STEP * Y_POLAR
 
         # Vertical Component
         Z = np.array([
@@ -217,36 +199,31 @@ class BezierGait():
             stepZ = 0.0
         return stepX, stepY, stepZ
 
-    def SwingStep(self, phase, L, LateralFraction, Lrot, clearance_height,
-                  T_bf):
+    def SwingStep(self, phase, L, LateralFraction, YawRate, clearance_height,
+                  T_bf, key, index):
         # Get Foot Coordinates for Forward Motion
         stepX_long, stepY_long, stepZ_long = self.BezierSwing(
             phase, L, LateralFraction, clearance_height)
 
-        r = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
+        DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
 
-        # Rotation Circumferance
-        RotationFraction = np.arctan2(T_bf[1], T_bf[0])
+        # Rotation Angle depending on leg type
+        DefaultBodyToFoot_Direction = np.arctan2(T_bf[1], T_bf[0])
 
         stepX_rot, stepY_rot, stepZ_rot = self.BezierSwing(
-            phase, Lrot, np.pi / 2 + RotationFraction - self.alpha,
-            clearance_height)
+            phase, YawRate, np.pi / 2 + DefaultBodyToFoot_Direction +
+            self.PhasedRotation[index], clearance_height)
+
+        print("SWING ANGLE: {}".format(
+            np.rad2deg(np.pi / 2 + DefaultBodyToFoot_Direction +
+                       self.PhasedRotation[index])))
 
         # Sign for each quadrant
-        if (T_bf[1] > 0):
-            if (stepX_rot < 0):
-                self.alpha = -np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                         r)
-            else:
-                self.alpha = np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                        r)
-        else:
-            if (stepX_rot < 0):
-                self.alpha = np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                        r)
-            else:
-                self.alpha = -np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                         r)
+        ModulatedBodyToFoot_Magnitude = np.sqrt(stepX_rot**2 + stepY_rot**2)
+        mod = np.arctan2(ModulatedBodyToFoot_Magnitude,
+                         DefaultBodyToFoot_Magnitude)
+        # LEFT
+        self.PhasedRotation[index] = mod
 
         coord = np.array([
             stepX_long + stepX_rot, stepY_long + stepY_rot,
@@ -255,36 +232,31 @@ class BezierGait():
 
         return coord
 
-    def StanceStep(self, phase, L, LateralFraction, Lrot, penetration_depth,
-                   T_bf):
+    def StanceStep(self, phase, L, LateralFraction, YawRate, penetration_depth,
+                   T_bf, key, index):
         # Get Foot Coordinates for Forward Motion
         stepX_long, stepY_long, stepZ_long = self.SineStance(
             phase, L, LateralFraction, penetration_depth)
 
-        r = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
+        DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
 
-        # Rotation Circumferance
-        RotationFraction = np.arctan2(T_bf[1], T_bf[0])
+        # Rotation Angle depending on leg type
+        DefaultBodyToFoot_Direction = np.arctan2(T_bf[1], T_bf[0])
 
         stepX_rot, stepY_rot, stepZ_rot = self.SineStance(
-            phase, Lrot, np.pi / 2 + RotationFraction - self.alpha,
-            penetration_depth)
+            phase, YawRate, np.pi / 2 + DefaultBodyToFoot_Direction +
+            self.PhasedRotation[index], penetration_depth)
+
+        print("STANCE ANGLE: {}".format(
+            np.rad2deg(np.pi / 2.0 + DefaultBodyToFoot_Direction +
+                       self.PhasedRotation[index])))
 
         # Sign for each quadrant
-        if (T_bf[1] > 0):
-            if (stepX_rot < 0):
-                self.alpha = -np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                         r)
-            else:
-                self.alpha = np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                        r)
-        else:
-            if (stepX_rot < 0):
-                self.alpha = np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                        r)
-            else:
-                self.alpha = -np.arctan2(np.sqrt(stepX_rot**2 + stepY_rot**2),
-                                         r)
+        ModulatedBodyToFoot_Magnitude = np.sqrt(stepX_rot**2 + stepY_rot**2)
+        mod = np.arctan2(ModulatedBodyToFoot_Magnitude,
+                         DefaultBodyToFoot_Magnitude)
+        # LEFT
+        self.PhasedRotation[index] = mod
 
         coord = np.array([
             stepX_long + stepX_rot, stepY_long + stepY_rot,
@@ -293,22 +265,23 @@ class BezierGait():
 
         return coord
 
-    def GetFootStep(self, L, LateralFraction, Lrot, clearance_height,
-                    penetration_depth, Tswing, T_bf, index):
+    def GetFootStep(self, L, LateralFraction, YawRate, clearance_height,
+                    penetration_depth, Tswing, T_bf, index, key):
         phase, StanceSwing = self.GetPhase(index, self.Tstance, Tswing)
         if StanceSwing == STANCE:
-            return self.StanceStep(phase, L, LateralFraction, Lrot,
-                                   penetration_depth, T_bf)
+            return self.StanceStep(phase, L, LateralFraction, YawRate,
+                                   penetration_depth, T_bf, key, index)
         elif StanceSwing == SWING:
-            return self.SwingStep(phase, L, LateralFraction, Lrot,
-                                  clearance_height, T_bf)
+            return self.SwingStep(phase, L, LateralFraction, YawRate,
+                                  clearance_height, T_bf, key, index)
 
     def GenerateTrajectory(self,
                            L,
                            LateralFraction,
-                           Lrot,
+                           YawRate,
                            vel,
                            T_bf_,
+                           T_bf_curr,
                            clearance_height=0.02,
                            penetration_depth=0.01,
                            dt=None):
@@ -323,6 +296,8 @@ class BezierGait():
         # Then, get time since last Touchdown and increment time counter
         if dt is None:
             dt = self.dt
+
+        YawRate *= dt
 
         # Catch infeasible timesteps
         if Tswing < dt:
@@ -344,20 +319,23 @@ class BezierGait():
             if key == "BR":
                 self.dSref[i] = 0.0
             _, p_bf = TransToRp(Tbf_in)
-            step_coord = self.GetFootStep(L, LateralFraction, Lrot,
+            print("LEG: {}".format(key))
+            print("PhasedRotation: {}".format(self.PhasedRotation))
+            step_coord = self.GetFootStep(L, LateralFraction, YawRate,
                                           clearance_height, penetration_depth,
-                                          Tswing, p_bf, i)
-            if key == "FL":
-                print("INDEX: {}".format(self.ref_idx))
-                print("FL IS IN PASE: {}".format(self.StanceSwing))
-                print("TIME: {}".format(self.time))
-                print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
-                # print("SWING REF: {}".format(self.SwRef))
-                print("TSWING: {}".format(Tswing))
-                if self.TD:
-                    print("TOUCHDOWN")
-                print("-----------------------------------")
+                                          Tswing, p_bf, i, key)
+
+            # if key == "FL":
+            #     print("INDEX: {}".format(self.ref_idx))
+            #     print("FL IS IN PASE: {}".format(self.StanceSwing))
+            #     print("TIME: {}".format(self.time))
+            #     print("TIME SINCE LAST TD: {}".format(self.time_since_last_TD))
+            #     # print("SWING REF: {}".format(self.SwRef))
+            #     print("TSWING: {}".format(Tswing))
+            #     if self.TD:
+            #         print("TOUCHDOWN")
             T_bf[key][0, 3] = Tbf_in[0, 3] + step_coord[0]
             T_bf[key][1, 3] = Tbf_in[1, 3] + step_coord[1]
             T_bf[key][2, 3] = Tbf_in[2, 3] + step_coord[2]
+        print("-----------------------------------")
         return T_bf

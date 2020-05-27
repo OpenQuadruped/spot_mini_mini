@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 
 from spotmicro.spot_gym_env import spotGymEnv
 from spotmicro.util.gui import GUI
@@ -52,6 +53,7 @@ def main():
 
     spot = SpotModel()
     T_bf0 = spot.WorldToFoot
+    T_bf = copy.deepcopy(T_bf0)
 
     bzg = BezierGait(dt=env._time_step)
 
@@ -65,7 +67,7 @@ def main():
 
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction,
-                                         StepRotation, StepVelocity, T_bf0)
+                                      StepRotation, StepVelocity, T_bf0, T_bf)
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
         # action = env.action_space.sample()
