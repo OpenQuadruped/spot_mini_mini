@@ -97,7 +97,7 @@ class spotGymEnv(gym.Env):
                  desired_velocity=0.5,
                  desired_rate=0.0,
                  lateral=False,
-                 draw_foot_path=False):
+                 draw_foot_path=True):
         """Initialize the spot gym environment.
 
     Args:
