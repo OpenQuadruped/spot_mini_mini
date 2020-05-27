@@ -16,5 +16,5 @@ Forward and Lateral Motion:
 
 Yaw logic based on 4-wheel steering car: http://www.inase.org/library/2014/santorini/bypaper/ROBCIRC/ROBCIRC-54.pdf
 
-![SYAW0](bullet/media/spot_lat_logic.gif)
-![SYAW1](bullet/media/spot_lat_demo.gif)
+![SYAW0](bullet/media/spot_yaw_logic.gif)
+![SYAW1](bullet/media/spot_yaw_demo.gif)
