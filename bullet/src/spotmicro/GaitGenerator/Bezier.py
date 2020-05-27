@@ -211,11 +211,6 @@ class BezierGait():
         FootArcAngle = np.pi / 2.0 + DefaultBodyToFoot_Direction + self.ModulatedRotation[
             index]
 
-        # # Ensures correct circle direction
-        # if (YawRate < 0 and (key == "FR" or key == "BR")) or \
-        #    (YawRate > 0 and (key == "FL" or key == "BL")):
-        #     L *= -1
-
         # Get Foot Coordinates for Forward Motion
         X_delta_lin, Y_delta_lin, Z_delta_lin = self.BezierSwing(
             phase, L, LateralFraction, clearance_height)
@@ -250,11 +245,6 @@ class BezierGait():
         # Angle Traced by Foot for Rotation
         FootArcAngle = np.pi / 2.0 + DefaultBodyToFoot_Direction + self.ModulatedRotation[
             index]
-
-        # Ensures correct circle direction
-        # if (YawRate < 0 and (key == "FR" or key == "BR")) or \
-        #    (YawRate > 0 and (key == "FL" or key == "BL")):
-        #     L *= -1
 
         # Get Foot Coordinates for Forward Motion
         X_delta_lin, Y_delta_lin, Z_delta_lin = self.SineStance(
