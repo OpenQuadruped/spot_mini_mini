@@ -62,12 +62,12 @@ def main():
     while t < (int(max_timesteps)):
 
         # GUI: x, y, z | r, p , y
-        pos, orn, StepLength, LateralFraction, StepRotation, StepVelocity = g_u_i.UserInput(
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity = g_u_i.UserInput(
         )
 
         # Get Desired Foot Poses
-        T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction,
-                                      StepRotation, StepVelocity, T_bf0, T_bf)
+        T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
+                                      StepVelocity, T_bf0, T_bf)
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
         # action = env.action_space.sample()

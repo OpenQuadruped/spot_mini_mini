@@ -25,13 +25,13 @@ class GUI:
         self.yawId = pb.addUserDebugParameter("yaw", -np.pi / 4, np.pi / 4, 0.)
         self.StepLengthID = pb.addUserDebugParameter("Step Length", -0.1, 0.1,
                                                      0.0)
-        self.StepRotationId = pb.addUserDebugParameter("Step Rotation",
-                                                       -np.pi / 2.0,
-                                                       np.pi / 2.0, 0.)
+        self.YawRateId = pb.addUserDebugParameter("Yaw Rate",
+                                                  -np.pi / 2.0, np.pi / 2.0,
+                                                  0.)
         self.LateralFractionId = pb.addUserDebugParameter(
             "Lateral Fraction", -np.pi / 2.0, np.pi / 2.0, 0.)
         self.StepVelocityId = pb.addUserDebugParameter("Step Velocity", 0.1,
-                                                       3., 0.1)
+                                                       3., 0.5)
 
         self.quadruped = quadruped
 
@@ -72,8 +72,8 @@ class GUI:
             pb.readUserDebugParameter(self.yawId)
         ])
         StepLength = pb.readUserDebugParameter(self.StepLengthID)
-        StepRotation = pb.readUserDebugParameter(self.StepRotationId)
+        YawRate = pb.readUserDebugParameter(self.YawRateId)
         LateralFraction = pb.readUserDebugParameter(self.LateralFractionId)
         StepVelocity = pb.readUserDebugParameter(self.StepVelocityId)
 
-        return pos, orn, StepLength, LateralFraction, StepRotation, StepVelocity
+        return pos, orn, StepLength, LateralFraction, YawRate, StepVelocity
