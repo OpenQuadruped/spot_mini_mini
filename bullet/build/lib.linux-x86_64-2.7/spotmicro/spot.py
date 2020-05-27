@@ -40,6 +40,11 @@ for name in MOTOR_NAMES:
     elif "foot" in name:
         MOTOR_LIMITS_BY_NAME[name] = [-0.1, 2.59]
 
+FOOT_NAMES = [
+    "front_left_toe", "front_right_toe", "rear_left_toe",
+    "rear_right_toe"
+]
+
 _CHASSIS_NAME_PATTERN = re.compile(r"chassis\D*")
 _MOTOR_NAME_PATTERN = re.compile(r"motor\D*")
 _FOOT_NAME_PATTERN = re.compile(r"foot_motor\D*")
@@ -243,6 +248,13 @@ class Spot(object):
             self._joint_name_to_id[motor_name] for motor_name in MOTOR_NAMES
         ]
 
+    def _BuildFootIdList(self):
+        self._foot_id_list = [
+            self._joint_name_to_id[foot_name] for foot_name in FOOT_NAMES
+        ]
+
+        print(self._foot_id_list)
+
     def _BuildUrdfIds(self):
         """Build the link Ids from its name in the URDF file."""
         c = []
@@ -317,6 +329,7 @@ class Spot(object):
             if self._remove_default_joint_damping:
                 self._RemoveDefaultJointDamping()
             self._BuildMotorIdList()
+            self._BuildFootIdList()
             self._RecordMassInfoFromURDF()
             self._RecordInertiaInfoFromURDF()
             self.ResetPose(add_constraint=True)
@@ -364,14 +377,22 @@ class Spot(object):
             force=torque)
 
     def _SetDesiredMotorAngleById(self, motor_id, desired_angle):
-        self._pybullet_client.setJointMotorControl2(
-            bodyIndex=self.quadruped,
-            jointIndex=motor_id,
-            controlMode=self._pybullet_client.POSITION_CONTROL,
-            targetPosition=desired_angle,
-            positionGain=self._kp,
-            velocityGain=self._kd,
-            force=self._max_force)
+        if self._pd_control_enabled or self._accurate_motor_model_enabled:
+            self._pybullet_client.setJointMotorControl2(
+                bodyIndex=self.quadruped,
+                jointIndex=motor_id,
+                controlMode=self._pybullet_client.POSITION_CONTROL,
+                targetPosition=desired_angle,
+                positionGain=self._kp,
+                velocityGain=self._kd,
+                force=self._max_force)
+        # Pybullet has a 'perfect' joint controller with its default p,d
+        else:
+            self._pybullet_client.setJointMotorControl2(
+                bodyIndex=self.quadruped,
+                jointIndex=motor_id,
+                controlMode=self._pybullet_client.POSITION_CONTROL,
+                targetPosition=desired_angle)
 
     def _SetDesiredMotorAngleByName(self, motor_name, desired_angle):
         self._SetDesiredMotorAngleById(self._joint_name_to_id[motor_name],
