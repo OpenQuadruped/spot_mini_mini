@@ -201,22 +201,32 @@ class BezierGait():
 
     def SwingStep(self, phase, L, LateralFraction, YawRate, clearance_height,
                   T_bf, key, index):
-        # Get Foot Coordinates for Forward Motion
-        X_delta_lin, Y_delta_lin, Z_delta_lin = self.BezierSwing(
-            phase, L, LateralFraction, clearance_height)
 
         DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
 
         # Rotation Angle depending on leg type
         DefaultBodyToFoot_Direction = np.arctan2(T_bf[1], T_bf[0])
 
-        X_delta_rot, Y_delta_rot, Z_delta_rot = self.BezierSwing(
-            phase, YawRate, np.pi / 2 + DefaultBodyToFoot_Direction +
-            self.ModulatedRotation[index], clearance_height)
+        # Angle Traced by Foot for Rotation
+        FootArcAngle = np.pi / 2.0 + DefaultBodyToFoot_Direction + self.ModulatedRotation[
+            index]
 
-        # Sign for each quadrant
-        ModulatedBodyToFoot_Magnitude = np.sqrt(X_delta_rot**2 +
-                                                Y_delta_rot**2)
+        # # Ensures correct circle direction
+        # if (YawRate < 0 and (key == "FR" or key == "BR")) or \
+        #    (YawRate > 0 and (key == "FL" or key == "BL")):
+        #     L *= -1
+
+        # Get Foot Coordinates for Forward Motion
+        X_delta_lin, Y_delta_lin, Z_delta_lin = self.BezierSwing(
+            phase, L, LateralFraction, clearance_height)
+
+        X_delta_rot, Y_delta_rot, Z_delta_rot = self.BezierSwing(
+            phase, YawRate, FootArcAngle, clearance_height)
+
+        # Modulate Magnitude to keep tracing circle
+        ModulatedBodyToFoot_Magnitude = np.sqrt((X_delta_rot +
+                                                 X_delta_lin)**2 +
+                                                (Y_delta_rot + Y_delta_lin)**2)
         mod = np.arctan2(ModulatedBodyToFoot_Magnitude,
                          DefaultBodyToFoot_Magnitude)
         # LEFT
@@ -231,22 +241,32 @@ class BezierGait():
 
     def StanceStep(self, phase, L, LateralFraction, YawRate, penetration_depth,
                    T_bf, key, index):
-        # Get Foot Coordinates for Forward Motion
-        X_delta_lin, Y_delta_lin, Z_delta_lin = self.SineStance(
-            phase, L, LateralFraction, penetration_depth)
 
         DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
 
         # Rotation Angle depending on leg type
         DefaultBodyToFoot_Direction = np.arctan2(T_bf[1], T_bf[0])
 
-        X_delta_rot, Y_delta_rot, Z_delta_rot = self.SineStance(
-            phase, YawRate, np.pi / 2 + DefaultBodyToFoot_Direction +
-            self.ModulatedRotation[index], penetration_depth)
+        # Angle Traced by Foot for Rotation
+        FootArcAngle = np.pi / 2.0 + DefaultBodyToFoot_Direction + self.ModulatedRotation[
+            index]
 
-        # Sign for each quadrant
-        ModulatedBodyToFoot_Magnitude = np.sqrt(X_delta_rot**2 +
-                                                Y_delta_rot**2)
+        # Ensures correct circle direction
+        # if (YawRate < 0 and (key == "FR" or key == "BR")) or \
+        #    (YawRate > 0 and (key == "FL" or key == "BL")):
+        #     L *= -1
+
+        # Get Foot Coordinates for Forward Motion
+        X_delta_lin, Y_delta_lin, Z_delta_lin = self.SineStance(
+            phase, L, LateralFraction, penetration_depth)
+
+        X_delta_rot, Y_delta_rot, Z_delta_rot = self.SineStance(
+            phase, YawRate, FootArcAngle, penetration_depth)
+
+        # Modulate Magnitude to keep tracing circle
+        ModulatedBodyToFoot_Magnitude = np.sqrt((X_delta_rot +
+                                                 X_delta_lin)**2 +
+                                                (Y_delta_rot + Y_delta_lin)**2)
         mod = np.arctan2(ModulatedBodyToFoot_Magnitude,
                          DefaultBodyToFoot_Magnitude)
         # LEFT
