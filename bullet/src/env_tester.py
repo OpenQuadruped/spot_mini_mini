@@ -9,6 +9,7 @@ from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import RPY
 from spotmicro.GaitGenerator.Bezier import BezierGait
+from mini_bullet.terrain_env_randomizer import MinitaurTerrainRandomizer
 import time
 
 import torch
@@ -57,17 +58,21 @@ def main():
 
     bzg = BezierGait(dt=env._time_step)
 
+    trand = MinitaurTerrainRandomizer()
+    trand._generate_convex_blocks(env)
+
     print("STARTED SPOT TEST ENV")
     t = 0
     while t < (int(max_timesteps)):
 
         # GUI: x, y, z | r, p , y
-        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity = g_u_i.UserInput(
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
         )
 
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
-                                      StepVelocity, T_bf0, T_bf)
+                                      StepVelocity, T_bf0, T_bf,
+                                      ClearanceHeight, PenetrationDepth)
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
         # action = env.action_space.sample()
