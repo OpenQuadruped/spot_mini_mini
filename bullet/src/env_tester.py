@@ -11,7 +11,7 @@ from spotmicro.Kinematics.LieAlgebra import RPY
 from spotmicro.GaitGenerator.Bezier import BezierGait
 
 # TESTING
-from spotmicro.OpenLoopSM import BezierStepper
+from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 
 import time
 
@@ -61,12 +61,17 @@ def main():
 
     bzg = BezierGait(dt=env._time_step)
 
+    bz_step = BezierStepper()
+
     print("STARTED SPOT TEST ENV")
     t = 0
     while t < (int(max_timesteps)):
 
         # GUI: x, y, z | r, p , y
-        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
+        # pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
+        # )
+
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
         )
 
         # Get Desired Foot Poses
