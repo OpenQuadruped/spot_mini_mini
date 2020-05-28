@@ -11,7 +11,9 @@ COMBI = 3
 
 class BezierStepper():
     def __init__(self,
-                 StepLength=0.04,
+                 pos=np.array([0.0, 0.0, 0.0]),
+                 orn=np.array([0.0, 0.0, 0.0]),
+                 StepLength=0.001,
                  LateralFraction=0.0,
                  YawRate=0.0,
                  StepVelocity=0.8,
@@ -19,6 +21,8 @@ class BezierStepper():
                  PenetrationDepth=0.01,
                  episode_length=2000,
                  dt=0.01):
+        self.pos = pos
+        self.orn = orn
         self.StepLength = StepLength
         self.StepLength_LIMITS = [-0.1, 0.1]
         self.LateralFraction = LateralFraction
@@ -61,6 +65,9 @@ class BezierStepper():
         else:
             index = int(self.time / self.time_per_episode)
 
+            if index > len(self.order) - 1:
+                index = len(self.order) - 1
+
             self.current_state = self.order[index]
 
         self.time += 1
@@ -88,16 +95,23 @@ class BezierStepper():
                   and Penetration Depth
         """
 
+        self.which_state()
+
         if self.current_state == FB:
+            print("FORWARD/BACKWARD")
             self.FB()
         elif self.current_state == LAT:
+            print("LATERAL")
             self.LAT()
         elif self.current_state == ROT:
+            print("ROTATION")
             self.ROT()
         elif self.current_state == COMBI:
+            print("COMBINED")
             self.COMBI()
+        print("-------------------------")
 
-        return self.StepLength, self.LateralFraction,\
+        return self.pos, self.orn, self.StepLength, self.LateralFraction,\
             self.YawRate, self.StepVelocity,\
             self.ClearanceHeight, self.PenetrationDepth
 
