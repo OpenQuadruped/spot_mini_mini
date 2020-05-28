@@ -12,6 +12,7 @@ from pkg_resources import parse_version
 from spotmicro import spot
 import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
+from mini_bullet.heightfield import HeightField
 
 NUM_SUBSTEPS = 5
 NUM_MOTORS = 12
@@ -97,7 +98,8 @@ class spotGymEnv(gym.Env):
                  desired_velocity=0.5,
                  desired_rate=0.0,
                  lateral=False,
-                 draw_foot_path=False):
+                 draw_foot_path=False,
+                 height_field=False):
         """Initialize the spot gym environment.
 
     Args:
@@ -156,6 +158,8 @@ class spotGymEnv(gym.Env):
     Raises:
       ValueError: If the urdf_version is not supported.
     """
+        # Enable Rough Terrain or Not
+        self.height_field = height_field
         self.draw_foot_path = draw_foot_path
         # DRAWING FEET PATH
         self.prev_feet_path = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0],
@@ -270,13 +274,13 @@ class spotGymEnv(gym.Env):
               reset_duration=1.0,
               desired_velocity=None,
               desired_rate=None):
+        # Generate HeightField or not
+        if self.height_field:
+            hf = HeightField()
+            hf._generate_field(self)
+
         self._pybullet_client.configureDebugVisualizer(
             self._pybullet_client.COV_ENABLE_RENDERING, 0)
-        # @TODO fix logging
-        # if self._env_step_counter > 0:
-        #     self.logging.save_episode(self._episode_proto)
-        # self._episode_proto = spot_logging_pb2.spotEpisode()
-        # spot_logging.preallocate_episode_proto(self._episode_proto, self._num_steps_to_log)
         if self._hard_reset:
             self._pybullet_client.resetSimulation()
             self._pybullet_client.setPhysicsEngineParameter(
@@ -438,17 +442,17 @@ class spotGymEnv(gym.Env):
                                                 self.spot._foot_id_list[3])[0]
 
         lifetime = 3.0  # sec
-        self._pybullet_client.addUserDebugLine(self.prev_feet_path[0], FL,
-                                               [1, 0, 0],
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[0],
+                                               FL, [1, 0, 0],
                                                lifeTime=lifetime)
-        self._pybullet_client.addUserDebugLine(self.prev_feet_path[1], FR,
-                                               [0, 1, 0],
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[1],
+                                               FR, [0, 1, 0],
                                                lifeTime=lifetime)
-        self._pybullet_client.addUserDebugLine(self.prev_feet_path[2], BL,
-                                               [0, 0, 1],
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[2],
+                                               BL, [0, 0, 1],
                                                lifeTime=lifetime)
-        self._pybullet_client.addUserDebugLine(self.prev_feet_path[3], BR,
-                                               [1, 1, 0],
+        self._pybullet_client.addUserDebugLine(self.prev_feet_path[3],
+                                               BR, [1, 1, 0],
                                                lifeTime=lifetime)
 
         self.prev_feet_path[0] = FL
