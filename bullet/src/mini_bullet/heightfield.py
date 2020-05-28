@@ -19,13 +19,13 @@ class HeightField():
     def __init__(self):
         self.hf = 1
 
-    def _generate_field(self, env):
+    def _generate_field(self, env, heightPerturbationRange=0.08):
 
         env.pybullet_client.setAdditionalSearchPath(pd.getDataPath())
 
         env.pybullet_client.configureDebugVisualizer(
             env.pybullet_client.COV_ENABLE_RENDERING, 0)
-        heightPerturbationRange = 0.05
+        heightPerturbationRange = heightPerturbationRange
         if heightfieldSource == useProgrammatic:
             numHeightfieldRows = 256
             numHeightfieldColumns = 256
