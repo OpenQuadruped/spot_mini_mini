@@ -9,8 +9,7 @@ from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import RPY
 from spotmicro.GaitGenerator.Bezier import BezierGait
-from mini_bullet.terrain_env_randomizer import MinitaurTerrainRandomizer
-from mini_bullet.heightfield import HeightField
+
 import time
 
 import torch
@@ -36,7 +35,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotGymEnv(render=True, on_rack=False)
+    env = spotGymEnv(render=True, on_rack=False, height_field=False)
 
     # Set seeds
     env.seed(seed)
@@ -58,11 +57,6 @@ def main():
     T_bf = copy.deepcopy(T_bf0)
 
     bzg = BezierGait(dt=env._time_step)
-
-    # trand = MinitaurTerrainRandomizer()
-    # trand._generate_height_field(env)
-    hf = HeightField()
-    hf._generate_field(env)
 
     print("STARTED SPOT TEST ENV")
     t = 0
