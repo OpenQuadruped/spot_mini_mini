@@ -1,8 +1,8 @@
-## Gait Generation and SLAM on Spot Micro from scratch!
+## Gait Generation and Optimization via RL on Spot Micro
 
 Progress so far:
 
-Pybullet Environment and body IK
+Pybullet Environment and body manipulation with leg IK from: https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot
 
 ![SIK](bullet/media/spot_IK.gif)
 

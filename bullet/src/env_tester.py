@@ -10,6 +10,9 @@ from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import RPY
 from spotmicro.GaitGenerator.Bezier import BezierGait
 
+# TESTING
+from spotmicro.OpenLoopSM import BezierStepper
+
 import time
 
 import torch
