@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import random
 
 import os, inspect
 currentdir = os.path.dirname(
@@ -198,12 +199,10 @@ class TerrainType(enum.Enum):
 
 class MinitaurTerrainRandomizer(env_randomizer_base.EnvRandomizerBase):
     """Generates an uneven terrain in the gym env."""
-    def __init__(
-            self,
-            terrain_type=TerrainType.TRIANGLE_MESH,
-            mesh_filename="robotics/reinforcement_learning/minitaur/envs/testdata/"
-            "triangle_mesh_terrain/terrain9735.obj",
-            mesh_scale=None):
+    def __init__(self,
+                 terrain_type=TerrainType.TRIANGLE_MESH,
+                 mesh_filename="terrain9735.obj",
+                 mesh_scale=None):
         """Initializes the randomizer.
     Args:
       terrain_type: Whether to generate random blocks or load a triangle mesh.
@@ -280,3 +279,20 @@ class MinitaurTerrainRandomizer(env_randomizer_base.EnvRandomizerBase):
                                                     shifted_center[1],
                                                     half_height
                                                 ])
+
+    def _generate_height_field(self, env):
+        random.seed(10)
+        env.pybullet_client.configureDebugVisualizer(
+            env.pybullet_client.COV_ENABLE_RENDERING, 0)
+        terrainShape = env.pybullet_client.createCollisionShape(
+            shapeType=env.pybullet_client.GEOM_HEIGHTFIELD,
+            meshScale=[.1, .1, 24],
+            fileName="heightmaps/wm_height_out.png")
+        textureId = env.pybullet_client.loadTexture("gimp_overlay_out.png")
+        terrain = env.pybullet_client.createMultiBody(0, terrainShape)
+        env.pybullet_client.changeVisualShape(terrain,
+                                              -1,
+                                              textureUniqueId=textureId)
+        env.pybullet_client.changeVisualShape(terrain,
+                                              -1,
+                                              rgbaColor=[1, 1, 1, 1])
