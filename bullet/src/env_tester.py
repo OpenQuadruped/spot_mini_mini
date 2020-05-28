@@ -38,7 +38,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotGymEnv(render=True, on_rack=False, height_field=False)
+    env = spotGymEnv(render=True, on_rack=False, height_field=True)
 
     # Set seeds
     env.seed(seed)
@@ -61,7 +61,7 @@ def main():
 
     bzg = BezierGait(dt=env._time_step)
 
-    bz_step = BezierStepper()
+    bz_step = BezierStepper(dt=env._time_step)
 
     print("STARTED SPOT TEST ENV")
     t = 0
