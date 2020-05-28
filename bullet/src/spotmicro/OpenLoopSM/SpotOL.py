@@ -22,7 +22,8 @@ class BezierStepper():
                  ClearanceHeight=0.04,
                  PenetrationDepth=0.01,
                  episode_length=2000,
-                 dt=0.01):
+                 dt=0.01,
+                 num_shuffles=2):
         self.pos = pos
         self.orn = orn
         self.StepLength = StepLength
@@ -52,7 +53,10 @@ class BezierStepper():
         """
         self.order = [FB, LAT, ROT, COMBI]
         # Shuffles list in place so the order of states is unpredictable
-        shuffle(self.order)
+        # NOTE: increment num_shuffles by episode num (cap at 10
+        # and reset or someting) for some forced randomness
+        for _ in range(num_shuffles):
+            shuffle(self.order)
 
         # Forward/Backward always needs to be first!
         FB_index = self.order.index(FB)
