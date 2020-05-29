@@ -545,9 +545,32 @@ class spotGymEnv(gym.Env):
         obs = self._get_observation()
         # forward_reward = current_base_position[0] - self._last_base_position[0]
 
+        # # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
+        # GETTING TWIST IN BODY FRAME
+        pos = self.spot.GetBasePosition()
+        orn = self.spot.GetBaseOrientation()
+        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+        rpy = LA.RPY(roll, pitch, yaw)
+        R, _ = LA.TransToRp(rpy)
+        T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
+        T_bw = LA.TransInv(T_wb)
+        Adj_Tbw = LA.Adjoint(T_bw)
+
+        Vw = np.concatenate(
+            (self.spot.prev_ang_twist, self.spot.prev_lin_twist))
+        Vb = np.dot(Adj_Tbw, Vw)
+
+        # New Twist in Body Frame
+
+        # get observation
+        obs = self._get_observation()
+
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
-        fwd_speed = self.spot.prev_lin_twist[0]
-        lat_speed = self.spot.prev_lin_twist[1]
+        fwd_speed = -Vb[3]  # vx
+        lat_speed = -Vb[4]  # vy
+        # fwd_speed = self.spot.prev_lin_twist[0]
+        # lat_speed = self.spot.prev_lin_twist[1]
         # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
         #     fwd_speed, self.desired_velocity))
         # self.desired_velocity = 0.4
