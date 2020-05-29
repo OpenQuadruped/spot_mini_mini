@@ -65,7 +65,7 @@ class spotBezierEnv(spotGymEnv):
                  pd_latency=0.0,
                  torque_control_enabled=False,
                  motor_overheat_protection=False,
-                 hard_reset=True,
+                 hard_reset=False,
                  on_rack=False,
                  render=True,
                  num_steps_to_log=1000,
