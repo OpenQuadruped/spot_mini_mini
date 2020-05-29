@@ -42,12 +42,12 @@ class spotBezierEnv(spotGymEnv):
     }
 
     def __init__(self,
-                 distance_weight=0.5,
-                 rotation_weight=0.5,
+                 distance_weight=0.2,
+                 rotation_weight=0.2,
                  energy_weight=0.000,
                  shake_weight=0.00,
                  drift_weight=0.0,
-                 rp_weight=0.1,
+                 rp_weight=1.0,
                  rate_weight=0.1,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,

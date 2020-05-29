@@ -3,6 +3,10 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
+from spotmicro.GaitGenerator.Bezier import BezierGait
+from spotmicro.OpenLoopSM.SpotOL import BezierStepper
+from spotmicro.Kinematics.SpotKinematics import SpotModel
+import copy
 
 np.random.seed(0)
 
@@ -18,14 +22,9 @@ _EXPLORE_TG = 4
 
 # Params for TG
 F_SCALE = 6.0
-HTG_MIN = 0.2
-HTG_MAX = 0.8
-AMP_MIN = 0.3
-AMP_MAX = 0.8
-RESIDUALS_ABS = 0.1
-INTENSITY_MIN = 1.0
-INTENSITY_MAX = 3.0
-BETA_SCALE = 6.0
+RESIDUALS_SCALE = 0.1
+CLEARANCE_SCALE = 0.005
+PENETRATION_SCALE = 0.001
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -77,9 +76,9 @@ def ParallelWorker(childPipe, env, nb_states):
                 # Normalize State
                 state = normalizer.normalize(state)
                 action = policy.evaluate(state, delta, direction)
-                # Clip action between +-1 for execution in env
-                for a in range(len(action)):
-                    action[a] = np.clip(action[a], -max_action, max_action)
+                # # Clip action between +-1 for execution in env
+                # for a in range(len(action)):
+                #     action[a] = np.clip(action[a], -max_action, max_action)
                 state, reward, done, _ = env.step(action)
                 reward = max(min(reward, 1), -1)
                 sum_rewards += reward
@@ -98,50 +97,47 @@ def ParallelWorker(childPipe, env, nb_states):
             desired_velocity = payload[4]
             desired_rate = payload[5]
             TGP = payload[6]
-            state = env.reset(desired_velocity, desired_rate)
-            # APPEND PHASE OBS
-            state = np.append(state, TGP.get_TG_state())
+            smach = payload[7]
+            spot = payload[8]
+            state = env.reset()
             sum_rewards = 0.0
             timesteps = 0
             done = False
+            BaseClearanceHeight = smach.ClearanceHeight
+            BasePenetrationDepth = smach.PenetrationDepth
+            T_bf = copy.deepcopy(spot.WorldToFoot)
+            T_b0 = copy.deepcopy(spot.WorldToFoot)
             while not done and timesteps < policy.episode_steps:
                 normalizer.observe(state)
                 # Normalize State
                 state = normalizer.normalize(state)
                 action = policy.evaluate(state, delta, direction)
+                # Extract Residuals
+                residuals = np.tanh(action[2:]) * RESIDUALS_SCALE
                 # Extract TG information from action
-                alpha_tg = action[0]
-                # FORCE ALPHA > 0.5 < 1.0
-                alpha_tg = np.tanh(alpha_tg)
-                alpha_tg = np.clip(alpha_tg, AMP_MIN, AMP_MAX)
-                h_tg = action[1]
-                h_tg = np.clip(h_tg, HTG_MIN, HTG_MAX)
-                intensity = np.clip(action[2], INTENSITY_MIN, INTENSITY_MAX)
-                intensity = 1.0
-                f_tg = action[3]
-                f_tg = np.tanh(f_tg) * F_SCALE
-                if f_tg < 2.0:
-                    f_tg = 2.0
-                Beta = np.tanh(action[4]) * BETA_SCALE
-                if Beta < 1.0:
-                    Beta = 1.0
-                residuals = action[5:]
-                residuals = np.tanh(residuals)
-                # CAP RESIDUALS!!
-                residuals = np.clip(residuals, -RESIDUALS_ABS, RESIDUALS_ABS)
-                # GET ACTION FROM TG
-                action = TGP.get_utg(residuals, alpha_tg, h_tg, intensity,
-                                     env.minitaur.num_motors)
+                ClearanceHeight_DELTA = np.tanh(action[0]) * CLEARANCE_SCALE
+                smach.ClearanceHeight = BaseClearanceHeight + ClearanceHeight_DELTA
+                PenetrationDepth_DELTA = np.tanh(action[0]) * PENETRATION_SCALE
+                smach.PenetrationDepth = BasePenetrationDepth + PenetrationDepth_DELTA
+                pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
+                )
+
+                env.pass_smach(smach)
+
+                # Get Desired Foot Poses
+                T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
+                                              YawRate, StepVelocity, T_b0,
+                                              T_bf, ClearanceHeight,
+                                              PenetrationDepth)
+                joint_angles = spot.IK(orn, pos, T_bf)
+                action[2:] = joint_angles.reshape(-1) + residuals
                 # Clip action between +-1 for execution in env
                 for a in range(len(action)):
                     action[a] = np.clip(action[a], -max_action, max_action)
                 state, reward, done, _ = env.step(action)
-                # PROGRESS TG
-                TGP.increment(env._time_step, f_tg, Beta)
-                # APPEND PHASE OBS
-                state = np.append(state, TGP.get_TG_state())
-                # Clip reward between -1 and 1
-                reward = max(min(reward, 1), -1)
+                # Clip reward between -1 and 1 to prevent outliers from
+                # distorting weights
+                reward = np.clip(reward, -max_action, max_action)
                 sum_rewards += reward
                 timesteps += 1
             childPipe.send([sum_rewards])
@@ -283,7 +279,13 @@ class Normalizer():
 
 
 class ARSAgent():
-    def __init__(self, normalizer, policy, env, TGP=None):
+    def __init__(self,
+                 normalizer,
+                 policy,
+                 env,
+                 smach=None,
+                 TGP=None,
+                 spot=None):
         self.normalizer = normalizer
         self.policy = policy
         self.state_dim = self.policy.state_dim
@@ -299,7 +301,12 @@ class ARSAgent():
         self.increment = 0
         self.scaledown = True
         self.type = "Stop"
+        self.smach = smach
+        if smach is not None:
+            self.BaseClearanceHeight = self.smach.ClearanceHeight
+            self.BasePenetrationDepth = self.smach.PenetrationDepth
         self.TGP = TGP
+        self.spot = spot
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
@@ -332,56 +339,46 @@ class ARSAgent():
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
     def deployTG(self, direction=None, delta=None):
-        state = self.env.reset(self.desired_velocity, self.desired_rate)
+        state = self.env.reset()
         # APPEND PHASE OBS
-        state = np.append(state, self.TGP.get_TG_state())
+        # state = np.append(state, self.TGP.get_TG_state())
         sum_rewards = 0.0
         timesteps = 0
         done = False
-        alpha = []
-        h = []
-        f = []
+        # alpha = []
+        # h = []
+        # f = []
+        T_bf = copy.deepcopy(self.spot.WorldToFoot)
+        T_b0 = copy.deepcopy(self.spot.WorldToFoot)
         while not done and timesteps < self.policy.episode_steps:
-            # print("STATE: ", state)
-            # print("dt: {}".format(timesteps))
             self.normalizer.observe(state)
             # Normalize State
             state = self.normalizer.normalize(state)
             action = self.policy.evaluate(state, delta, direction)
+            # Extract Residuals
+            residuals = np.tanh(action[2:]) * RESIDUALS_SCALE
             # Extract TG information from action
-            alpha_tg = action[0]
-            alpha_tg = np.tanh(alpha_tg)
-            alpha_tg = np.clip(alpha_tg, AMP_MIN, AMP_MAX)
-            alpha.append(alpha_tg)
-            h_tg = action[1]
-            h_tg = np.clip(h_tg, HTG_MIN, HTG_MAX)
-            h.append(h_tg)
-            intensity = np.clip(action[2], INTENSITY_MIN, INTENSITY_MAX)
-            intensity = 1.0
-            f_tg = action[3]
-            f_tg = np.tanh(f_tg) * F_SCALE
-            if f_tg < 2.0:
-                f_tg = 2.0
-            f.append(f_tg)
-            Beta = np.tanh(action[4]) * BETA_SCALE
-            if Beta < 1.0:
-                Beta = 1.0
-            residuals = action[5:]
-            residuals = np.tanh(residuals)
-            # CAP RESIDUALS!!
-            residuals = np.clip(residuals, -RESIDUALS_ABS, RESIDUALS_ABS)
-            # GET ACTION FROM TG
-            action = self.TGP.get_utg(residuals, alpha_tg, h_tg, intensity,
-                                      self.env.minitaur.num_motors)
+            ClearanceHeight_DELTA = np.tanh(action[0]) * CLEARANCE_SCALE
+            self.smach.ClearanceHeight = self.BaseClearanceHeight + ClearanceHeight_DELTA
+            PenetrationDepth_DELTA = np.tanh(action[0]) * PENETRATION_SCALE
+            self.smach.PenetrationDepth = self.BasePenetrationDepth + PenetrationDepth_DELTA
+            pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
+            )
+
+            self.env.pass_smach(self.smach)
+
+            # Get Desired Foot Poses
+            T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
+                                               YawRate, StepVelocity, T_b0,
+                                               T_bf, ClearanceHeight,
+                                               PenetrationDepth)
+            joint_angles = self.spot.IK(orn, pos, T_bf)
+            action[2:] = joint_angles.reshape(-1) + residuals
             # Clip action between +-1 for execution in env
-            for a in range(len(action)):
-                action[a] = np.clip(action[a], -self.max_action,
-                                    self.max_action)
+            # for a in range(len(action)):
+            #     action[a] = np.clip(action[a], -self.max_action,
+            #                         self.max_action)
             state, reward, done, _ = self.env.step(action)
-            # PROGRESS TG
-            self.TGP.increment(self.env._time_step, f_tg, Beta)
-            # APPEND PHASE OBS
-            state = np.append(state, self.TGP.get_TG_state())
             # Clip reward between -1 and 1 to prevent outliers from
             # distorting weights
             reward = np.clip(reward, -self.max_action, self.max_action)
@@ -396,6 +393,9 @@ class ARSAgent():
         # plt.title("TG Parameters by Policy")
         # plt.legend()
         # plt.show()
+        self.smach.reshuffle()
+        self.smach.PenetrationDepth = self.BasePenetrationDepth
+        self.smach.ClearanceHeight = self.BaseClearanceHeight
         return sum_rewards
 
     def train(self):
@@ -453,6 +453,11 @@ class ARSAgent():
         positive_rewards = [0] * self.policy.num_deltas
         negative_rewards = [0] * self.policy.num_deltas
 
+        smach = copy.deepcopy(self.smach)
+        smach.ClearanceHeight = self.BaseClearanceHeight
+        smach.PenetrationDepth = self.BasePenetrationDepth
+        smach.reshuffle()
+
         if parentPipes:
             for i in range(self.policy.num_deltas):
                 # Execute each rollout on a separate thread
@@ -463,7 +468,8 @@ class ARSAgent():
                     exploration,
                     [
                         self.normalizer, self.policy, "+", deltas[i],
-                        self.desired_velocity, self.desired_rate, self.TGP
+                        self.desired_velocity, self.desired_rate, self.TGP,
+                        smach, self.spot
                     ]
                 ])
             for i in range(self.policy.num_deltas):
@@ -477,7 +483,8 @@ class ARSAgent():
                     exploration,
                     [
                         self.normalizer, self.policy, "-", deltas[i],
-                        self.desired_velocity, self.desired_rate, self.TGP
+                        self.desired_velocity, self.desired_rate, self.TGP,
+                        smach, self.spot
                     ]
                 ])
             for i in range(self.policy.num_deltas):
