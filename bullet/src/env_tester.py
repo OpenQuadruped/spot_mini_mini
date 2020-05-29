@@ -66,6 +66,8 @@ def main():
 
     bz_step = BezierStepper(dt=env._time_step)
 
+    action = env.action_space.sample()
+
     print("STARTED SPOT TEST ENV")
     t = 0
     while t < (int(max_timesteps)):
@@ -87,7 +89,7 @@ def main():
                                       StepVelocity, T_bf0, T_bf,
                                       ClearanceHeight, PenetrationDepth)
         joint_angles = spot.IK(orn, pos, T_bf)
-        action = joint_angles.reshape(-1)
+        action[2:] = joint_angles.reshape(-1)
         # Pass smach
         env.pass_smach(bz_step)
         # Step
