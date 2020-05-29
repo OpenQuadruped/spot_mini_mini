@@ -25,7 +25,6 @@ def main():
     print("STARTING SPOT SAC")
 
     # TRAINING PARAMETERS
-    # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 4e6
     batch_size = 256
@@ -46,7 +45,7 @@ def main():
 
     env = spotBezierEnv(render=False,
                         on_rack=False,
-                        height_field=False,
+                        height_field=True,
                         draw_foot_path=False,
                         action_dim=14)
     env = NormalizedActions(env)
@@ -90,7 +89,7 @@ def main():
     episode_reward = 0
     episode_timesteps = 0
     episode_num = 0
-    max_t_per_ep = 500
+    max_t_per_ep = 5000
 
     # State Machine for Random Controller Commands
     bz_step = BezierStepper(dt=0.01)
@@ -103,16 +102,24 @@ def main():
     T_bf0 = spot.WorldToFoot
     T_bf = copy.deepcopy(T_bf0)
 
-    print("STARTED MINITAUR SAC")
+    BaseClearanceHeight = bz_step.ClearanceHeight
+    BasePenetrationDepth = bz_step.PenetrationDepth
+
+    print("STARTED SPOT SAC")
 
     for t in range(int(max_timesteps)):
 
         action = sac.policy_net.get_action(state)
+        # Clip Bezier Perturb at -0.01, 0.01
+        action[0] = np.tanh(action[0]) * 0.005
+        action[1] = np.tanh(action[1]) * 0.001
+        # Clip Residuals at -0.2, 0.2
+        action[2:] = np.tanh(action[2:]) * 0.2
 
         # First 2 elements are ClearanceHeight and PenetrationDepth DELTAS,
         # last 12 are residuals
-        bz_step.ClearanceHeight += action[0]
-        bz_step.PenetrationDepth += action[1]
+        bz_step.ClearanceHeight = BaseClearanceHeight + action[0]
+        bz_step.PenetrationDepth = BasePenetrationDepth + action[1]
 
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
         )
@@ -149,6 +156,8 @@ def main():
         if done:
             # Reshuffle State Machine
             bz_step.reshuffle()
+            bz_step.ClearanceHeight = BaseClearanceHeight
+            bz_step.PenetrationDepth = BasePenetrationDepth
             # +1 to account for 0 indexing.
             # +0 on ep_timesteps since it will increment +1 even if done=True
             print(

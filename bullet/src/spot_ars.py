@@ -3,10 +3,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from spotmicro.spot_gym_env import spotGymEnv
 from spotmicro.util.gui import GUI
+from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.Kinematics.SpotKinematics import SpotModel
-from spotmicro.Kinematics.LieAlgebra import RPY
+from spotmicro.GaitGenerator.Bezier import BezierGait
+from spotmicro.OpenLoopSM.SpotOL import BezierStepper
+
 import time
 from ars_lib.ars import ARSAgent, Normalizer, Policy, ParallelWorker
 # Multiprocessing package for python
@@ -29,7 +31,7 @@ def main():
     # Hold mp pipes
     mp.freeze_support()
 
-    print("STARTING SPOT TEST ENV")
+    print("STARTING SPOT TRAINING ENV")
     seed = 0
     max_timesteps = 4e6
     eval_freq = 1e1
@@ -47,7 +49,11 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotGymEnv(render=False, on_rack=False)
+    env = spotBezierEnv(render=False,
+                        on_rack=False,
+                        height_field=True,
+                        draw_foot_path=False,
+                        action_dim=14)
 
     # Set seeds
     env.seed(seed)
@@ -67,6 +73,9 @@ def main():
     spot = SpotModel()
     T_bf = spot.WorldToFoot
 
+    bz_step = BezierStepper(dt=env._time_step)
+    bzg = BezierGait(dt=env._time_step)
+
     # Initialize Normalizer
     normalizer = Normalizer(state_dim)
 
@@ -74,7 +83,7 @@ def main():
     policy = Policy(state_dim, action_dim)
 
     # Initialize Agent with normalizer, policy and gym env
-    agent = ARSAgent(normalizer, policy, env)
+    agent = ARSAgent(normalizer, policy, env, bz_step, bzg, spot)
     agent_num = 0
     if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                       "_policy"):
@@ -107,7 +116,7 @@ def main():
         p.start()
         processes.append(p)
 
-    print("STARTED SPOT TEST ENV")
+    print("STARTED SPOT TRAINING ENV")
     t = 0
     while t < (int(max_timesteps)):
 
