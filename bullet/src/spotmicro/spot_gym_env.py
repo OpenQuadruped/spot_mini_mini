@@ -13,6 +13,7 @@ from spotmicro import spot
 import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
 from mini_bullet.heightfield import HeightField
+from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 
 NUM_SUBSTEPS = 5
 NUM_MOTORS = 12
@@ -99,7 +100,8 @@ class spotGymEnv(gym.Env):
                  desired_rate=0.0,
                  lateral=False,
                  draw_foot_path=False,
-                 height_field=False):
+                 height_field=False,
+                 AutoStepper=False):
         """Initialize the spot gym environment.
 
     Args:
@@ -158,6 +160,8 @@ class spotGymEnv(gym.Env):
     Raises:
       ValueError: If the urdf_version is not supported.
     """
+        # Enable Auto Stepper State Machine
+        self.AutoStepper = AutoStepper
         # Enable Rough Terrain or Not
         self.height_field = height_field
         self.draw_foot_path = draw_foot_path
@@ -274,6 +278,11 @@ class spotGymEnv(gym.Env):
               reset_duration=1.0,
               desired_velocity=None,
               desired_rate=None):
+        # Use Autostepper
+        if self.AutoStepper:
+            self.StateMachine = BezierStepper(dt=self._time_step)
+            # Shuffle order of states
+            self.StateMachine.reshuffle()
         # Generate HeightField or not
         if self.height_field:
             hf = HeightField()

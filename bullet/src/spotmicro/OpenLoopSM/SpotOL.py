@@ -42,7 +42,7 @@ class BezierStepper():
         self.dt = dt
 
         # Keep track of state machine
-        self.time = 0.0
+        self.time = 0
         # Decide how long to stay in each phase based on maxtime
         self.max_time = episode_length
         """ States
@@ -59,12 +59,7 @@ class BezierStepper():
             shuffle(self.order)
 
         # Forward/Backward always needs to be first!
-        FB_index = self.order.index(FB)
-        if FB_index != 0:
-            what_was_in_zero = self.order[0]
-            self.order[0] = FB
-            self.order[FB_index] = what_was_in_zero
-        print("ORDER: {}".format(self.order))
+        self.reshuffle()
 
         # Current State
         self.current_state = self.order[0]
@@ -72,12 +67,22 @@ class BezierStepper():
         # Divide by number of states (see RL_SM())
         self.time_per_episode = int(self.max_time / len(self.order))
 
+    def reshuffle(self):
+        self.time = 0
+        # Make sure FWD/BWD is always first state
+        FB_index = self.order.index(FB)
+        if FB_index != 0:
+            what_was_in_zero = self.order[0]
+            self.order[0] = FB
+            self.order[FB_index] = what_was_in_zero
+
     def which_state(self):
         # Ensuring totally random seed every step!
         np.random.seed()
         if self.time > self.max_time:
             # Combined
             self.current_state = COMBI
+            self.time = 0
         else:
             index = int(self.time / self.time_per_episode)
 
@@ -126,6 +131,9 @@ class BezierStepper():
             # print("COMBINED")
             self.COMBI()
 
+        return self.return_bezier_params()
+
+    def return_bezier_params(self):
         return self.pos, self.orn, self.StepLength, self.LateralFraction,\
             self.YawRate, self.StepVelocity,\
             self.ClearanceHeight, self.PenetrationDepth

@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
-from spotmicro.spot_gym_env import spotGymEnv
+from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import RPY
@@ -38,7 +38,10 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotGymEnv(render=True, on_rack=False, height_field=True)
+    env = spotBezierEnv(render=True,
+                     on_rack=False,
+                     height_field=False,
+                     draw_foot_path=False)
 
     # Set seeds
     env.seed(seed)
@@ -81,7 +84,7 @@ def main():
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
         # action = env.action_space.sample()
-        next_state, reward, done, _ = env.step(action)
+        next_state, reward, done, _ = env.step(action, bz_step)
         if done:
             print("DONE")
 
