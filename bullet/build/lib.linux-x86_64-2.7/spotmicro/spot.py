@@ -606,11 +606,9 @@ class Spot(object):
     def ApplyMotorLimits(self, joint_angles):
         eps = 0.001
         for i in range(len(joint_angles)):
-            # print("JA IN: {}".format(joint_angles[i]))
             LIM = MOTOR_LIMITS_BY_NAME[MOTOR_NAMES[i]]
             joint_angles[i] = np.clip(joint_angles[i], LIM[0] + eps,
                                       LIM[1] - eps)
-            # print("JA OUT: {}".format(joint_angles[i]))
         return joint_angles
 
     def ApplyAction(self, motor_commands):
@@ -624,7 +622,6 @@ class Spot(object):
       motor_commands: The eight desired motor angles.
     """
         # FIRST, APPLY MOTOR LIMITS:
-
         motor_commands = self.ApplyMotorLimits(motor_commands)
 
         if self._motor_velocity_limit < np.inf:
