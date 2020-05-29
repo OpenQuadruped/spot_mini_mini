@@ -42,11 +42,11 @@ class spotBezierEnv(spotGymEnv):
     }
 
     def __init__(self,
-                 distance_weight=1.0,
-                 rotation_weight=1.0,
-                 energy_weight=0.0005,
-                 shake_weight=0.005,
-                 drift_weight=2.0,
+                 distance_weight=0.5,
+                 rotation_weight=0.5,
+                 energy_weight=0.000,
+                 shake_weight=0.00,
+                 drift_weight=0.0,
                  rp_weight=0.1,
                  rate_weight=0.1,
                  urdf_root=pybullet_data.getDataPath(),
@@ -173,6 +173,9 @@ class spotBezierEnv(spotGymEnv):
         return np.array(self._get_observation()), reward, done, {}
 
     def _reward(self, smach):
+        # get observation
+        obs = self._get_observation()
+
         # Return simulated controller values for reward calc
         _, _, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = smach.return_bezier_params(
         )
@@ -197,9 +200,6 @@ class spotBezierEnv(spotGymEnv):
 
         # New Twist in Body Frame
 
-        # get observation
-        obs = self._get_observation()
-
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = -Vb[3]  # vx
         lat_speed = -Vb[4]  # vy
@@ -219,10 +219,6 @@ class spotBezierEnv(spotGymEnv):
         #     lat_speed, DesiredVelicty * np.sin(LateralFraction)))
 
         # print("-----------------------------------------------")
-
-        # print("YAW: {}".format(current_yaw))
-        # print("SIN YAW: {}".format(np.sin(current_yaw)))
-        # print("COS YAW: {}".format(np.cos(current_yaw)))
 
         forward_reward += lateral_reward
 

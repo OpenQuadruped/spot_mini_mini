@@ -39,9 +39,9 @@ def main():
         os.makedirs(models_path)
 
     env = spotBezierEnv(render=True,
-                     on_rack=False,
-                     height_field=False,
-                     draw_foot_path=False)
+                        on_rack=False,
+                        height_field=False,
+                        draw_foot_path=False)
 
     # Set seeds
     env.seed(seed)

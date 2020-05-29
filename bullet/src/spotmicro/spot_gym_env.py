@@ -562,10 +562,6 @@ class spotGymEnv(gym.Env):
         Vb = np.dot(Adj_Tbw, Vw)
 
         # New Twist in Body Frame
-
-        # get observation
-        obs = self._get_observation()
-
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
         fwd_speed = -Vb[3]  # vx
         lat_speed = -Vb[4]  # vy
