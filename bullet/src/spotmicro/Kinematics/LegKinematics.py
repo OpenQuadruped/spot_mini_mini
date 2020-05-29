@@ -48,22 +48,28 @@ class LegIK():
 
     def RightIK(self, x, y, z, D):
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
-        hip_angle = -np.arctan2(z, y) - np.arctan2(
-            np.sqrt(y**2 + (-z)**2 - self.hip_length**2), -self.hip_length)
-        shoulder_angle = np.arctan2(
-            -x, np.sqrt(y**2 + (-z)**2 - self.hip_length**2)) - np.arctan2(
-                self.leg_length * np.sin(leg_angle),
-                self.shoulder_length + self.leg_length * np.cos(leg_angle))
+        sqrt_component = y**2 + (-z)**2 - self.hip_length**2
+        if sqrt_component < 0.0:
+            print("NEGATIVE SQRT")
+            sqrt_component = 0.0
+        hip_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component),
+                                                   -self.hip_length)
+        shoulder_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
+            self.leg_length * np.sin(leg_angle),
+            self.shoulder_length + self.leg_length * np.cos(leg_angle))
         joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles
 
     def LeftIK(self, x, y, z, D):
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
-        hip_angle = -np.arctan2(z, y) - np.arctan2(
-            np.sqrt(y**2 + (-z)**2 - self.hip_length**2), self.hip_length)
-        shoulder_angle = np.arctan2(
-            -x, np.sqrt(y**2 + (-z)**2 - self.hip_length**2)) - np.arctan2(
-                self.leg_length * np.sin(leg_angle),
-                self.shoulder_length + self.leg_length * np.cos(leg_angle))
+        sqrt_component = y**2 + (-z)**2 - self.hip_length**2
+        if sqrt_component < 0.0:
+            print("NEGATIVE SQRT")
+            sqrt_component = 0.0
+        hip_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component),
+                                                   self.hip_length)
+        shoulder_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
+            self.leg_length * np.sin(leg_angle),
+            self.shoulder_length + self.leg_length * np.cos(leg_angle))
         joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles
