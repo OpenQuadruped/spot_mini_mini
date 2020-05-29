@@ -14,6 +14,7 @@ import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.spot_gym_env import spotGymEnv
+import spotmicro.Kinematics.LieAlgebra as LA
 
 SENSOR_NOISE_STDDEV = spot.SENSOR_NOISE_STDDEV
 
@@ -173,32 +174,55 @@ class spotBezierEnv(spotGymEnv):
 
     def _reward(self, smach):
         # Return simulated controller values for reward calc
-        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = smach.return_bezier_params(
+        _, _, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = smach.return_bezier_params(
         )
 
         # Return StepVelocity with the sign of StepLength
-        DesiredVelicty = math.copysign(StepVelocity, StepLength)
+        DesiredVelicty = math.copysign(StepVelocity / 4.0, StepLength)
 
-        current_base_position = self.spot.GetBasePosition()
+        # GETTING TWIST IN BODY FRAME
+        pos = self.spot.GetBasePosition()
+        orn = self.spot.GetBaseOrientation()
+        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+        rpy = LA.RPY(roll, pitch, yaw)
+        R, _ = LA.TransToRp(rpy)
+        T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
+        T_bw = LA.TransInv(T_wb)
+        Adj_Tbw = LA.Adjoint(T_bw)
+
+        Vw = np.concatenate(
+            (self.spot.prev_ang_twist, self.spot.prev_lin_twist))
+        Vb = np.dot(Adj_Tbw, Vw)
+
+        # New Twist in Body Frame
 
         # get observation
         obs = self._get_observation()
-        # forward_reward = current_base_position[0] - self._last_base_position[0]
 
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
-        fwd_speed = self.spot.prev_lin_twist[0]
-        lat_speed = self.spot.prev_lin_twist[1]
-        # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
-        #     fwd_speed, self.desired_velocity))
-        # self.desired_velocity = 0.4
+        fwd_speed = -Vb[3]  # vx
+        lat_speed = -Vb[4]  # vy
 
         # Modification for lateral/fwd rewards
         reward_max = 1.0
         # FORWARD/LATERAL
-        forward_reward = reward_max * np.exp(-(fwd_speed - StepVelocity)**2 /
-                                             (0.1)) * np.cos(LateralFraction)
-        lateral_reward = reward_max * np.exp(-(lat_speed - StepVelocity)**2 /
-                                             (0.1)) * np.sin(LateralFraction)
+        forward_reward = reward_max * np.exp(
+            -(fwd_speed - DesiredVelicty * np.cos(LateralFraction))**2 / (0.1))
+        lateral_reward = reward_max * np.exp(
+            -(lat_speed - DesiredVelicty * np.sin(LateralFraction))**2 / (0.1))
+
+        # print("FWD SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
+        #     fwd_speed, DesiredVelicty * np.cos(LateralFraction)))
+
+        # print("LAT SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
+        #     lat_speed, DesiredVelicty * np.sin(LateralFraction)))
+
+        # print("-----------------------------------------------")
+
+        # print("YAW: {}".format(current_yaw))
+        # print("SIN YAW: {}".format(np.sin(current_yaw)))
+        # print("COS YAW: {}".format(np.cos(current_yaw)))
 
         forward_reward += lateral_reward
 
@@ -217,8 +241,6 @@ class spotBezierEnv(spotGymEnv):
         rate_reward = -(abs(obs[2]) + abs(obs[3]))
 
         drift_reward = 0
-
-        self._last_base_position = current_base_position
         energy_reward = -np.abs(
             np.dot(self.spot.GetMotorTorques(),
                    self.spot.GetMotorVelocities())) * self._time_step

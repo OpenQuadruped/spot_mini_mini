@@ -14,6 +14,7 @@ import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
 from mini_bullet.heightfield import HeightField
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
+import spotmicro.Kinematics.LieAlgebra as LA
 
 NUM_SUBSTEPS = 5
 NUM_MOTORS = 12
@@ -303,7 +304,7 @@ class spotGymEnv(gym.Env):
                 self._pybullet_client.configureDebugVisualizer(
                     self._pybullet_client.COV_ENABLE_PLANAR_REFLECTION,
                     self._ground_id)
-            self._pybullet_client.setGravity(0, 0, -10)
+            self._pybullet_client.setGravity(0, 0, -9.81)
             acc_motor = self._accurate_motor_model_enabled
             motor_protect = self._motor_overheat_protection
             if self._urdf_version not in spot_URDF_VERSION_MAP:

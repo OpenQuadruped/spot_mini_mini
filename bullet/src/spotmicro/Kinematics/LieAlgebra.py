@@ -47,7 +47,7 @@ def TransToRp(T):
          np.array([0, 0, 3]))
     """
     T = np.array(T)
-    return T[0: 3, 0: 3], T[0: 3, 3]
+    return T[0:3, 0:3], T[0:3, 3]
 
 
 def TransInv(T):
@@ -74,18 +74,54 @@ def TransInv(T):
     return np.r_[np.c_[Rt, -np.dot(Rt, p)], [[0, 0, 0, 1]]]
 
 
+def Adjoint(T):
+    """Computes the adjoint representation of a homogeneous transformation
+    matrix
+
+    :param T: A homogeneous transformation matrix
+    :return: The 6x6 adjoint representation [AdT] of T
+
+    Example Input:
+        T = np.array([[1, 0,  0, 0],
+                      [0, 0, -1, 0],
+                      [0, 1,  0, 3],
+                      [0, 0,  0, 1]])
+    Output:
+        np.array([[1, 0,  0, 0, 0,  0],
+                  [0, 0, -1, 0, 0,  0],
+                  [0, 1,  0, 0, 0,  0],
+                  [0, 0,  3, 1, 0,  0],
+                  [3, 0,  0, 0, 0, -1],
+                  [0, 0,  0, 0, 1,  0]])
+    """
+    R, p = TransToRp(T)
+    return np.r_[np.c_[R, np.zeros((3, 3))], np.c_[np.dot(VecToso3(p), R), R]]
+
+
+def VecToso3(omg):
+    """Converts a 3-vector to an so(3) representation
+
+    :param omg: A 3-vector
+    :return: The skew symmetric representation of omg
+
+    Example Input:
+        omg = np.array([1, 2, 3])
+    Output:
+        np.array([[ 0, -3,  2],
+                  [ 3,  0, -1],
+                  [-2,  1,  0]])
+    """
+    return np.array([[0, -omg[2], omg[1]], [omg[2], 0, -omg[0]],
+                     [-omg[1], omg[0], 0]])
+
+
 def RPY(roll, pitch, yaw):
-    Roll = np.array([[1, 0, 0, 0],
-                    [0, np.cos(roll), -np.sin(roll), 0],
-                    [0, np.sin(roll), np.cos(roll), 0],
-                    [0, 0, 0, 1]])
-    Pitch = np.array([[np.cos(pitch), 0, np.sin(pitch), 0],
-                     [0, 1, 0, 0],
-                     [-np.sin(pitch), 0, np.cos(pitch), 0],
-                     [0, 0, 0, 1]])
+    Roll = np.array([[1, 0, 0, 0], [0, np.cos(roll), -np.sin(roll), 0],
+                     [0, np.sin(roll), np.cos(roll), 0], [0, 0, 0, 1]])
+    Pitch = np.array([[np.cos(pitch), 0, np.sin(pitch), 0], [0, 1, 0, 0],
+                      [-np.sin(pitch), 0, np.cos(pitch), 0], [0, 0, 0, 1]])
     Yaw = np.array([[np.cos(yaw), -np.sin(yaw), 0, 0],
-                    [np.sin(yaw), np.cos(yaw), 0, 0],
-                    [0, 0, 1, 0],
+                    [np.sin(yaw), np.cos(yaw), 0, 0], [0, 0, 1, 0],
                     [0, 0, 0, 1]])
     return np.matmul(np.matmul(Roll, Pitch), Yaw)
 
