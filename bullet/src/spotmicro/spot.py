@@ -13,7 +13,9 @@ from spotmicro.Kinematics.SpotKinematics import SpotModel
 
 INIT_POSITION = [0, 0, 0.21]
 INIT_RACK_POSITION = [0, 0, 1]
-INIT_ORIENTATION = [0, 0, 0, 1]
+# NOTE: URDF IS FACING THE WRONG WAY
+# TEMP FIX
+INIT_ORIENTATION = [0, 0, 1, 0]
 OVERHEAT_SHUTDOWN_TORQUE = 2.45
 OVERHEAT_SHUTDOWN_TIME = 1.0
 # -math.pi / 5
@@ -146,6 +148,7 @@ class Spot(object):
         # used to calculate minitaur acceleration
         self.init_leg = INIT_LEG_POS
         self.init_foot = INIT_FOOT_POS
+        self.prev_ang_twist = np.array([0, 0, 0])
         self.prev_lin_twist = np.array([0, 0, 0])
         self.prev_lin_acc = np.array([0, 0, 0])
         self.num_motors = 12
@@ -501,7 +504,7 @@ class Spot(object):
                                                4:3 * self.num_motors + 7]),
             self._observation_noise_stdev[4])
 
-    def GetBaseTwitst(self):
+    def GetBaseTwist(self):
         """Get the Twist of minitaur's base.
     Returns:
       The Twist of the minitaur's base.
@@ -581,15 +584,16 @@ class Spot(object):
             [ori[0], ori[1], ori[2], ori[3]])
 
         # Get linear accelerations and angular rates
-        lt, ang_twist = self.GetBaseTwitst()
+        lt, ang_twist = self.GetBaseTwist()
         lin_twist = np.array([lt[0], lt[1], lt[2]])
         # Get linear accelerations
         lin_acc = self.prev_lin_twist - lin_twist
         # if lin_acc.all() == 0.0:
         #     lin_acc = self.prev_lin_acc
         self.prev_lin_acc = lin_acc
-        # print("LIN ACC: ", lin_acc)
+        # print("LIN TWIST: ", lin_twist)
         self.prev_lin_twist = lin_twist
+        self.prev_ang_twist = ang_twist
 
         # order: roll, pitch, gyro(x,y,z)
         observation.append(roll)

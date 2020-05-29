@@ -70,12 +70,17 @@ def main():
     t = 0
     while t < (int(max_timesteps)):
 
-        # GUI: x, y, z | r, p , y
-        # pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
-        # )
-
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
         )
+
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
+        )
+
+        # TEMP
+        bz_step.StepLength = StepLength
+        bz_step.LateralFraction = LateralFraction
+        bz_step.YawRate = YawRate
+        bz_step.StepVelocity = StepVelocity
 
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
