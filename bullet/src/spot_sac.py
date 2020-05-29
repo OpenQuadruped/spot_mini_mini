@@ -3,30 +3,35 @@
 import numpy as np
 
 from sac_lib import SoftActorCritic, NormalizedActions, ReplayBuffer, PolicyNetwork
-from mini_bullet.minitaur_gym_env import MinitaurBulletEnv
+import copy
+from gym import spaces
 
-import gym
-import torch
-import os
+from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
+from spotmicro.Kinematics.SpotKinematics import SpotModel
+from spotmicro.GaitGenerator.Bezier import BezierGait
+
+# TESTING
+from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 
 import time
+
+import torch
+import os
 
 
 def main():
     """ The main() function. """
 
-    print("STARTING MINITAUR SAC")
+    print("STARTING SPOT SAC")
 
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
     max_timesteps = 4e6
-    start_timesteps = 1e4  # 1e3 for testing purposes, use 1e4 for real
-    expl_noise = 0.1
     batch_size = 256
     eval_freq = 1e4
     save_model = True
-    file_name = "mini_sac_"
+    file_name = "spot_sac_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
@@ -39,7 +44,12 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = NormalizedActions(MinitaurBulletEnv(render=False))
+    env = spotBezierEnv(render=False,
+                        on_rack=False,
+                        height_field=False,
+                        draw_foot_path=False,
+                        action_dim=14)
+    env = NormalizedActions(env)
 
     # Set seeds
     env.seed(seed)
@@ -80,34 +90,48 @@ def main():
     episode_reward = 0
     episode_timesteps = 0
     episode_num = 0
+    max_t_per_ep = 500
+
+    # State Machine for Random Controller Commands
+    bz_step = BezierStepper(dt=0.01)
+
+    # Bezier Gait Generator
+    bzg = BezierGait(dt=0.01)
+
+    # Spot Model
+    spot = SpotModel()
+    T_bf0 = spot.WorldToFoot
+    T_bf = copy.deepcopy(T_bf0)
 
     print("STARTED MINITAUR SAC")
 
     for t in range(int(max_timesteps)):
 
-        episode_timesteps += 1
+        action = sac.policy_net.get_action(state)
 
-        # Select action randomly or according to policy
-        # Random Action - no training yet, just storing in buffer
-        if t < start_timesteps:
-            action = env.action_space.sample()
-            # rospy.logdebug("Sampled Action")
-        else:
-            # According to policy + Exploraton Noise
-            # print("POLICY Action")
-            """ Note we clip at +-0.99.... because Gazebo
-                has problems executing actions at the
-                position limit (breaks model)
-            """
-            action = np.clip(
-                (policy.get_action(np.array(state)) + np.random.normal(
-                    0, max_action * expl_noise, size=action_dim)), -max_action,
-                max_action)
-            # rospy.logdebug("Selected Acton: {}".format(action))
+        # First 2 elements are ClearanceHeight and PenetrationDepth DELTAS,
+        # last 12 are residuals
+        bz_step.ClearanceHeight += action[0]
+        bz_step.PenetrationDepth += action[1]
 
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
+        )
+
+        # Get Desired Foot Poses
+        T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
+                                      StepVelocity, T_bf0, T_bf,
+                                      ClearanceHeight, PenetrationDepth)
+        joint_angles = spot.IK(orn, pos, T_bf)
+        # Add Residuals
+        action[2:] = joint_angles.reshape(-1) + action[2:]
+
+        # Pass smach
+        env.pass_smach(bz_step)
         # Perform action
         next_state, reward, done, _ = env.step(action)
         done_bool = float(done)
+
+        episode_timesteps += 1
 
         # Store data in replay buffer
         replay_buffer.push(state, action, reward, next_state, done_bool)
@@ -116,8 +140,11 @@ def main():
         episode_reward += reward
 
         # Train agent after collecting sufficient data for buffer
-        if t >= start_timesteps and len(replay_buffer) > batch_size:
+        if len(replay_buffer) > batch_size:
             sac.soft_q_update(batch_size)
+
+        if episode_timesteps > max_t_per_ep:
+            done = True
 
         if done:
             # +1 to account for 0 indexing.

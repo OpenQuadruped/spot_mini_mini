@@ -88,8 +88,10 @@ def main():
                                       ClearanceHeight, PenetrationDepth)
         joint_angles = spot.IK(orn, pos, T_bf)
         action = joint_angles.reshape(-1)
-        # action = env.action_space.sample()
-        next_state, reward, done, _ = env.step(action, bz_step)
+        # Pass smach
+        env.pass_smach(bz_step)
+        # Step
+        next_state, reward, done, _ = env.step(action)
         if done:
             print("DONE")
 

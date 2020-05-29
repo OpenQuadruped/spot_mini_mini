@@ -80,7 +80,8 @@ class spotBezierEnv(spotGymEnv):
                  lateral=False,
                  draw_foot_path=False,
                  height_field=False,
-                 AutoStepper=True):
+                 AutoStepper=True,
+                 action_dim=14):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,
@@ -123,13 +124,18 @@ class spotBezierEnv(spotGymEnv):
             height_field=height_field,
             AutoStepper=AutoStepper)
 
-    def step(self, action, smach):
+        # Residuals + Clearance Height + Penetration Depth
+        action_high = np.array([self._action_bound] * action_dim)
+        self.action_space = spaces.Box(-action_high, action_high)
+        print("Action SPACE: {}".format(self.action_space))
+
+    def step(self, action):
         """Step forward the simulation, given the action.
 
     Args:
       action: A list of desired motor angles for eight motors.
       smach: the bezier state machine containing simulated
-      		 random controll inputs
+             random controll inputs
 
     Returns:
       observations: The angles, velocities and torques of all motors.
@@ -141,6 +147,9 @@ class spotBezierEnv(spotGymEnv):
       ValueError: The action dimension is not the same as the number of motors.
       ValueError: The magnitude of actions is out of bounds.
     """
+        # Discard all but joint angles
+        action = action[2:]
+
         self._last_base_position = self.spot.GetBasePosition()
         self._last_base_orientation = self.spot.GetBaseOrientation()
         # print("ACTION:")
@@ -163,7 +172,7 @@ class spotBezierEnv(spotGymEnv):
         action = self._transform_action_to_motor_command(action)
         self.spot.Step(action)
         # NOTE: SMACH is passed to the reward method
-        reward = self._reward(smach)
+        reward = self._reward()
         done = self._termination()
         self._env_step_counter += 1
 
@@ -172,12 +181,17 @@ class spotBezierEnv(spotGymEnv):
             self.DrawFootPath()
         return np.array(self._get_observation()), reward, done, {}
 
-    def _reward(self, smach):
+    def pass_smach(self, smach):
+        """ Pass current state machine params for reward calc
+        """
+        self.smach = smach
+
+    def _reward(self):
         # get observation
         obs = self._get_observation()
 
         # Return simulated controller values for reward calc
-        _, _, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = smach.return_bezier_params(
+        _, _, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = self.smach.return_bezier_params(
         )
 
         # Return StepVelocity with the sign of StepLength

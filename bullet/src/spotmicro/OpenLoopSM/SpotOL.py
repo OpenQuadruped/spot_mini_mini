@@ -134,6 +134,24 @@ class BezierStepper():
         return self.return_bezier_params()
 
     def return_bezier_params(self):
+        # First, Clip Everything
+        self.StepLength = np.clip(self.StepLength, self.StepLength_LIMITS[0],
+                                  self.StepLength_LIMITS[1])
+        self.StepVelocity = np.clip(self.StepVelocity,
+                                    self.StepVelocity_LIMITS[0],
+                                    self.StepVelocity_LIMITS[1])
+        self.LateralFraction = np.clip(self.LateralFraction,
+                                       self.LateralFraction_LIMITS[0],
+                                       self.LateralFraction_LIMITS[1])
+        self.YawRate = np.clip(self.YawRate, self.YawRate_LIMITS[0],
+                               self.YawRate_LIMITS[1])
+        self.ClearanceHeight = np.clip(self.ClearanceHeight,
+                                       self.ClearanceHeight_LIMITS[0],
+                                       self.ClearanceHeight_LIMITS[1])
+        self.PenetrationDepth = np.clip(self.PenetrationDepth,
+                                        self.PenetrationDepth_LIMITS[0],
+                                        self.PenetrationDepth_LIMITS[1])
+        # Then, return
         return self.pos, self.orn, self.StepLength, self.LateralFraction,\
             self.YawRate, self.StepVelocity,\
             self.ClearanceHeight, self.PenetrationDepth
