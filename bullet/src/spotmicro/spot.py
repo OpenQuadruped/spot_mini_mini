@@ -10,6 +10,7 @@ import numpy as np
 from . import motor
 from spotmicro.util import pybullet_data
 from spotmicro.Kinematics.SpotKinematics import SpotModel
+import spotmicro.Kinematics.LieAlgebra as LA
 
 INIT_POSITION = [0, 0, 0.21]
 INIT_RACK_POSITION = [0, 0, 1]
@@ -43,8 +44,7 @@ for name in MOTOR_NAMES:
         MOTOR_LIMITS_BY_NAME[name] = [-0.1, 2.59]
 
 FOOT_NAMES = [
-    "front_left_toe", "front_right_toe", "rear_left_toe",
-    "rear_right_toe"
+    "front_left_toe", "front_right_toe", "rear_left_toe", "rear_right_toe"
 ]
 
 _CHASSIS_NAME_PATTERN = re.compile(r"chassis\D*")
@@ -145,6 +145,13 @@ class Spot(object):
     """
         # SPOT MODEL
         self.spot = SpotModel()
+        # Control Inputs
+        self.StepLength = 0.0
+        self.StepVelocity = 0.0
+        self.LateralFraction = 0.0
+        self.YawRate = 0.0
+        # Leg Phases
+        self.LegPhases = [0.0, 0.0, 0.0, 0.0]
         # used to calculate minitaur acceleration
         self.init_leg = INIT_LEG_POS
         self.init_foot = INIT_FOOT_POS
@@ -578,28 +585,82 @@ class Spot(object):
       # NOTE: use True version for perfect data, or other for realistic data
     """
         observation = []
-        ori = self.GetBaseOrientation()
-        # Get roll and pitch
-        roll, pitch, _ = self._pybullet_client.getEulerFromQuaternion(
-            [ori[0], ori[1], ori[2], ori[3]])
+        # GETTING TWIST IN BODY FRAME
+        pos = self.GetBasePosition()
+        orn = self.GetBaseOrientation()
+        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+        rpy = LA.RPY(roll, pitch, yaw)
+        R, _ = LA.TransToRp(rpy)
+        T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
+        T_bw = LA.TransInv(T_wb)
+        Adj_Tbw = LA.Adjoint(T_bw)
 
-        # Get linear accelerations and angular rates
-        lt, ang_twist = self.GetBaseTwist()
-        lin_twist = np.array([lt[0], lt[1], lt[2]])
+        # Get Linear and Angular Twist in WORLD FRAME
+        lin_twist, ang_twist = self.GetBaseTwist()
+
+        Vw = np.concatenate((ang_twist, lin_twist))
+        Vb = np.dot(Adj_Tbw, Vw)
+
+        roll, pitch, _ = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+
         # Get linear accelerations
-        lin_acc = self.prev_lin_twist - lin_twist
-        # if lin_acc.all() == 0.0:
-        #     lin_acc = self.prev_lin_acc
+        lin_twist = -Vb[3:]
+        lin_acc = lin_twist - self.prev_lin_twist
+        if lin_acc.all() == 0.0:
+            lin_acc = self.prev_lin_acc
         self.prev_lin_acc = lin_acc
         # print("LIN TWIST: ", lin_twist)
         self.prev_lin_twist = lin_twist
-        self.prev_ang_twist = ang_twist
+        self.prev_ang_twist = Vb[:3]
 
-        # order: roll, pitch, gyro(x,y,z)
+        ang_twist = self.prev_ang_twist
+
+        # order: roll, pitch, gyro(x,y,z), acc(x, y, z)
         observation.append(roll)
         observation.append(pitch)
         observation.extend(list(ang_twist))
+        observation.extend(list(lin_acc))
+        # Control Input
+        observation.append(self.StepLength)
+        observation.append(self.StepVelocity)
+        observation.append(self.LateralFraction)
+        observation.append(self.YawRate)
+        observation.extend(self.LegPhases)
         return observation
+
+    def GetControlInput(self, controller):
+        """ Store Control Input as Observation
+        """
+        _, _, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = controller.return_bezier_params(
+        )
+
+        self.StepLength = StepLength
+        self.StepVelocity = StepVelocity
+        self.LateralFraction = LateralFraction
+        self.YawRate = YawRate
+
+    def GetLegPhases(self, TrajectoryGenerator):
+        """ Leg phases according to TG from 0->2
+            0->1: Stance
+            1->2 Swing
+        """
+        if self.StepVelocity != 0.0:
+            Tswing = 2.0 * abs(self.StepLength) / abs(self.StepVelocity)
+        else:
+            Tswing = 0.0
+        for i in range(4):
+            TrajectoryGenerator.GetPhase(i, TrajectoryGenerator.Tstance,
+                                         Tswing)
+
+        self.LegPhases = TrajectoryGenerator.Phases
+
+    def GetExternalObservations(self, TrajectoryGenerator, controller):
+        """ Augment State Space
+        """
+        self.GetControlInput(controller)
+        self.GetLegPhases(TrajectoryGenerator)
 
     def ConvertFromLegModel(self, action):
         # TODO

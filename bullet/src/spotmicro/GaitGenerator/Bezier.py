@@ -40,6 +40,26 @@ class BezierGait():
         # Reference Leg
         self.ref_idx = 0
 
+        # Store all leg phases
+        self.Phases = self.dSref
+
+    def reset(self):
+        self.ModulatedRotation = [0.0, 0.0, 0.0, 0.0]
+
+        # Total Elapsed Time
+        self.time = 0.0
+        # Touchdown Time
+        self.TD_time = 0.0
+        # Time Since Last Touchdown
+        self.time_since_last_TD = 0.0
+        # Trajectory Mode
+        self.StanceSwing = SWING
+        # Swing Phase value [0, 1] of Reference Foot
+        self.SwRef = 0.0
+        self.Stref = 0.0
+        # Whether Reference Foot has Touched Down
+        self.TD = False
+
     def GetPhase(self, index, Tstance, Tswing):
         StanceSwing = STANCE
         Sw_phase = 0.0
@@ -275,6 +295,12 @@ class BezierGait():
     def GetFootStep(self, L, LateralFraction, YawRate, clearance_height,
                     penetration_depth, Tswing, T_bf, index, key):
         phase, StanceSwing = self.GetPhase(index, self.Tstance, Tswing)
+        if StanceSwing == SWING:
+            stored_phase = phase + 1.0
+        else:
+            stored_phase = phase
+        # Just for keeping track
+        self.Phases[index] = stored_phase
         if StanceSwing == STANCE:
             return self.StanceStep(phase, L, LateralFraction, YawRate,
                                    penetration_depth, T_bf, key, index)

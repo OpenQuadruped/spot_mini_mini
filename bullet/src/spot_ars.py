@@ -60,7 +60,7 @@ def main():
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    state_dim = env.observation_space.shape[0]
+    state_dim = env.observation_space.shape[0] + 12
     print("STATE DIM: {}".format(state_dim))
     action_dim = env.action_space.shape[0]
     print("ACTION DIM: {}".format(action_dim))
@@ -121,20 +121,15 @@ def main():
     while t < (int(max_timesteps)):
 
         # Maximum timesteps per rollout
-        t += policy.episode_steps
 
-        episode_timesteps += 1
-
-        episode_reward = agent.train_parallel(parentPipes)
+        episode_reward, episode_timesteps = agent.train_parallel(parentPipes)
+        t += episode_timesteps
         # episode_reward = agent.train()
         # +1 to account for 0 indexing.
         # +0 on ep_timesteps since it will increment +1 even if done=True
         print("Total T: {} Episode Num: {} Episode T: {} Reward: {}, >400: {}".
-              format(t, episode_num, policy.episode_steps, episode_reward,
+              format(t, episode_num, episode_timesteps, episode_reward,
                      agent.successes))
-        # Reset environment
-        episode_reward = 0
-        episode_timesteps = 0
 
         # Evaluate episode
         if (episode_num + 1) % eval_freq == 0:
