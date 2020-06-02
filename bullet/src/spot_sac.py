@@ -158,15 +158,10 @@ def main():
 
         # Add DELTA to Z Foot Poses
         RESIDUALS_SCALE = 0.02
-        for i, (key, Tbf) in enumerate(T_bf.items()):
-            if key == "FL":
-                Tbf[3, 2] += action[6] * RESIDUALS_SCALE
-            if key == "FR":
-                Tbf[3, 2] += action[7] * RESIDUALS_SCALE
-            if key == "BL":
-                Tbf[3, 2] += action[8] * RESIDUALS_SCALE
-            if key == "BR":
-                Tbf[3, 2] += action[9] * RESIDUALS_SCALE
+        T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+        T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+        T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+        T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
         joint_angles = spot.IK(orn, pos, T_bf)
         # Pass Joint Angles

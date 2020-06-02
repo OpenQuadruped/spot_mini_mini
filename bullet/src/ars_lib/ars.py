@@ -22,9 +22,12 @@ _EXPLORE = 3
 _EXPLORE_TG = 4
 
 # Params for TG
-RESIDUALS_SCALE = 0.02
-CLEARANCE_SCALE = 0.05
-PENETRATION_SCALE = 0.025
+SL_SCALE = 0.007
+SV_SCALE = 0.2
+LF_SCALE = 0.1
+Y_SCALE = 0.1
+CH_SCALE = 0.007
+PD_SCALE = 0.0025
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -97,7 +100,6 @@ def ParallelWorker(childPipe, env, nb_states):
             desired_velocity = payload[4]
             desired_rate = payload[5]
             TGP = payload[6]
-            TGP_UnMod = copy.deepcopy(TGP)
             smach = payload[7]
             spot = payload[8]
             state = env.reset()
@@ -109,52 +111,69 @@ def ParallelWorker(childPipe, env, nb_states):
             while not done and timesteps < policy.episode_steps:
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
                 )
-                # Unmodified command
-                T_bf = TGP_UnMod.GenerateTrajectory(StepLength,
-                                                    LateralFraction, YawRate,
-                                                    StepVelocity, T_b0, T_bf,
-                                                    ClearanceHeight,
-                                                    PenetrationDepth)
-                # APPEND Commanded Foot Position to state
-                _, pbfFL = TransToRp(T_bf["FL"])
-                _, pbfBL = TransToRp(T_bf["BL"])
-                _, pbfFR = TransToRp(T_bf["FR"])
-                _, pbfBR = TransToRp(T_bf["BR"])
-                UnModFootPoses = np.concatenate((pbfFL, pbfBL, pbfFR, pbfBR))
-                state = np.append(state, UnModFootPoses)
+
+                env.spot.GetExternalObservations(TGP, smach)
+
+                # Read UPDATED state based on controls and phase
+                state = env.return_state()
                 normalizer.observe(state)
-                # Normalize State
                 state = normalizer.normalize(state)
                 action = policy.evaluate(state, delta, direction)
-                # Extract Residuals
-                residuals = np.tanh(action[2:]) * RESIDUALS_SCALE
-                # Extract TG information from action
-                ClearanceHeight_DELTA = np.tanh(action[0]) * CLEARANCE_SCALE
-                NewClearanceHeight = smach.ClearanceHeight + ClearanceHeight_DELTA
-                PenetrationDepth_DELTA = np.tanh(action[0]) * PENETRATION_SCALE
-                NewPenetrationDepth = smach.PenetrationDepth + PenetrationDepth_DELTA
 
-                env.pass_smach(smach)
+                # Add DELTA to Bezier Params
+                # LIMS
+                SL_SCALE = 0.007
+                SV_SCALE = 0.2
+                LF_SCALE = 0.1
+                Y_SCALE = 0.1
+                CH_SCALE = 0.007
+                PD_SCALE = 0.0025
+                StepLength += np.tanh(action[0]) * SL_SCALE
+                StepVelocity += np.tanh(action[1]) * SV_SCALE
+                LateralFraction += np.tanh(action[2]) * LF_SCALE
+                YawRate += np.tanh(action[3]) * Y_SCALE
+                ClearanceHeight += np.tanh(action[4]) * CH_SCALE
+                PenetrationDepth += np.tanh(action[5]) * PD_SCALE
+
+                # CLIP EVERYTHING
+                StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
+                                     smach.StepLength_LIMITS[1])
+                StepVelocity = np.clip(StepVelocity,
+                                       smach.StepVelocity_LIMITS[0],
+                                       smach.StepVelocity_LIMITS[1])
+                LateralFraction = np.clip(LateralFraction,
+                                          smach.LateralFraction_LIMITS[0],
+                                          smach.LateralFraction_LIMITS[1])
+                YawRate = np.clip(YawRate, smach.YawRate_LIMITS[0],
+                                  smach.YawRate_LIMITS[1])
+                ClearanceHeight = np.clip(ClearanceHeight,
+                                          smach.ClearanceHeight_LIMITS[0],
+                                          smach.ClearanceHeight_LIMITS[1])
+                PenetrationDepth = np.clip(PenetrationDepth,
+                                           smach.PenetrationDepth_LIMITS[0],
+                                           smach.PenetrationDepth_LIMITS[1])
 
                 # Get Desired Foot Poses
                 T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
                                               YawRate, StepVelocity, T_b0,
-                                              T_bf, NewClearanceHeight,
-                                              NewPenetrationDepth)
-                # Add Residuals as XYZ to each item
-                T_bf["FL"][3, :3] += residuals[:3]
-                T_bf["BL"][3, :3] += residuals[3:6]
-                T_bf["FR"][3, :3] += residuals[6:9]
-                T_bf["BR"][3, :3] += residuals[9:]
+                                              T_bf, ClearanceHeight,
+                                              PenetrationDepth)
+
+                # Add DELTA to Z Foot Poses
+                RESIDUALS_SCALE = 0.02
+                T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+                T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+                T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+                T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
+
                 joint_angles = spot.IK(orn, pos, T_bf)
-                action[2:] = joint_angles.reshape(-1)
-                # Clip action between +-1 for execution in env
-                for a in range(len(action)):
-                    action[a] = np.clip(action[a], -max_action, max_action)
-                state, reward, done, _ = env.step(action)
-                # Clip reward between -1 and 1 to prevent outliers from
-                # distorting weights
-                reward = np.clip(reward, -max_action, max_action)
+                # Pass Joint Angles
+                env.pass_joint_angles(joint_angles.reshape(-1))
+
+                env.step(action)
+
+                # Perform action
+                next_state, reward, done, _ = env.step(action)
                 sum_rewards += reward
                 timesteps += 1
             childPipe.send([sum_rewards])
@@ -364,57 +383,72 @@ class ARSAgent():
         # f = []
         T_bf = copy.deepcopy(self.spot.WorldToFoot)
         T_b0 = copy.deepcopy(self.spot.WorldToFoot)
-        TGP_UnMod = copy.deepcopy(self.TGP)
         while not done and timesteps < self.policy.episode_steps:
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
-            # Unmodified command
-            T_bf = TGP_UnMod.GenerateTrajectory(StepLength, LateralFraction,
-                                                YawRate, StepVelocity, T_b0,
-                                                T_bf, ClearanceHeight,
-                                                PenetrationDepth)
-            # APPEND Commanded Foot Position to state
-            _, pbfFL = TransToRp(T_bf["FL"])
-            _, pbfBL = TransToRp(T_bf["BL"])
-            _, pbfFR = TransToRp(T_bf["FR"])
-            _, pbfBR = TransToRp(T_bf["BR"])
-            UnModFootPoses = np.concatenate((pbfFL, pbfBL, pbfFR, pbfBR))
-            state = np.append(state, UnModFootPoses)
+
+            self.env.spot.GetExternalObservations(self.TGP, self.smach)
+
+            # Read UPDATED state based on controls and phase
+            state = self.env.return_state()
             self.normalizer.observe(state)
-            # Normalize State
             state = self.normalizer.normalize(state)
             action = self.policy.evaluate(state, delta, direction)
-            # Extract Residuals
-            residuals = np.tanh(action[2:]) * RESIDUALS_SCALE
-            # Extract TG information from action
-            ClearanceHeight_DELTA = np.tanh(action[0]) * CLEARANCE_SCALE
-            NewClearanceHeight = self.smach.ClearanceHeight + ClearanceHeight_DELTA
-            PenetrationDepth_DELTA = np.tanh(action[0]) * PENETRATION_SCALE
-            NewPenetrationDepth = self.smach.PenetrationDepth + PenetrationDepth_DELTA
 
-            self.env.pass_smach(self.smach)
+            # Add DELTA to Bezier Params
+            # LIMS
+            SL_SCALE = 0.007
+            SV_SCALE = 0.2
+            LF_SCALE = 0.1
+            Y_SCALE = 0.1
+            CH_SCALE = 0.007
+            PD_SCALE = 0.0025
+            StepLength += np.tanh(action[0]) * SL_SCALE
+            StepVelocity += np.tanh(action[1]) * SV_SCALE
+            LateralFraction += np.tanh(action[2]) * LF_SCALE
+            YawRate += np.tanh(action[3]) * Y_SCALE
+            ClearanceHeight += np.tanh(action[4]) * CH_SCALE
+            PenetrationDepth += np.tanh(action[5]) * PD_SCALE
+
+            # CLIP EVERYTHING
+            StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
+                                 self.smach.StepLength_LIMITS[1])
+            StepVelocity = np.clip(StepVelocity,
+                                   self.smach.StepVelocity_LIMITS[0],
+                                   self.smach.StepVelocity_LIMITS[1])
+            LateralFraction = np.clip(LateralFraction,
+                                      self.smach.LateralFraction_LIMITS[0],
+                                      self.smach.LateralFraction_LIMITS[1])
+            YawRate = np.clip(YawRate, self.smach.YawRate_LIMITS[0],
+                              self.smach.YawRate_LIMITS[1])
+            ClearanceHeight = np.clip(ClearanceHeight,
+                                      self.smach.ClearanceHeight_LIMITS[0],
+                                      self.smach.ClearanceHeight_LIMITS[1])
+            PenetrationDepth = np.clip(PenetrationDepth,
+                                       self.smach.PenetrationDepth_LIMITS[0],
+                                       self.smach.PenetrationDepth_LIMITS[1])
 
             # Get Desired Foot Poses
             T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
                                                YawRate, StepVelocity, T_b0,
-                                               T_bf, NewClearanceHeight,
-                                               NewPenetrationDepth)
-            # Add Residuals as Z to each item
-            # print("RESIDUALS: {}".format(residuals))
-            T_bf["FL"][3, :3] += residuals[:3]
-            T_bf["BL"][3, :3] += residuals[3:6]
-            T_bf["FR"][3, :3] += residuals[6:9]
-            T_bf["BR"][3, :3] += residuals[9:]
+                                               T_bf, ClearanceHeight,
+                                               PenetrationDepth)
+
+            # Add DELTA to Z Foot Poses
+            RESIDUALS_SCALE = 0.02
+            T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+            T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+            T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+            T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
+
             joint_angles = self.spot.IK(orn, pos, T_bf)
-            action[2:] = joint_angles.reshape(-1)
-            # Clip action between +-1 for execution in env
-            # for a in range(len(action)):
-            #     action[a] = np.clip(action[a], -self.max_action,
-            #                         self.max_action)
-            state, reward, done, _ = self.env.step(action)
-            # Clip reward between -1 and 1 to prevent outliers from
-            # distorting weights
-            reward = np.clip(reward, -self.max_action, self.max_action)
+            # Pass Joint Angles
+            self.env.pass_joint_angles(joint_angles.reshape(-1))
+
+            self.env.step(action)
+
+            # Perform action
+            next_state, reward, done, _ = self.env.step(action)
             sum_rewards += reward
             timesteps += 1
         # plt.plot(0)
