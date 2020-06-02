@@ -129,6 +129,11 @@ class spotBezierEnv(spotGymEnv):
         self.action_space = spaces.Box(-action_high, action_high)
         print("Action SPACE: {}".format(self.action_space))
 
+    def pass_joint_angles(self, ja):
+        """ For executing joint angles
+        """
+        self.ja = ja
+
     def step(self, action):
         """Step forward the simulation, given the action.
 
@@ -148,7 +153,7 @@ class spotBezierEnv(spotGymEnv):
       ValueError: The magnitude of actions is out of bounds.
     """
         # Discard all but joint angles
-        action = action[2:]
+        action = self.ja
 
         self._last_base_position = self.spot.GetBasePosition()
         self._last_base_orientation = self.spot.GetBaseOrientation()
@@ -181,6 +186,9 @@ class spotBezierEnv(spotGymEnv):
             self.DrawFootPath()
         return np.array(self._get_observation()), reward, done, {}
 
+    def return_state(self):
+        return np.array(self._get_observation())
+
     def _reward(self):
         # get observation
         obs = self._get_observation()
@@ -202,24 +210,24 @@ class spotBezierEnv(spotGymEnv):
             -(lat_speed - DesiredVelicty * np.sin(self.spot.LateralFraction))**
             2 / (0.1))
 
-        print("FWD SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
-            fwd_speed, DesiredVelicty * np.cos(self.spot.LateralFraction)))
+        # print("FWD SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
+        #     fwd_speed, DesiredVelicty * np.cos(self.spot.LateralFraction)))
 
-        print("LAT SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
-            lat_speed, DesiredVelicty * np.sin(self.spot.LateralFraction)))
+        # print("LAT SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
+        #     lat_speed, DesiredVelicty * np.sin(self.spot.LateralFraction)))
 
-        print("ROLL: {:.2f}".format(obs[0]))
-        print("PITCH: {:.2f}".format(obs[1]))
+        # print("ROLL: {:.2f}".format(obs[0]))
+        # print("PITCH: {:.2f}".format(obs[1]))
 
-        print("GYRO X: {:.2f}".format(obs[2]))
-        print("GYRO Y: {:.2f}".format(obs[3]))
-        print("GYRO Z: {:.2f}".format(obs[4]))
+        # print("GYRO X: {:.2f}".format(obs[2]))
+        # print("GYRO Y: {:.2f}".format(obs[3]))
+        # print("GYRO Z: {:.2f}".format(obs[4]))
 
-        print("ACC X: {:.2f}".format(obs[5]))
-        print("ACC Y: {:.2f}".format(obs[6]))
-        print("ACC Z: {:.2f}".format(obs[7]))
+        # print("ACC X: {:.2f}".format(obs[5]))
+        # print("ACC Y: {:.2f}".format(obs[6]))
+        # print("ACC Z: {:.2f}".format(obs[7]))
 
-        print("-----------------------------------------------")
+        # print("-----------------------------------------------")
 
         forward_reward += lateral_reward
 

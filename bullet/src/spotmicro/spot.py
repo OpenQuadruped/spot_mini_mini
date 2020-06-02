@@ -538,19 +538,16 @@ class Spot(object):
         upper_bound[0:2] = np.pi / 2.0
         # acc, rate in x,y,z
         upper_bound[2:8] = np.inf
-
-        # 8:10 are velocity and rate bounds, min and max are +-10
-        # upper_bound[8:10] = 10
-
-        # NOTE: ORIGINAL BELOW
-        # upper_bound[10:10 + self.num_motors] = math.pi  # Joint angle.
-        # upper_bound[self.num_motors + 10:2 * self.num_motors + 10] = (
-        #     motor.MOTOR_SPEED_LIMIT)  # Joint velocity.
-        # upper_bound[2 * self.num_motors + 10:3 * self.num_motors + 10] = (
-        #     motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
-        # upper_bound[3 *
-        #             self.num_motors:] = 1.0  # Quaternion of base orientation.
-        # print("UPPER BOUND{}".format(upper_bound))
+        # Step Length
+        upper_bound[8] = 0.1
+        # Step Velocity
+        upper_bound[9] = 3.0
+        # Lateral Fraction
+        upper_bound[10] = np.pi / 2.0
+        # Yaw Rate
+        upper_bound[11] = 1.0
+        # Leg Phases
+        upper_bound[12:] = 2.0
         return upper_bound
 
     def GetObservationLowerBound(self):

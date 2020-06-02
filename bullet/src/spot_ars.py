@@ -60,7 +60,7 @@ def main():
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    state_dim = env.observation_space.shape[0] + 12
+    state_dim = env.observation_space.shape[0]
     print("STATE DIM: {}".format(state_dim))
     action_dim = env.action_space.shape[0]
     print("ACTION DIM: {}".format(action_dim))
