@@ -47,7 +47,7 @@ def main():
                         on_rack=False,
                         height_field=True,
                         draw_foot_path=False,
-                        action_dim=14)
+                        action_dim=10)
     env = NormalizedActions(env)
 
     # Set seeds
@@ -109,31 +109,71 @@ def main():
 
     for t in range(int(max_timesteps)):
 
-        action = sac.policy_net.get_action(state)
-        # Clip Bezier Perturb at -0.01, 0.01
-        action[0] = np.tanh(action[0]) * 0.005
-        action[1] = np.tanh(action[1]) * 0.001
-        # Clip Residuals at -0.2, 0.2
-        action[2:] = np.tanh(action[2:]) * 0.2
-
-        # First 2 elements are ClearanceHeight and PenetrationDepth DELTAS,
-        # last 12 are residuals
-        bz_step.ClearanceHeight = BaseClearanceHeight + action[0]
-        bz_step.PenetrationDepth = BasePenetrationDepth + action[1]
-
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
         )
+
+        env.spot.GetExternalObservations(bzg, bz_step)
+
+        # Read UPDATED state based on controls and phase
+        state = env.return_state()
+
+        action = sac.policy_net.get_action(state)
+
+        # Add DELTA to Bezier Params
+        # LIMS
+        SL_SCALE = 0.007
+        SV_SCALE = 0.2
+        LF_SCALE = 0.1
+        Y_SCALE = 0.1
+        CH_SCALE = 0.007
+        PD_SCALE = 0.0025
+        StepLength += np.tanh(action[0]) * SL_SCALE
+        StepVelocity += np.tanh(action[1]) * SV_SCALE
+        LateralFraction += np.tanh(action[2]) * LF_SCALE
+        YawRate += np.tanh(action[3]) * Y_SCALE
+        ClearanceHeight += np.tanh(action[4]) * CH_SCALE
+        PenetrationDepth += np.tanh(action[5]) * PD_SCALE
+
+        # CLIP EVERYTHING
+        StepLength = np.clip(StepLength, bz_step.StepLength_LIMITS[0],
+                             bz_step.StepLength_LIMITS[1])
+        StepVelocity = np.clip(StepVelocity, bz_step.StepVelocity_LIMITS[0],
+                               bz_step.StepVelocity_LIMITS[1])
+        LateralFraction = np.clip(LateralFraction,
+                                  bz_step.LateralFraction_LIMITS[0],
+                                  bz_step.LateralFraction_LIMITS[1])
+        YawRate = np.clip(YawRate, bz_step.YawRate_LIMITS[0],
+                          bz_step.YawRate_LIMITS[1])
+        ClearanceHeight = np.clip(ClearanceHeight,
+                                  bz_step.ClearanceHeight_LIMITS[0],
+                                  bz_step.ClearanceHeight_LIMITS[1])
+        PenetrationDepth = np.clip(PenetrationDepth,
+                                   bz_step.PenetrationDepth_LIMITS[0],
+                                   bz_step.PenetrationDepth_LIMITS[1])
 
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
                                       StepVelocity, T_bf0, T_bf,
                                       ClearanceHeight, PenetrationDepth)
-        joint_angles = spot.IK(orn, pos, T_bf)
-        # Add Residuals
-        action[2:] = joint_angles.reshape(-1) + action[2:]
 
-        # Pass smach
-        env.pass_smach(bz_step)
+        # Add DELTA to Z Foot Poses
+        RESIDUALS_SCALE = 0.02
+        for i, (key, Tbf) in enumerate(T_bf.items()):
+            if key == "FL":
+                Tbf[3, 2] += action[6] * RESIDUALS_SCALE
+            if key == "FR":
+                Tbf[3, 2] += action[7] * RESIDUALS_SCALE
+            if key == "BL":
+                Tbf[3, 2] += action[8] * RESIDUALS_SCALE
+            if key == "BR":
+                Tbf[3, 2] += action[9] * RESIDUALS_SCALE
+
+        joint_angles = spot.IK(orn, pos, T_bf)
+        # Pass Joint Angles
+        env.pass_joint_angles(joint_angles.reshape(-1))
+
+        env.step(action)
+
         # Perform action
         next_state, reward, done, _ = env.step(action)
         done_bool = float(done)
@@ -161,8 +201,9 @@ def main():
             # +1 to account for 0 indexing.
             # +0 on ep_timesteps since it will increment +1 even if done=True
             print(
-                "Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(
-                    t + 1, episode_num, episode_timesteps, episode_reward))
+                "Total T: {} Episode Num: {} Episode T: {} Reward: {:.2f} REWARD PER STEP: {:.2f}"
+                .format(t + 1, episode_num, episode_timesteps, episode_reward,
+                        episode_reward / float(episode_timesteps)))
             # Reset environment
             state, done = env.reset(), False
             evaluations.append(episode_reward)
