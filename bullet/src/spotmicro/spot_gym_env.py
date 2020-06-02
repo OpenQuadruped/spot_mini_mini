@@ -267,6 +267,11 @@ class spotGymEnv(gym.Env):
         self.viewer = None
         self._hard_reset = hard_reset  # This assignment need to be after reset()
         self.goal_reached = False
+        # Generate HeightField or not
+        if self.height_field:
+            hf = HeightField()
+            # Do 3x for extra roughness
+            hf._generate_field(self)
 
     def set_env_randomizer(self, env_randomizer):
         self._env_randomizer = env_randomizer
@@ -284,10 +289,6 @@ class spotGymEnv(gym.Env):
             self.StateMachine = BezierStepper(dt=self._time_step)
             # Shuffle order of states
             self.StateMachine.reshuffle()
-        # Generate HeightField or not
-        if self.height_field:
-            hf = HeightField()
-            hf._generate_field(self)
 
         self._pybullet_client.configureDebugVisualizer(
             self._pybullet_client.COV_ENABLE_RENDERING, 0)

@@ -6,6 +6,7 @@ from scipy.signal import butter, filtfilt
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.Kinematics.SpotKinematics import SpotModel
+from spotmicro.Kinematics.LieAlgebra import TransToRp
 import copy
 
 np.random.seed(0)
@@ -21,10 +22,9 @@ _EXPLORE = 3
 _EXPLORE_TG = 4
 
 # Params for TG
-F_SCALE = 6.0
-RESIDUALS_SCALE = 0.1
-CLEARANCE_SCALE = 0.005
-PENETRATION_SCALE = 0.001
+RESIDUALS_SCALE = 0.02
+CLEARANCE_SCALE = 0.05
+PENETRATION_SCALE = 0.025
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -97,17 +97,31 @@ def ParallelWorker(childPipe, env, nb_states):
             desired_velocity = payload[4]
             desired_rate = payload[5]
             TGP = payload[6]
+            TGP_UnMod = copy.deepcopy(TGP)
             smach = payload[7]
             spot = payload[8]
             state = env.reset()
             sum_rewards = 0.0
             timesteps = 0
             done = False
-            BaseClearanceHeight = smach.ClearanceHeight
-            BasePenetrationDepth = smach.PenetrationDepth
             T_bf = copy.deepcopy(spot.WorldToFoot)
             T_b0 = copy.deepcopy(spot.WorldToFoot)
             while not done and timesteps < policy.episode_steps:
+                pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
+                )
+                # Unmodified command
+                T_bf = TGP_UnMod.GenerateTrajectory(StepLength,
+                                                    LateralFraction, YawRate,
+                                                    StepVelocity, T_b0, T_bf,
+                                                    ClearanceHeight,
+                                                    PenetrationDepth)
+                # APPEND Commanded Foot Position to state
+                _, pbfFL = TransToRp(T_bf["FL"])
+                _, pbfBL = TransToRp(T_bf["BL"])
+                _, pbfFR = TransToRp(T_bf["FR"])
+                _, pbfBR = TransToRp(T_bf["BR"])
+                UnModFootPoses = np.concatenate((pbfFL, pbfBL, pbfFR, pbfBR))
+                state = np.append(state, UnModFootPoses)
                 normalizer.observe(state)
                 # Normalize State
                 state = normalizer.normalize(state)
@@ -116,21 +130,24 @@ def ParallelWorker(childPipe, env, nb_states):
                 residuals = np.tanh(action[2:]) * RESIDUALS_SCALE
                 # Extract TG information from action
                 ClearanceHeight_DELTA = np.tanh(action[0]) * CLEARANCE_SCALE
-                smach.ClearanceHeight = BaseClearanceHeight + ClearanceHeight_DELTA
+                NewClearanceHeight = smach.ClearanceHeight + ClearanceHeight_DELTA
                 PenetrationDepth_DELTA = np.tanh(action[0]) * PENETRATION_SCALE
-                smach.PenetrationDepth = BasePenetrationDepth + PenetrationDepth_DELTA
-                pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
-                )
+                NewPenetrationDepth = smach.PenetrationDepth + PenetrationDepth_DELTA
 
                 env.pass_smach(smach)
 
                 # Get Desired Foot Poses
                 T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
                                               YawRate, StepVelocity, T_b0,
-                                              T_bf, ClearanceHeight,
-                                              PenetrationDepth)
+                                              T_bf, NewClearanceHeight,
+                                              NewPenetrationDepth)
+                # Add Residuals as XYZ to each item
+                T_bf["FL"][3, :3] += residuals[:3]
+                T_bf["BL"][3, :3] += residuals[3:6]
+                T_bf["FR"][3, :3] += residuals[6:9]
+                T_bf["BR"][3, :3] += residuals[9:]
                 joint_angles = spot.IK(orn, pos, T_bf)
-                action[2:] = joint_angles.reshape(-1) + residuals
+                action[2:] = joint_angles.reshape(-1)
                 # Clip action between +-1 for execution in env
                 for a in range(len(action)):
                     action[a] = np.clip(action[a], -max_action, max_action)
@@ -156,7 +173,7 @@ class Policy():
             state_dim,
             action_dim,
             # how much weights are changed each step
-            learning_rate=0.03,
+            learning_rate=0.02,
             # number of random expl_noise variations generated
             # each step
             # each one will be run for 2 epochs, + and -
@@ -164,7 +181,7 @@ class Policy():
             # used to update weights, sorted by highest rwrd
             num_best_deltas=16,
             # number of timesteps per episode per rollout
-            episode_steps=1000,
+            episode_steps=5000,
             # weight of sampled exploration noise
             expl_noise=0.01,
             # for seed gen
@@ -293,7 +310,6 @@ class ARSAgent():
         self.env = env
         self.max_action = float(self.env.action_space.high[0])
         self.successes = 0
-        self.last_reward = 0.0
         self.phase = 0
         self.desired_velocity = 0.5
         self.desired_rate = 0.0
@@ -340,8 +356,6 @@ class ARSAgent():
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
     def deployTG(self, direction=None, delta=None):
         state = self.env.reset()
-        # APPEND PHASE OBS
-        # state = np.append(state, self.TGP.get_TG_state())
         sum_rewards = 0.0
         timesteps = 0
         done = False
@@ -350,7 +364,22 @@ class ARSAgent():
         # f = []
         T_bf = copy.deepcopy(self.spot.WorldToFoot)
         T_b0 = copy.deepcopy(self.spot.WorldToFoot)
+        TGP_UnMod = copy.deepcopy(self.TGP)
         while not done and timesteps < self.policy.episode_steps:
+            pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
+            )
+            # Unmodified command
+            T_bf = TGP_UnMod.GenerateTrajectory(StepLength, LateralFraction,
+                                                YawRate, StepVelocity, T_b0,
+                                                T_bf, ClearanceHeight,
+                                                PenetrationDepth)
+            # APPEND Commanded Foot Position to state
+            _, pbfFL = TransToRp(T_bf["FL"])
+            _, pbfBL = TransToRp(T_bf["BL"])
+            _, pbfFR = TransToRp(T_bf["FR"])
+            _, pbfBR = TransToRp(T_bf["BR"])
+            UnModFootPoses = np.concatenate((pbfFL, pbfBL, pbfFR, pbfBR))
+            state = np.append(state, UnModFootPoses)
             self.normalizer.observe(state)
             # Normalize State
             state = self.normalizer.normalize(state)
@@ -359,21 +388,25 @@ class ARSAgent():
             residuals = np.tanh(action[2:]) * RESIDUALS_SCALE
             # Extract TG information from action
             ClearanceHeight_DELTA = np.tanh(action[0]) * CLEARANCE_SCALE
-            self.smach.ClearanceHeight = self.BaseClearanceHeight + ClearanceHeight_DELTA
+            NewClearanceHeight = self.smach.ClearanceHeight + ClearanceHeight_DELTA
             PenetrationDepth_DELTA = np.tanh(action[0]) * PENETRATION_SCALE
-            self.smach.PenetrationDepth = self.BasePenetrationDepth + PenetrationDepth_DELTA
-            pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
-            )
+            NewPenetrationDepth = self.smach.PenetrationDepth + PenetrationDepth_DELTA
 
             self.env.pass_smach(self.smach)
 
             # Get Desired Foot Poses
             T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
                                                YawRate, StepVelocity, T_b0,
-                                               T_bf, ClearanceHeight,
-                                               PenetrationDepth)
+                                               T_bf, NewClearanceHeight,
+                                               NewPenetrationDepth)
+            # Add Residuals as Z to each item
+            # print("RESIDUALS: {}".format(residuals))
+            T_bf["FL"][3, :3] += residuals[:3]
+            T_bf["BL"][3, :3] += residuals[3:6]
+            T_bf["FR"][3, :3] += residuals[6:9]
+            T_bf["BR"][3, :3] += residuals[9:]
             joint_angles = self.spot.IK(orn, pos, T_bf)
-            action[2:] = joint_angles.reshape(-1) + residuals
+            action[2:] = joint_angles.reshape(-1)
             # Clip action between +-1 for execution in env
             # for a in range(len(action)):
             #     action[a] = np.clip(action[a], -self.max_action,
@@ -393,10 +426,11 @@ class ARSAgent():
         # plt.title("TG Parameters by Policy")
         # plt.legend()
         # plt.show()
+        self.TGP.reset()
         self.smach.reshuffle()
         self.smach.PenetrationDepth = self.BasePenetrationDepth
         self.smach.ClearanceHeight = self.BaseClearanceHeight
-        return sum_rewards
+        return sum_rewards, timesteps
 
     def train(self):
         # Sample random expl_noise deltas
@@ -518,70 +552,9 @@ class ARSAgent():
 
         # Execute Current Policy USING VANILLA OR TG
         if self.TGP is None:
-            eval_reward = self.deploy()
+            return self.deploy()
         else:
-            eval_reward = self.deployTG()
-        self.last_reward = eval_reward
-
-        # Call evolve_state function to adjust reward/state
-        self.evolve_state()
-        return eval_reward
-
-    def evolve_state(self):
-        """ Change desired velocity and rate parameters
-            over course of training if success criteria
-            is met for current goals
-        """
-        # if self.last_reward > 400.0:
-        #     self.successes += 1
-        # elif self.successes > 0:
-        #     self.successes -= 1
-
-        # if self.successes > 10:
-        #     self.successes = 0
-
-        #     # # alternating phases for fwd vel
-        #     # # start at 0.5 m/s and then flip to -0.5ms
-        #     # # then increment to -0.4ms, then flip to 0.4ms
-        #     # # then decrement to 0.3ms etc.
-
-        #     # if self.flip % 2 == 0:
-        #     #     self.desired_velocity *= -1
-        #     # else:
-        #     #     if self.increment % 2 != 0:
-        #     #         if self.scaledown:
-        #     #             if np.sign(self.desired_velocity) < 0:
-        #     #                 self.desired_velocity += 0.1
-        #     #             else:
-        #     #                 self.desired_velocity -= 0.1
-        #     #         else:
-        #     #             if np.sign(self.desired_velocity) > 0:
-        #     #                 self.desired_velocity += 0.1
-        #     #             else:
-        #     #                 self.desired_velocity -= 0.1
-
-        #     #     if self.desired_velocity == 0.0:
-        #     #         self.scaledown = False
-        #     #     elif abs(self.desired_velocity) == 0.5:
-        #     #         self.increment = True
-        #     if self.scaledown:
-        #         self.desired_velocity -= 0.1
-        #     else:
-        #         self.desired_velocity += 0.1
-
-        #     if self.desired_velocity >= 0.5:
-        #         self.scaledown = True
-        #     elif self.desired_velocity <= -0.5:
-        #         self.scaledown = False
-
-        #     # self.flip += 1
-        #     # self.increment += 1
-
-        # self.desired_velocity = np.random.uniform(low=0.0, high=1.0)
-        self.desired_velocity = self.desired_velocity
-
-        print("NEW DESIRED VELOCITY IS {}".format(self.desired_velocity))
-        print("NEW DESIRED RATE IS {}".format(self.desired_rate))
+            return self.deployTG()
 
     def save(self, filename):
         """ Save the Policy

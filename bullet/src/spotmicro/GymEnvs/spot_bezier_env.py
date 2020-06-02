@@ -47,8 +47,8 @@ class spotBezierEnv(spotGymEnv):
                  energy_weight=0.000,
                  shake_weight=0.00,
                  drift_weight=0.0,
-                 rp_weight=1.0,
-                 rate_weight=0.1,
+                 rp_weight=3.0,
+                 rate_weight=0.005,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
                  distance_limit=float("inf"),
@@ -181,64 +181,52 @@ class spotBezierEnv(spotGymEnv):
             self.DrawFootPath()
         return np.array(self._get_observation()), reward, done, {}
 
-    def pass_smach(self, smach):
-        """ Pass current state machine params for reward calc
-        """
-        self.smach = smach
-
     def _reward(self):
         # get observation
         obs = self._get_observation()
 
-        # Return simulated controller values for reward calc
-        _, _, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = self.smach.return_bezier_params(
-        )
-
         # Return StepVelocity with the sign of StepLength
-        DesiredVelicty = math.copysign(StepVelocity / 4.0, StepLength)
+        DesiredVelicty = math.copysign(self.spot.StepVelocity / 4.0,
+                                       self.spot.StepLength)
 
-        # GETTING TWIST IN BODY FRAME
-        pos = self.spot.GetBasePosition()
-        orn = self.spot.GetBaseOrientation()
-        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
-            [orn[0], orn[1], orn[2], orn[3]])
-        rpy = LA.RPY(roll, pitch, yaw)
-        R, _ = LA.TransToRp(rpy)
-        T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
-        T_bw = LA.TransInv(T_wb)
-        Adj_Tbw = LA.Adjoint(T_bw)
-
-        Vw = np.concatenate(
-            (self.spot.prev_ang_twist, self.spot.prev_lin_twist))
-        Vb = np.dot(Adj_Tbw, Vw)
-
-        # New Twist in Body Frame
-
-        # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
-        fwd_speed = -Vb[3]  # vx
-        lat_speed = -Vb[4]  # vy
+        fwd_speed = self.spot.prev_lin_twist[0]  # vx
+        lat_speed = self.spot.prev_lin_twist[1]  # vy
 
         # Modification for lateral/fwd rewards
         reward_max = 1.0
         # FORWARD/LATERAL
         forward_reward = reward_max * np.exp(
-            -(fwd_speed - DesiredVelicty * np.cos(LateralFraction))**2 / (0.1))
+            -(fwd_speed - DesiredVelicty * np.cos(self.spot.LateralFraction))**
+            2 / (0.1))
         lateral_reward = reward_max * np.exp(
-            -(lat_speed - DesiredVelicty * np.sin(LateralFraction))**2 / (0.1))
+            -(lat_speed - DesiredVelicty * np.sin(self.spot.LateralFraction))**
+            2 / (0.1))
 
-        # print("FWD SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
-        #     fwd_speed, DesiredVelicty * np.cos(LateralFraction)))
+        print("FWD SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
+            fwd_speed, DesiredVelicty * np.cos(self.spot.LateralFraction)))
 
-        # print("LAT SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
-        #     lat_speed, DesiredVelicty * np.sin(LateralFraction)))
+        print("LAT SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
+            lat_speed, DesiredVelicty * np.sin(self.spot.LateralFraction)))
 
-        # print("-----------------------------------------------")
+        print("ROLL: {:.2f}".format(obs[0]))
+        print("PITCH: {:.2f}".format(obs[1]))
+
+        print("GYRO X: {:.2f}".format(obs[2]))
+        print("GYRO Y: {:.2f}".format(obs[3]))
+        print("GYRO Z: {:.2f}".format(obs[4]))
+
+        print("ACC X: {:.2f}".format(obs[5]))
+        print("ACC Y: {:.2f}".format(obs[6]))
+        print("ACC Z: {:.2f}".format(obs[7]))
+
+        print("-----------------------------------------------")
 
         forward_reward += lateral_reward
 
         yaw_rate = obs[4]
 
-        rot_reward = reward_max * np.exp(-(yaw_rate - YawRate)**2 / (0.1))
+        rot_reward = reward_max * np.exp(-(yaw_rate - self.spot.YawRate)**2 /
+                                         (0.1))
 
         # penalty for nonzero roll, pitch
         rp_reward = -(abs(obs[0]) + abs(obs[1]))

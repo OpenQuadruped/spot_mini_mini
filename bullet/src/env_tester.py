@@ -40,7 +40,7 @@ def main():
 
     env = spotBezierEnv(render=True,
                         on_rack=False,
-                        height_field=True,
+                        height_field=False,
                         draw_foot_path=False)
 
     # Set seeds
@@ -90,8 +90,8 @@ def main():
                                       ClearanceHeight, PenetrationDepth)
         joint_angles = spot.IK(orn, pos, T_bf)
         action[2:] = joint_angles.reshape(-1)
-        # Pass smach
-        env.pass_smach(bz_step)
+        # Get External Observations
+        env.spot.GetExternalObservations(bzg, bz_step)
         # Step
         next_state, reward, done, _ = env.step(action)
         if done:
