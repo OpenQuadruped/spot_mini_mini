@@ -1,4 +1,4 @@
-## Gait Generation and Optimization via RL on Spot Micro
+## Gait Generation on Spot Micro
 
 Progress so far:
 
