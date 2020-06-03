@@ -151,11 +151,13 @@ def main():
         #                            bz_step.PenetrationDepth_LIMITS[0],
         #                            bz_step.PenetrationDepth_LIMITS[1])
 
+        contacts = state[-4:]
+
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
                                       StepVelocity, T_bf0, T_bf,
-                                      ClearanceHeight, PenetrationDepth)
-
+                                      ClearanceHeight, PenetrationDepth,
+                                      contacts)
         # Add DELTA to XYZ Foot Poses
         RESIDUALS_SCALE = 0.03
         T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
