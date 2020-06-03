@@ -226,36 +226,38 @@ class spotBezierEnv(spotGymEnv):
 
         self.prev_pos = pos
 
-        lateral_reward = np.sin(self.spot.LateralFraction) * lateral_reward
-        forward_reward = np.cos(self.spot.LateralFraction) * forward_reward
+        lateral_reward = np.sin(
+            self.spot.LateralFraction) * lateral_reward * 100
+        forward_reward = np.cos(
+            self.spot.LateralFraction) * forward_reward * 100
 
-        print("FWD RWD: {:.2f}".format(forward_reward))
-        print("LAT RWD: {:.2f}".format(lateral_reward))
+        # print("FWD RWD: {:.2f}".format(forward_reward))
+        # print("LAT RWD: {:.2f}".format(lateral_reward))
 
-        print("FWD SPEED: {:.2f} \t UNMOD: {:.2f} ".format(fwd_speed, lt[0]))
+        # print("FWD SPEED: {:.2f} \t UNMOD: {:.2f} ".format(fwd_speed, lt[0]))
 
-        print("LAT SPEED: {:.2f} \t UNMOD: {:.2f} ".format(lat_speed, lt[1]))
+        # print("LAT SPEED: {:.2f} \t UNMOD: {:.2f} ".format(lat_speed, lt[1]))
 
-        print("ROLL: {:.2f}".format(obs[0]))
-        print("PITCH: {:.2f}".format(obs[1]))
+        # print("ROLL: {:.2f}".format(obs[0]))
+        # print("PITCH: {:.2f}".format(obs[1]))
 
-        print("GYRO X: {:.2f}".format(obs[2]))
-        print("GYRO Y: {:.2f}".format(obs[3]))
-        print("GYRO Z: {:.2f}".format(obs[4]))
+        # print("GYRO X: {:.2f}".format(obs[2]))
+        # print("GYRO Y: {:.2f}".format(obs[3]))
+        # print("GYRO Z: {:.2f}".format(obs[4]))
 
-        print("ACC X: {:.2f}".format(obs[5]))
-        print("ACC Y: {:.2f}".format(obs[6]))
-        print("ACC Z: {:.2f}".format(obs[7]))
+        # print("ACC X: {:.2f}".format(obs[5]))
+        # print("ACC Y: {:.2f}".format(obs[6]))
+        # print("ACC Z: {:.2f}".format(obs[7]))
 
-        print("STEP LEN: {:.2f}".format(obs[8]))
-        print("STEP VEL: {:.2f}".format(obs[9]))
-        print("LAT FRAC: {:.2f}".format(obs[10]))
-        print("YAW RATE: {:.2f}".format(obs[11]))
-        print(
-            "LEG PHASES: \nFL: {:.2f} \tFR: {:.2f} \nBL: {:.2f} \tBR: {:.2f}".
-            format(obs[12], obs[13], obs[14], obs[15]))
+        # print("STEP LEN: {:.2f}".format(obs[8]))
+        # print("STEP VEL: {:.2f}".format(obs[9]))
+        # print("LAT FRAC: {:.2f}".format(obs[10]))
+        # print("YAW RATE: {:.2f}".format(obs[11]))
+        # print(
+        #     "LEG PHASES: \nFL: {:.2f} \tFR: {:.2f} \nBL: {:.2f} \tBR: {:.2f}".
+        #     format(obs[12], obs[13], obs[14], obs[15]))
 
-        print("-----------------------------------------------")
+        # print("-----------------------------------------------")
 
         forward_reward += lateral_reward
 
@@ -266,6 +268,7 @@ class spotBezierEnv(spotGymEnv):
 
         # penalty for nonzero roll, pitch
         rp_reward = -(abs(obs[0]) + abs(obs[1]))
+        # print("RP RWD: {:.2f}".format(rp_reward))
         # print("ROLL: {} \t PITCH: {}".format(obs[0], obs[1]))
 
         # penalty for nonzero acc(z) - UNRELIABLE ON IMU
