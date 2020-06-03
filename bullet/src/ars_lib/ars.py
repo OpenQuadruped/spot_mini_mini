@@ -153,11 +153,13 @@ def ParallelWorker(childPipe, env, nb_states):
                 #                            smach.PenetrationDepth_LIMITS[0],
                 #                            smach.PenetrationDepth_LIMITS[1])
 
+                contacts = state[-4:]
+
                 # Get Desired Foot Poses
                 T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
                                               YawRate, StepVelocity, T_b0,
                                               T_bf, ClearanceHeight,
-                                              PenetrationDepth)
+                                              PenetrationDepth, contacts)
 
                 # Add DELTA to XYZ Foot Poses
                 RESIDUALS_SCALE = 0.03
@@ -428,11 +430,13 @@ class ARSAgent():
             #                            self.smach.PenetrationDepth_LIMITS[0],
             #                            self.smach.PenetrationDepth_LIMITS[1])
 
+            contacts = state[-4:]
+
             # Get Desired Foot Poses
             T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
                                                YawRate, StepVelocity, T_b0,
                                                T_bf, ClearanceHeight,
-                                               PenetrationDepth)
+                                               PenetrationDepth, contacts)
 
             # Add DELTA to XYZ Foot Poses
             RESIDUALS_SCALE = 0.03

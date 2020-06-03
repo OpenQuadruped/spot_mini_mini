@@ -91,16 +91,18 @@ class BezierGait():
         if index == self.ref_idx:
             self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
-            # print("SWING REF: {}".format(Sw_phase))
             # REF Touchdown at End of Swing
-            if self.SwRef >= 0.999:
-                self.TD = True
+            # if self.SwRef >= 0.999:
+            #     self.TD = True
             # else:
             #     self.TD = False
-                # print("TOUCHDOWN")
         return Sw_phase, StanceSwing
 
     def Get_ti(self, index, Tstride):
+        # NOTE: for some reason python's having numerical issues w this
+        # setting to 0 for ref leg by force
+        if index == self.ref_idx:
+            self.dSref[index] = 0.0
         return self.time_since_last_TD - self.dSref[index] * Tstride
 
     def Increment(self, dt, Tstride):
@@ -111,6 +113,8 @@ class BezierGait():
         self.time_since_last_TD = self.time - self.TD_time
         if self.time_since_last_TD > Tstride:
             self.time_since_last_TD = Tstride
+        elif self.time_since_last_TD < 0.0:
+            self.time_since_last_TD = 0.0
         # print("T STRIDE: {}".format(Tstride))
         # Increment Time at the end in case TD just happened
         # So that we get time_since_last_TD = 0.0
@@ -126,9 +130,9 @@ class BezierGait():
 
     def CheckTouchDown(self):
         if self.SwRef >= 0.9 and self.TD:
-            print("CONTACT")
             self.TD_time = self.time
             self.TD = False
+            self.SwRef = 0.0
 
     def BezierPoint(self, t, k, point):
         return point * self.Binomial(k) * np.power(t, k) * np.power(
@@ -327,6 +331,9 @@ class BezierGait():
         else:
             Tswing = 0.0
             L = 0.0
+            self.TD = False
+            self.time = 0.0
+            self.time_since_last_TD = 0.0
 
         # Then, get time since last Touchdown and increment time counter
         if dt is None:
@@ -338,14 +345,15 @@ class BezierGait():
         if Tswing < dt:
             Tswing = 0.0
             L = 0.0
+            self.TD = False
+            self.time = 0.0
+            self.time_since_last_TD = 0.0
 
         # Check contacts
         if contacts[0] == 1 and Tswing > dt:
             self.TD = True
 
         self.Increment(dt, Tswing + self.Tstance)
-        print("SWS: {}".format(self.StanceSwing))
-        print("------")
 
         T_bf = copy.deepcopy(T_bf_)
         for i, (key, Tbf_in) in enumerate(T_bf_.items()):

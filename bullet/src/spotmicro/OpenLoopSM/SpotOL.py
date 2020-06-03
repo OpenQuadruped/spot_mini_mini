@@ -97,9 +97,6 @@ class BezierStepper():
 
             self.current_state = self.order[index]
 
-        if self.mode is ALL:
-            self.time += 1
-
     def StateMachine(self):
         """ State Machined used for training robust RL on top of OL gait.
 
@@ -122,21 +119,21 @@ class BezierStepper():
             NOTE: the RL is solely responsible for modulating Clearance Height
                   and Penetration Depth
         """
+        if self.mode is ALL:
+            self.which_state()
 
-        self.which_state()
-
-        if self.current_state == FB:
-            # print("FORWARD/BACKWARD")
-            self.FB()
-        elif self.current_state == LAT:
-            # print("LATERAL")
-            self.LAT()
-        elif self.current_state == ROT:
-            # print("ROTATION")
-            self.ROT()
-        elif self.current_state == COMBI:
-            # print("COMBINED")
-            self.COMBI()
+            if self.current_state == FB:
+                # print("FORWARD/BACKWARD")
+                self.FB()
+            elif self.current_state == LAT:
+                # print("LATERAL")
+                self.LAT()
+            elif self.current_state == ROT:
+                # print("ROTATION")
+                self.ROT()
+            elif self.current_state == COMBI:
+                # print("COMBINED")
+                self.COMBI()
 
         return self.return_bezier_params()
 

@@ -535,19 +535,13 @@ class Spot(object):
     """
         upper_bound = np.array([0.0] * self.GetObservationDimension())
         # roll, pitch
-        upper_bound[0:2] = np.pi / 2.0
+        upper_bound[0:2] = 2.0 * np.pi
         # acc, rate in x,y,z
         upper_bound[2:8] = np.inf
-        # Step Length
-        upper_bound[8] = 0.1
-        # Step Velocity
-        upper_bound[9] = 3.0
-        # Lateral Fraction
-        upper_bound[10] = np.pi / 2.0
-        # Yaw Rate
-        upper_bound[11] = 1.0
         # Leg Phases
-        upper_bound[12:] = 2.0
+        upper_bound[8:12] = 2.0
+        # Contacts
+        upper_bound[12:] = 1.0
         return upper_bound
 
     def GetObservationLowerBound(self):
@@ -644,10 +638,10 @@ class Spot(object):
         observation.extend(list(ang_twist))
         observation.extend(list(lin_acc))
         # Control Input
-        observation.append(self.StepLength)
-        observation.append(self.StepVelocity)
-        observation.append(self.LateralFraction)
-        observation.append(self.YawRate)
+        # observation.append(self.StepLength)
+        # observation.append(self.StepVelocity)
+        # observation.append(self.LateralFraction)
+        # observation.append(self.YawRate)
         observation.extend(self.LegPhases)
         observation.append(FLC)
         observation.append(FRC)
