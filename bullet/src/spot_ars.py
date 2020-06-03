@@ -53,7 +53,7 @@ def main():
                         on_rack=False,
                         height_field=True,
                         draw_foot_path=False,
-                        action_dim=10)
+                        action_dim=4)
 
     # Set seeds
     env.seed(seed)
@@ -127,9 +127,10 @@ def main():
         # episode_reward = agent.train()
         # +1 to account for 0 indexing.
         # +0 on ep_timesteps since it will increment +1 even if done=True
-        print("Total T: {} Episode Num: {} Episode T: {} Reward: {}, >400: {}".
-              format(t, episode_num, episode_timesteps, episode_reward,
-                     agent.successes))
+        print(
+            "Total T: {} Episode Num: {} Episode T: {} Reward: {:.2f} REWARD PER STEP: {:.2f}"
+            .format(t + 1, episode_num, episode_timesteps, episode_reward,
+                    episode_reward / float(episode_timesteps)))
 
         # Evaluate episode
         if (episode_num + 1) % eval_freq == 0:

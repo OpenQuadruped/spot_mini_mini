@@ -47,7 +47,7 @@ def main():
                         on_rack=False,
                         height_field=True,
                         draw_foot_path=False,
-                        action_dim=10)
+                        action_dim=4)
     env = NormalizedActions(env)
 
     # Set seeds
@@ -121,35 +121,35 @@ def main():
 
         # Add DELTA to Bezier Params
         # LIMS
-        SL_SCALE = 0.007
-        SV_SCALE = 0.2
-        LF_SCALE = 0.1
-        Y_SCALE = 0.1
-        CH_SCALE = 0.007
-        PD_SCALE = 0.0025
-        StepLength += np.tanh(action[0]) * SL_SCALE
-        StepVelocity += np.tanh(action[1]) * SV_SCALE
-        LateralFraction += np.tanh(action[2]) * LF_SCALE
-        YawRate += np.tanh(action[3]) * Y_SCALE
-        ClearanceHeight += np.tanh(action[4]) * CH_SCALE
-        PenetrationDepth += np.tanh(action[5]) * PD_SCALE
+        # SL_SCALE = 0.007
+        # SV_SCALE = 0.2
+        # LF_SCALE = 0.1
+        # Y_SCALE = 0.1
+        # CH_SCALE = 0.007
+        # PD_SCALE = 0.0025
+        # StepLength += np.tanh(action[0]) * SL_SCALE
+        # StepVelocity += np.tanh(action[1]) * SV_SCALE
+        # LateralFraction += np.tanh(action[2]) * LF_SCALE
+        # YawRate += np.tanh(action[3]) * Y_SCALE
+        # ClearanceHeight += np.tanh(action[4]) * CH_SCALE
+        # PenetrationDepth += np.tanh(action[5]) * PD_SCALE
 
-        # CLIP EVERYTHING
-        StepLength = np.clip(StepLength, bz_step.StepLength_LIMITS[0],
-                             bz_step.StepLength_LIMITS[1])
-        StepVelocity = np.clip(StepVelocity, bz_step.StepVelocity_LIMITS[0],
-                               bz_step.StepVelocity_LIMITS[1])
-        LateralFraction = np.clip(LateralFraction,
-                                  bz_step.LateralFraction_LIMITS[0],
-                                  bz_step.LateralFraction_LIMITS[1])
-        YawRate = np.clip(YawRate, bz_step.YawRate_LIMITS[0],
-                          bz_step.YawRate_LIMITS[1])
-        ClearanceHeight = np.clip(ClearanceHeight,
-                                  bz_step.ClearanceHeight_LIMITS[0],
-                                  bz_step.ClearanceHeight_LIMITS[1])
-        PenetrationDepth = np.clip(PenetrationDepth,
-                                   bz_step.PenetrationDepth_LIMITS[0],
-                                   bz_step.PenetrationDepth_LIMITS[1])
+        # # CLIP EVERYTHING
+        # StepLength = np.clip(StepLength, bz_step.StepLength_LIMITS[0],
+        #                      bz_step.StepLength_LIMITS[1])
+        # StepVelocity = np.clip(StepVelocity, bz_step.StepVelocity_LIMITS[0],
+        #                        bz_step.StepVelocity_LIMITS[1])
+        # LateralFraction = np.clip(LateralFraction,
+        #                           bz_step.LateralFraction_LIMITS[0],
+        #                           bz_step.LateralFraction_LIMITS[1])
+        # YawRate = np.clip(YawRate, bz_step.YawRate_LIMITS[0],
+        #                   bz_step.YawRate_LIMITS[1])
+        # ClearanceHeight = np.clip(ClearanceHeight,
+        #                           bz_step.ClearanceHeight_LIMITS[0],
+        #                           bz_step.ClearanceHeight_LIMITS[1])
+        # PenetrationDepth = np.clip(PenetrationDepth,
+        #                            bz_step.PenetrationDepth_LIMITS[0],
+        #                            bz_step.PenetrationDepth_LIMITS[1])
 
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
@@ -158,10 +158,10 @@ def main():
 
         # Add DELTA to Z Foot Poses
         RESIDUALS_SCALE = 0.02
-        T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
-        T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
-        T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
-        T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
+        T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
+        T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
+        T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
+        T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
 
         joint_angles = spot.IK(orn, pos, T_bf)
         # Pass Joint Angles
@@ -190,6 +190,7 @@ def main():
 
         if done:
             # Reshuffle State Machine
+            bzg.reset()
             bz_step.reshuffle()
             bz_step.ClearanceHeight = BaseClearanceHeight
             bz_step.PenetrationDepth = BasePenetrationDepth

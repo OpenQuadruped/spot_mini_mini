@@ -10,6 +10,9 @@ LAT = 1
 ROT = 2
 COMBI = 3
 
+FWD = 0
+ALL = 1
+
 
 class BezierStepper():
     def __init__(self,
@@ -23,7 +26,8 @@ class BezierStepper():
                  PenetrationDepth=0.01,
                  episode_length=2000,
                  dt=0.01,
-                 num_shuffles=2):
+                 num_shuffles=2,
+                 mode=ALL):
         self.pos = pos
         self.orn = orn
         self.StepLength = StepLength
@@ -38,6 +42,8 @@ class BezierStepper():
         self.ClearanceHeight_LIMITS = [0.0, 0.1]
         self.PenetrationDepth = PenetrationDepth
         self.PenetrationDepth_LIMITS = [0.0, 0.05]
+
+        self.mode = mode
 
         self.dt = dt
 
@@ -91,7 +97,8 @@ class BezierStepper():
 
             self.current_state = self.order[index]
 
-        self.time += 1
+        if self.mode is ALL:
+            self.time += 1
 
     def StateMachine(self):
         """ State Machined used for training robust RL on top of OL gait.
