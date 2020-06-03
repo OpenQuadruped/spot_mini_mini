@@ -47,7 +47,7 @@ def main():
                         on_rack=False,
                         height_field=True,
                         draw_foot_path=False,
-                        action_dim=12)
+                        action_dim=4)
     env = NormalizedActions(env)
 
     # Set seeds
@@ -160,16 +160,18 @@ def main():
                                       contacts)
         # Add DELTA to XYZ Foot Poses
         RESIDUALS_SCALE = 0.03
-        T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
-        T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
-        T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-        T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+        # T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
+        # T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
+        # T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+        # T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+        T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
+        T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
+        T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
+        T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
 
         joint_angles = spot.IK(orn, pos, T_bf)
         # Pass Joint Angles
         env.pass_joint_angles(joint_angles.reshape(-1))
-
-        env.step(action)
 
         # Perform action
         next_state, reward, done, _ = env.step(action)
