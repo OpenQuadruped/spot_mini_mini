@@ -40,7 +40,7 @@ def main():
 
     env = spotBezierEnv(render=True,
                         on_rack=False,
-                        height_field=False,
+                        height_field=True,
                         draw_foot_path=False)
 
     # Set seeds
@@ -64,7 +64,7 @@ def main():
 
     bzg = BezierGait(dt=env._time_step)
 
-    bz_step = BezierStepper(dt=env._time_step)
+    bz_step = BezierStepper(dt=env._time_step, mode=0)
 
     action = env.action_space.sample()
 
@@ -89,7 +89,7 @@ def main():
                                       StepVelocity, T_bf0, T_bf,
                                       ClearanceHeight, PenetrationDepth)
         joint_angles = spot.IK(orn, pos, T_bf)
-        action[2:] = joint_angles.reshape(-1)
+        env.pass_joint_angles(joint_angles.reshape(-1))
         # Get External Observations
         env.spot.GetExternalObservations(bzg, bz_step)
         # Step

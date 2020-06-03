@@ -36,7 +36,7 @@ class SpotModel:
         self.foot_y = 0.18
 
         # Body Height
-        self.height = 0.15
+        self.height = 0.135
 
         # Joint Parameters
         self.hip_lim = hip_lim

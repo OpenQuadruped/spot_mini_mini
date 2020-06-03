@@ -129,6 +129,8 @@ class spotBezierEnv(spotGymEnv):
         self.action_space = spaces.Box(-action_high, action_high)
         print("Action SPACE: {}".format(self.action_space))
 
+        self.prev_pos = np.array([0.0, 0.0, 0.0])
+
     def pass_joint_angles(self, ja):
         """ For executing joint angles
         """
@@ -200,34 +202,60 @@ class spotBezierEnv(spotGymEnv):
         fwd_speed = self.spot.prev_lin_twist[0]  # vx
         lat_speed = self.spot.prev_lin_twist[1]  # vy
 
+        # DEBUG
+        lt, at = self.spot.GetBaseTwist()
+
         # Modification for lateral/fwd rewards
         reward_max = 1.0
         # FORWARD/LATERAL
-        forward_reward = reward_max * np.exp(
-            -(fwd_speed - DesiredVelicty * np.cos(self.spot.LateralFraction))**
-            2 / (0.1))
-        lateral_reward = reward_max * np.exp(
-            -(lat_speed - DesiredVelicty * np.sin(self.spot.LateralFraction))**
-            2 / (0.1))
+        # forward_reward = reward_max * np.exp(
+        #     -(fwd_speed - DesiredVelicty * np.cos(self.spot.LateralFraction))**
+        #     2 / (0.1))
+        # lateral_reward = reward_max * np.exp(
+        #     -(lat_speed - DesiredVelicty * np.sin(self.spot.LateralFraction))**
+        #     2 / (0.1))
+        # NOTE: Replaceing speed-based reward with movement-based reward
+        # ONLY WORKS FOR MOVING PURELY FORWARD
+        pos = self.spot.GetBasePosition()
+        if DesiredVelicty > 0:
+            forward_reward = pos[0] - self.prev_pos[0]
+        else:
+            forward_reward = -(pos[0] - self.prev_pos[0])
 
-        # print("FWD SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
-        #     fwd_speed, DesiredVelicty * np.cos(self.spot.LateralFraction)))
+        lateral_reward = pos[1] - self.prev_pos[1]
 
-        # print("LAT SPEED: {:.2f} \t DESIRED: {:.2f} ".format(
-        #     lat_speed, DesiredVelicty * np.sin(self.spot.LateralFraction)))
+        self.prev_pos = pos
 
-        # print("ROLL: {:.2f}".format(obs[0]))
-        # print("PITCH: {:.2f}".format(obs[1]))
+        lateral_reward = np.sin(self.spot.LateralFraction) * lateral_reward
+        forward_reward = np.cos(self.spot.LateralFraction) * forward_reward
 
-        # print("GYRO X: {:.2f}".format(obs[2]))
-        # print("GYRO Y: {:.2f}".format(obs[3]))
-        # print("GYRO Z: {:.2f}".format(obs[4]))
+        print("FWD RWD: {:.2f}".format(forward_reward))
+        print("LAT RWD: {:.2f}".format(lateral_reward))
 
-        # print("ACC X: {:.2f}".format(obs[5]))
-        # print("ACC Y: {:.2f}".format(obs[6]))
-        # print("ACC Z: {:.2f}".format(obs[7]))
+        print("FWD SPEED: {:.2f} \t UNMOD: {:.2f} ".format(fwd_speed, lt[0]))
 
-        # print("-----------------------------------------------")
+        print("LAT SPEED: {:.2f} \t UNMOD: {:.2f} ".format(lat_speed, lt[1]))
+
+        print("ROLL: {:.2f}".format(obs[0]))
+        print("PITCH: {:.2f}".format(obs[1]))
+
+        print("GYRO X: {:.2f}".format(obs[2]))
+        print("GYRO Y: {:.2f}".format(obs[3]))
+        print("GYRO Z: {:.2f}".format(obs[4]))
+
+        print("ACC X: {:.2f}".format(obs[5]))
+        print("ACC Y: {:.2f}".format(obs[6]))
+        print("ACC Z: {:.2f}".format(obs[7]))
+
+        print("STEP LEN: {:.2f}".format(obs[8]))
+        print("STEP VEL: {:.2f}".format(obs[9]))
+        print("LAT FRAC: {:.2f}".format(obs[10]))
+        print("YAW RATE: {:.2f}".format(obs[11]))
+        print(
+            "LEG PHASES: \nFL: {:.2f} \tFR: {:.2f} \nBL: {:.2f} \tBR: {:.2f}".
+            format(obs[12], obs[13], obs[14], obs[15]))
+
+        print("-----------------------------------------------")
 
         forward_reward += lateral_reward
 
