@@ -40,8 +40,8 @@ def main():
 
     env = spotBezierEnv(render=True,
                         on_rack=False,
-                        height_field=True,
-                        draw_foot_path=True)
+                        height_field=False,
+                        draw_foot_path=False)
 
     # Set seeds
     env.seed(seed)
@@ -54,7 +54,7 @@ def main():
     print("ACTION DIM: {}".format(action_dim))
     max_action = float(env.action_space.high[0])
 
-    env.reset()
+    state = env.reset()
 
     g_u_i = GUI(env.spot.quadruped)
 
@@ -84,16 +84,19 @@ def main():
         bz_step.YawRate = YawRate
         bz_step.StepVelocity = StepVelocity
 
+        contacts = state[-4:]
+
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
                                       StepVelocity, T_bf0, T_bf,
-                                      ClearanceHeight, PenetrationDepth)
+                                      ClearanceHeight, PenetrationDepth,
+                                      contacts)
         joint_angles = spot.IK(orn, pos, T_bf)
         env.pass_joint_angles(joint_angles.reshape(-1))
         # Get External Observations
         env.spot.GetExternalObservations(bzg, bz_step)
         # Step
-        next_state, reward, done, _ = env.step(action)
+        state, reward, done, _ = env.step(action)
         if done:
             print("DONE")
 

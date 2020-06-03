@@ -73,7 +73,7 @@ class BezierGait():
         # STANCE
         if ti >= 0.0 and ti <= Tstance:
             StanceSwing = STANCE
-            Stnphase = ti / Tstance
+            Stnphase = ti / float(Tstance)
             if index == self.ref_idx:
                 # print("STANCE REF: {}".format(Stnphase))
                 self.StanceSwing = StanceSwing
@@ -95,8 +95,8 @@ class BezierGait():
             # REF Touchdown at End of Swing
             if self.SwRef >= 0.999:
                 self.TD = True
-            else:
-                self.TD = False
+            # else:
+            #     self.TD = False
                 # print("TOUCHDOWN")
         return Sw_phase, StanceSwing
 
@@ -118,7 +118,7 @@ class BezierGait():
 
         # If Tstride = Tstance, Tswing = 0
         # RESET ALL
-        if Tstride == self.Tstance:
+        if Tstride < self.Tstance + dt:
             self.time = 0.0
             self.time_since_last_TD = 0.0
             self.TD_time = 0.0
@@ -126,6 +126,7 @@ class BezierGait():
 
     def CheckTouchDown(self):
         if self.SwRef >= 0.9 and self.TD:
+            print("CONTACT")
             self.TD_time = self.time
             self.TD = False
 
@@ -317,6 +318,7 @@ class BezierGait():
                            T_bf_curr,
                            clearance_height=0.06,
                            penetration_depth=0.01,
+                           contacts=[0, 0, 0, 0],
                            dt=None):
         # First, get Tswing from desired speed and stride length
         # NOTE: L is HALF of stride length
@@ -337,7 +339,13 @@ class BezierGait():
             Tswing = 0.0
             L = 0.0
 
+        # Check contacts
+        if contacts[0] == 1 and Tswing > dt:
+            self.TD = True
+
         self.Increment(dt, Tswing + self.Tstance)
+        print("SWS: {}".format(self.StanceSwing))
+        print("------")
 
         T_bf = copy.deepcopy(T_bf_)
         for i, (key, Tbf_in) in enumerate(T_bf_.items()):
