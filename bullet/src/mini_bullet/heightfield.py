@@ -17,7 +17,7 @@ random.seed(10)
 
 class HeightField():
     def __init__(self):
-        self.hf = 1
+        self.hf_id = 0
 
     def _generate_field(self, env, heightPerturbationRange=0.08):
 
@@ -49,7 +49,8 @@ class HeightField():
                 heightfieldData=heightfieldData,
                 numHeightfieldRows=numHeightfieldRows,
                 numHeightfieldColumns=numHeightfieldColumns)
-            terrain = env.pybullet_client.createMultiBody(0, terrainShape)
+            terrain = env.pybullet_client.createMultiBody(
+                0, terrainShape)
             env.pybullet_client.resetBasePositionAndOrientation(
                 terrain, [0, 0, 0], [0, 0, 0, 1])
 
@@ -59,7 +60,8 @@ class HeightField():
                 meshScale=[.5, .5, 2.5],
                 fileName="heightmaps/ground0.txt",
                 heightfieldTextureScaling=128)
-            terrain = env.pybullet_client.createMultiBody(0, terrainShape)
+            terrain = env.pybullet_client.createMultiBody(
+                0, terrainShape)
             env.pybullet_client.resetBasePositionAndOrientation(
                 terrain, [0, 0, 0], [0, 0, 0, 1])
 
@@ -70,10 +72,14 @@ class HeightField():
                 fileName="heightmaps/wm_height_out.png")
             textureId = env.pybullet_client.loadTexture(
                 "heightmaps/gimp_overlay_out.png")
-            terrain = env.pybullet_client.createMultiBody(0, terrainShape)
+            terrain = env.pybullet_client.createMultiBody(
+                0, terrainShape)
             env.pybullet_client.changeVisualShape(terrain,
                                                   -1,
                                                   textureUniqueId=textureId)
+
+        self.hf_id = terrainShape
+        print("TERRAIN SHAPE: {}".format(terrainShape))
 
         env.pybullet_client.changeVisualShape(terrain,
                                               -1,
