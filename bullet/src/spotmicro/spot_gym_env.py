@@ -272,6 +272,8 @@ class spotGymEnv(gym.Env):
             hf = HeightField()
             # Do 3x for extra roughness
             hf._generate_field(self)
+            hf._generate_field(self)
+            hf._generate_field(self)
 
     def set_env_randomizer(self, env_randomizer):
         self._env_randomizer = env_randomizer

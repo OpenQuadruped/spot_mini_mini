@@ -159,12 +159,12 @@ def ParallelWorker(childPipe, env, nb_states):
                                               T_bf, ClearanceHeight,
                                               PenetrationDepth)
 
-                # Add DELTA to Z Foot Poses
-                RESIDUALS_SCALE = 0.02
-                T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
-                T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
-                T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
-                T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
+                # Add DELTA to XYZ Foot Poses
+                RESIDUALS_SCALE = 0.03
+                T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
+                T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
+                T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+                T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
                 # Pass Joint Angles
@@ -434,12 +434,12 @@ class ARSAgent():
                                                T_bf, ClearanceHeight,
                                                PenetrationDepth)
 
-            # Add DELTA to Z Foot Poses
-            RESIDUALS_SCALE = 0.02
-            T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
-            T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
-            T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
-            T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
+            # Add DELTA to XYZ Foot Poses
+            RESIDUALS_SCALE = 0.03
+            T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
+            T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
+            T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+            T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
 
             joint_angles = self.spot.IK(orn, pos, T_bf)
             # Pass Joint Angles

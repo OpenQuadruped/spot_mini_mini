@@ -18,7 +18,7 @@ class BezierStepper():
     def __init__(self,
                  pos=np.array([0.0, 0.0, 0.0]),
                  orn=np.array([0.0, 0.0, 0.0]),
-                 StepLength=0.001,
+                 StepLength=0.03,
                  LateralFraction=0.0,
                  YawRate=0.0,
                  StepVelocity=0.8,
