@@ -45,7 +45,7 @@ def main():
 
     env = spotBezierEnv(render=True,
                         on_rack=False,
-                        height_field=False,
+                        height_field=True,
                         draw_foot_path=False,
                         action_dim=12)
     env = NormalizedActions(env)
@@ -92,7 +92,7 @@ def main():
     max_t_per_ep = 5000
 
     # State Machine for Random Controller Commands
-    bz_step = BezierStepper(dt=0.01)
+    bz_step = BezierStepper(dt=0.01, mode=0)
 
     # Bezier Gait Generator
     bzg = BezierGait(dt=0.01)
@@ -108,6 +108,10 @@ def main():
     print("STARTED SPOT SAC")
 
     for t in range(int(max_timesteps)):
+
+        contacts = state[-4:]
+
+        t += 1
 
         episode_timesteps += 1
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
@@ -155,24 +159,25 @@ def main():
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
                                       StepVelocity, T_bf0, T_bf,
-                                      ClearanceHeight, PenetrationDepth)
+                                      ClearanceHeight, PenetrationDepth,
+                                      contacts)
         # Add DELTA to XYZ Foot Poses
         RESIDUALS_SCALE = 0.03
-        T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
-        T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
-        T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-        T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+        # T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
+        # T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
+        # T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+        # T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+        # T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
+        # T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
+        # T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
+        # T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
 
         joint_angles = spot.IK(orn, pos, T_bf)
         # Pass Joint Angles
         env.pass_joint_angles(joint_angles.reshape(-1))
 
-        env.step(action)
-
         # Perform action
-        next_state, reward, done, _ = env.step(action)
-
-        state = next_state
+        state, reward, done, _ = env.step(action)
         episode_reward += reward
         # print("DT REWARD: {}".format(reward))
 

@@ -42,13 +42,13 @@ class spotBezierEnv(spotGymEnv):
     }
 
     def __init__(self,
-                 distance_weight=0.2,
+                 distance_weight=1.0,
                  rotation_weight=0.2,
-                 energy_weight=0.000,
+                 energy_weight=0.0005,
                  shake_weight=0.00,
                  drift_weight=0.0,
-                 rp_weight=3.0,
-                 rate_weight=0.005,
+                 rp_weight=2.0,
+                 rate_weight=0.0005,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
                  distance_limit=float("inf"),
@@ -227,9 +227,9 @@ class spotBezierEnv(spotGymEnv):
         self.prev_pos = pos
 
         lateral_reward = np.sin(
-            self.spot.LateralFraction) * lateral_reward * 100
+            self.spot.LateralFraction) * lateral_reward * 300
         forward_reward = np.cos(
-            self.spot.LateralFraction) * forward_reward * 100
+            self.spot.LateralFraction) * forward_reward * 300
 
         # print("FWD RWD: {:.2f}".format(forward_reward))
         # print("LAT RWD: {:.2f}".format(lateral_reward))
