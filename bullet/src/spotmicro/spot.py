@@ -628,18 +628,16 @@ class Spot(object):
                 Contact_Link_Index = CONTACT[i][3]
                 if Contact_Link_Index == self._foot_id_list[0]:
                     FLC = 1
-                    print("FL CONTACT")
+                    # print("FL CONTACT")
                 if Contact_Link_Index == self._foot_id_list[1]:
                     FRC = 1
-                    print("FR CONTACT")
+                    # print("FR CONTACT")
                 if Contact_Link_Index == self._foot_id_list[2]:
                     BLC = 1
-                    print("BL CONTACT")
+                    # print("BL CONTACT")
                 if Contact_Link_Index == self._foot_id_list[3]:
                     BRC = 1
-                    print("BR CONTACT")
-
-        print("-----------------------------------")
+                    # print("BR CONTACT")
         # order: roll, pitch, gyro(x,y,z), acc(x, y, z)
         observation.append(roll)
         observation.append(pitch)
