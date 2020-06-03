@@ -45,7 +45,7 @@ def main():
 
     env = spotBezierEnv(render=True,
                         on_rack=False,
-                        height_field=True,
+                        height_field=False,
                         draw_foot_path=False,
                         action_dim=12)
     env = NormalizedActions(env)
@@ -74,9 +74,9 @@ def main():
                           action_dim=action_dim,
                           replay_buffer=replay_buffer)
 
-    policy_num = 0
+    policy_num = raw_input("Policy Number: ")
     if os.path.exists(models_path + "/" + file_name + str(policy_num) +
-                      "_critic"):
+                      "_policy_net"):
         print("Loading Existing Policy")
         sac.load(models_path + "/" + file_name + str(policy_num))
         policy = sac.policy_net

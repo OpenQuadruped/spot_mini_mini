@@ -39,14 +39,14 @@ def main():
                         on_rack=False,
                         height_field=True,
                         draw_foot_path=False,
-                        action_dim=14)
+                        action_dim=12)
 
     # Set seeds
     env.seed(seed)
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    state_dim = env.observation_space.shape[0] + 12
+    state_dim = env.observation_space.shape[0]
     print("STATE DIM: {}".format(state_dim))
     action_dim = env.action_space.shape[0]
     print("ACTION DIM: {}".format(action_dim))

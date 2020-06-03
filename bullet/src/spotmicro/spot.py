@@ -614,6 +614,32 @@ class Spot(object):
 
         ang_twist = self.prev_ang_twist
 
+        # Get Contacts
+        CONTACT = list(
+            self._pybullet_client.getContactPoints(self.quadruped))
+
+        FLC = 0
+        FRC = 0
+        BLC = 0
+        BRC = 0
+
+        if len(CONTACT) > 0:
+            for i in range(len(CONTACT)):
+                Contact_Link_Index = CONTACT[i][3]
+                if Contact_Link_Index == self._foot_id_list[0]:
+                    FLC = 1
+                    print("FL CONTACT")
+                if Contact_Link_Index == self._foot_id_list[1]:
+                    FRC = 1
+                    print("FR CONTACT")
+                if Contact_Link_Index == self._foot_id_list[2]:
+                    BLC = 1
+                    print("BL CONTACT")
+                if Contact_Link_Index == self._foot_id_list[3]:
+                    BRC = 1
+                    print("BR CONTACT")
+
+        print("-----------------------------------")
         # order: roll, pitch, gyro(x,y,z), acc(x, y, z)
         observation.append(roll)
         observation.append(pitch)
@@ -625,6 +651,10 @@ class Spot(object):
         observation.append(self.LateralFraction)
         observation.append(self.YawRate)
         observation.extend(self.LegPhases)
+        observation.append(FLC)
+        observation.append(FRC)
+        observation.append(BLC)
+        observation.append(BRC)
         return observation
 
     def GetControlInput(self, controller):

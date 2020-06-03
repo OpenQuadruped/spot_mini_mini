@@ -127,9 +127,9 @@ class SoftActorCritic(object):
         self.policy_optimizer.load_state_dict(
             torch.load(filename + "_policy_optimizer",
                        map_location=self.device))
-        self.soft_q_net.load_state_dict(
-            torch.load(filename + "_soft_q_net", map_location=self.device))
-        self.soft_q_optimizer.load_state_dict(
-            torch.load(filename + "_soft_q_optimizer",
-                       map_location=self.device))
-        self.target_soft_q_net = copy.deepcopy(self.soft_q_net)
+        # self.soft_q_net.load_state_dict(
+        #     torch.load(filename + "_soft_q_net", map_location=self.device))
+        # self.soft_q_optimizer.load_state_dict(
+        #     torch.load(filename + "_soft_q_optimizer",
+        #                map_location=self.device))
+        # self.target_soft_q_net = copy.deepcopy(self.soft_q_net)
