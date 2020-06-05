@@ -45,7 +45,7 @@ def main():
 
     env = spotBezierEnv(render=False,
                         on_rack=False,
-                        height_field=True,
+                        height_field=False,
                         draw_foot_path=False,
                         action_dim=18)
     env = NormalizedActions(env)
