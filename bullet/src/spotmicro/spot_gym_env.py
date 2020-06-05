@@ -12,7 +12,7 @@ from pkg_resources import parse_version
 from spotmicro import spot
 import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
-from mini_bullet.heightfield import HeightField
+from spotmicro.heightfield import HeightField
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 import spotmicro.Kinematics.LieAlgebra as LA
 
