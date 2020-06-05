@@ -31,13 +31,13 @@ class BezierStepper():
         self.pos = pos
         self.orn = orn
         self.StepLength = StepLength
-        self.StepLength_LIMITS = [-0.06, 0.06]
+        self.StepLength_LIMITS = [-0.05, 0.05]
         self.LateralFraction = LateralFraction
         self.LateralFraction_LIMITS = [-np.pi / 2.0, np.pi / 2.0]
         self.YawRate = YawRate
         self.YawRate_LIMITS = [-1.0, 1.0]
         self.StepVelocity = StepVelocity
-        self.StepVelocity_LIMITS = [0.1, 1.5]
+        self.StepVelocity_LIMITS = [0.3, 1.5]
         self.ClearanceHeight = ClearanceHeight
         self.ClearanceHeight_LIMITS = [0.0, 0.1]
         self.PenetrationDepth = PenetrationDepth

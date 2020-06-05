@@ -127,12 +127,12 @@ def main():
         # Y_SCALE = 0.1
         # CH_SCALE = 0.007
         # PD_SCALE = 0.0025
-        # StepLength += np.tanh(action[0]) * SL_SCALE
-        # StepVelocity += np.tanh(action[1]) * SV_SCALE
-        # LateralFraction += np.tanh(action[2]) * LF_SCALE
-        # YawRate += np.tanh(action[3]) * Y_SCALE
-        # ClearanceHeight += np.tanh(action[4]) * CH_SCALE
-        # PenetrationDepth += np.tanh(action[5]) * PD_SCALE
+        # StepLength += action[0] * SL_SCALE
+        # StepVelocity += action[1] * SV_SCALE
+        # LateralFraction += action[2] * LF_SCALE
+        # YawRate += action[3] * Y_SCALE
+        # ClearanceHeight += action[4] * CH_SCALE
+        # PenetrationDepth += action[5] * PD_SCALE
 
         # # CLIP EVERYTHING
         # StepLength = np.clip(StepLength, bz_step.StepLength_LIMITS[0],
