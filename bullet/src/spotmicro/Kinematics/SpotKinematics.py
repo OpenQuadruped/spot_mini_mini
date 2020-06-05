@@ -33,7 +33,7 @@ class SpotModel:
         # Length
         self.foot_x = 0.192
         # Width
-        self.foot_y = 0.18
+        self.foot_y = 0.17
 
         # Body Height
         self.height = 0.135
