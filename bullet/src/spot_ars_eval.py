@@ -39,7 +39,7 @@ def main():
                         on_rack=False,
                         height_field=True,
                         draw_foot_path=False,
-                        action_dim=12)
+                        action_dim=13)
 
     # Set seeds
     env.seed(seed)

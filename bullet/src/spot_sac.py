@@ -47,7 +47,7 @@ def main():
                         on_rack=False,
                         height_field=True,
                         draw_foot_path=False,
-                        action_dim=4)
+                        action_dim=13)
     env = NormalizedActions(env)
 
     # Set seeds
@@ -153,21 +153,24 @@ def main():
 
         contacts = state[-4:]
 
+        # Mod Yaw Rate using Action
+        YawRate = action[0]
+
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
                                       StepVelocity, T_bf0, T_bf,
                                       ClearanceHeight, PenetrationDepth,
                                       contacts)
         # Add DELTA to XYZ Foot Poses
-        RESIDUALS_SCALE = 0.03
-        # T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
-        # T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
-        # T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-        # T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
-        T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
-        T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
-        T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
-        T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
+        RESIDUALS_SCALE = 0.05
+        T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
+        T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
+        T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
+        T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
+        # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
+        # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
+        # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
+        # T_bf["BR"][3, 2] += action[4] * RESIDUALS_SCALE
 
         joint_angles = spot.IK(orn, pos, T_bf)
         # Pass Joint Angles

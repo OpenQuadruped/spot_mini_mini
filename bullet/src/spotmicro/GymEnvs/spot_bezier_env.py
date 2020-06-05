@@ -43,11 +43,11 @@ class spotBezierEnv(spotGymEnv):
 
     def __init__(self,
                  distance_weight=1.0,
-                 rotation_weight=0.2,
+                 rotation_weight=0.5,
                  energy_weight=0.0005,
                  shake_weight=0.00,
-                 drift_weight=0.0,
-                 rp_weight=2.0,
+                 drift_weight=2.0,
+                 rp_weight=5.0,
                  rate_weight=0.0005,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
@@ -263,11 +263,13 @@ class spotBezierEnv(spotGymEnv):
 
         yaw_rate = obs[4]
 
-        rot_reward = reward_max * np.exp(-(yaw_rate - self.spot.YawRate)**2 /
-                                         (0.1))
+        # rot_reward = reward_max * np.exp(-(yaw_rate - self.spot.YawRate)**2 /
+        #                                  (0.1))
 
-        # penalty for nonzero roll, pitch
-        rp_reward = -(abs(obs[0]) + abs(obs[1]))
+        rot_reward = -abs(yaw_rate)
+
+        # penalty for nonzero PITCH ONLY
+        rp_reward = -(abs(obs[1]))
         # print("RP RWD: {:.2f}".format(rp_reward))
         # print("ROLL: {} \t PITCH: {}".format(obs[0], obs[1]))
 
@@ -277,7 +279,7 @@ class spotBezierEnv(spotGymEnv):
         # penalty for nonzero rate (x,y,z)
         rate_reward = -(abs(obs[2]) + abs(obs[3]))
 
-        drift_reward = 0
+        drift_reward = -abs(pos[1])
         energy_reward = -np.abs(
             np.dot(self.spot.GetMotorTorques(),
                    self.spot.GetMotorVelocities())) * self._time_step
