@@ -38,8 +38,7 @@ def main():
     env = spotBezierEnv(render=True,
                         on_rack=False,
                         height_field=False,
-                        draw_foot_path=False,
-                        action_dim=18)
+                        draw_foot_path=False)
 
     # Set seeds
     env.seed(seed)

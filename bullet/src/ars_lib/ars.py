@@ -127,12 +127,12 @@ def ParallelWorker(childPipe, env, nb_states):
                 action = np.tanh(action)
 
                 # Bezier params specced by action
-                StepLength = action[0]
-                StepVelocity = action[1]
-                LateralFraction = action[2]
-                YawRate = action[3]
-                ClearanceHeight = action[4]
-                PenetrationDepth = action[5]
+                # StepLength = action[0]
+                # StepVelocity = action[1]
+                # LateralFraction = action[2]
+                YawRate = action[0]
+                # ClearanceHeight = action[4]
+                # PenetrationDepth = action[5]
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -159,10 +159,10 @@ def ParallelWorker(childPipe, env, nb_states):
                                               PenetrationDepth, contacts)
 
                 # Add DELTA to XYZ Foot Poses
-                T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-                T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
-                T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
-                T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
+                T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
+                T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
+                T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
+                T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
                 # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
                 # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
                 # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
@@ -396,12 +396,12 @@ class ARSAgent():
             action = np.tanh(action)
 
             # Bezier params specced by action
-            StepLength = action[0]
-            StepVelocity = action[1]
-            LateralFraction = action[2]
-            YawRate = action[3]
-            ClearanceHeight = action[4]
-            PenetrationDepth = action[5]
+            # StepLength = action[0]
+            # StepVelocity = action[1]
+            # LateralFraction = action[2]
+            YawRate = action[0]
+            # ClearanceHeight = action[4]
+            # PenetrationDepth = action[5]
 
             # CLIP EVERYTHING
             StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
@@ -430,10 +430,10 @@ class ARSAgent():
                                                PenetrationDepth, contacts)
 
             # Add DELTA to XYZ Foot Poses
-            T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-            T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
-            T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
-            T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
+            T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
+            T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
+            T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
+            T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
             # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
             # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
             # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
