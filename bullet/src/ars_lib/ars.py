@@ -29,6 +29,8 @@ Y_SCALE = 0.1
 CH_SCALE = 0.007
 PD_SCALE = 0.0025
 
+RESIDUALS_SCALE = 0.05
+
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
     """ Pass two subsequent datapoints in here to be filtered
@@ -155,6 +157,11 @@ def ParallelWorker(childPipe, env, nb_states):
 
                 contacts = state[-4:]
 
+                action = np.tanh(action)
+
+                # Mod Yaw Rate using Action
+                YawRate = action[0]
+
                 # Get Desired Foot Poses
                 T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
                                               YawRate, StepVelocity, T_b0,
@@ -162,15 +169,14 @@ def ParallelWorker(childPipe, env, nb_states):
                                               PenetrationDepth, contacts)
 
                 # Add DELTA to XYZ Foot Poses
-                RESIDUALS_SCALE = 0.03
-                # T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
-                # T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
-                # T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-                # T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
-                T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
-                T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
-                T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
-                T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
+                T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
+                T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
+                T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
+                T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
+                # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
+                # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
+                # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
+                # T_bf["BR"][3, 2] += action[4] * RESIDUALS_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
                 # Pass Joint Angles
@@ -433,6 +439,11 @@ class ARSAgent():
 
             contacts = state[-4:]
 
+            action = np.tanh(action)
+
+            # Mod Yaw Rate using Action
+            YawRate = action[0]
+
             # Get Desired Foot Poses
             T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
                                                YawRate, StepVelocity, T_b0,
@@ -440,15 +451,16 @@ class ARSAgent():
                                                PenetrationDepth, contacts)
 
             # Add DELTA to XYZ Foot Poses
-            RESIDUALS_SCALE = 0.03
-            # T_bf["FL"][3, :3] += action[0:3] * RESIDUALS_SCALE
-            # T_bf["FR"][3, :3] += action[3:6] * RESIDUALS_SCALE
-            # T_bf["BL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-            # T_bf["BR"][3, :3] += action[9:12] * RESIDUALS_SCALE
-            T_bf["FL"][3, 2] += action[0] * RESIDUALS_SCALE
-            T_bf["FR"][3, 2] += action[1] * RESIDUALS_SCALE
-            T_bf["BL"][3, 2] += action[2] * RESIDUALS_SCALE
-            T_bf["BR"][3, 2] += action[3] * RESIDUALS_SCALE
+            T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
+            T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
+            T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
+            T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
+            # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
+            # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
+            # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
+            # T_bf["BR"][3, 2] += action[4] * RESIDUALS_SCALE
+
+            # print("ACTIONS: {}".format(action))
 
             joint_angles = self.spot.IK(orn, pos, T_bf)
             # Pass Joint Angles

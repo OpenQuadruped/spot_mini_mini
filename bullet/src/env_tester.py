@@ -40,7 +40,7 @@ def main():
 
     env = spotBezierEnv(render=True,
                         on_rack=False,
-                        height_field=True,
+                        height_field=False,
                         draw_foot_path=False)
 
     # Set seeds
@@ -75,8 +75,8 @@ def main():
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
         )
 
-        # pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
-        # )
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
+        )
 
         # TEMP
         bz_step.StepLength = StepLength
