@@ -29,7 +29,7 @@ Y_SCALE = 0.1
 CH_SCALE = 0.007
 PD_SCALE = 0.0025
 
-RESIDUALS_SCALE = 0.05
+RESIDUALS_SCALE = 0.02
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -122,45 +122,35 @@ def ParallelWorker(childPipe, env, nb_states):
                 state = normalizer.normalize(state)
                 action = policy.evaluate(state, delta, direction)
 
-                # Add DELTA to Bezier Params
-                # LIMS
-                # SL_SCALE = 0.007
-                # SV_SCALE = 0.2
-                # LF_SCALE = 0.1
-                # Y_SCALE = 0.1
-                # CH_SCALE = 0.007
-                # PD_SCALE = 0.0025
-                # StepLength += np.tanh(action[0]) * SL_SCALE
-                # StepVelocity += np.tanh(action[1]) * SV_SCALE
-                # LateralFraction += np.tanh(action[2]) * LF_SCALE
-                # YawRate += np.tanh(action[3]) * Y_SCALE
-                # ClearanceHeight += np.tanh(action[4]) * CH_SCALE
-                # PenetrationDepth += np.tanh(action[5]) * PD_SCALE
-
-                # # CLIP EVERYTHING
-                # StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
-                #                      smach.StepLength_LIMITS[1])
-                # StepVelocity = np.clip(StepVelocity,
-                #                        smach.StepVelocity_LIMITS[0],
-                #                        smach.StepVelocity_LIMITS[1])
-                # LateralFraction = np.clip(LateralFraction,
-                #                           smach.LateralFraction_LIMITS[0],
-                #                           smach.LateralFraction_LIMITS[1])
-                # YawRate = np.clip(YawRate, smach.YawRate_LIMITS[0],
-                #                   smach.YawRate_LIMITS[1])
-                # ClearanceHeight = np.clip(ClearanceHeight,
-                #                           smach.ClearanceHeight_LIMITS[0],
-                #                           smach.ClearanceHeight_LIMITS[1])
-                # PenetrationDepth = np.clip(PenetrationDepth,
-                #                            smach.PenetrationDepth_LIMITS[0],
-                #                            smach.PenetrationDepth_LIMITS[1])
-
                 contacts = state[-4:]
 
                 action = np.tanh(action)
 
-                # Mod Yaw Rate using Action
-                YawRate = action[0]
+                # Bezier params specced by action
+                StepLength = action[0]
+                StepVelocity = action[1]
+                LateralFraction = action[2]
+                YawRate = action[3]
+                ClearanceHeight = action[4]
+                PenetrationDepth = action[5]
+
+                # CLIP EVERYTHING
+                StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
+                                     smach.StepLength_LIMITS[1])
+                StepVelocity = np.clip(StepVelocity,
+                                       smach.StepVelocity_LIMITS[0],
+                                       smach.StepVelocity_LIMITS[1])
+                LateralFraction = np.clip(LateralFraction,
+                                          smach.LateralFraction_LIMITS[0],
+                                          smach.LateralFraction_LIMITS[1])
+                YawRate = np.clip(YawRate, smach.YawRate_LIMITS[0],
+                                  smach.YawRate_LIMITS[1])
+                ClearanceHeight = np.clip(ClearanceHeight,
+                                          smach.ClearanceHeight_LIMITS[0],
+                                          smach.ClearanceHeight_LIMITS[1])
+                PenetrationDepth = np.clip(PenetrationDepth,
+                                           smach.PenetrationDepth_LIMITS[0],
+                                           smach.PenetrationDepth_LIMITS[1])
 
                 # Get Desired Foot Poses
                 T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
@@ -169,10 +159,10 @@ def ParallelWorker(childPipe, env, nb_states):
                                               PenetrationDepth, contacts)
 
                 # Add DELTA to XYZ Foot Poses
-                T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
-                T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
-                T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
-                T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
+                T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+                T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+                T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
+                T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
                 # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
                 # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
                 # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
@@ -403,46 +393,35 @@ class ARSAgent():
             self.normalizer.observe(state)
             state = self.normalizer.normalize(state)
             action = self.policy.evaluate(state, delta, direction)
-
-            # Add DELTA to Bezier Params
-            # LIMS
-            # SL_SCALE = 0.007
-            # SV_SCALE = 0.2
-            # LF_SCALE = 0.1
-            # Y_SCALE = 0.1
-            # CH_SCALE = 0.007
-            # PD_SCALE = 0.0025
-            # StepLength += np.tanh(action[0]) * SL_SCALE
-            # StepVelocity += np.tanh(action[1]) * SV_SCALE
-            # LateralFraction += np.tanh(action[2]) * LF_SCALE
-            # YawRate += np.tanh(action[3]) * Y_SCALE
-            # ClearanceHeight += np.tanh(action[4]) * CH_SCALE
-            # PenetrationDepth += np.tanh(action[5]) * PD_SCALE
-
-            # # CLIP EVERYTHING
-            # StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
-            #                      self.smach.StepLength_LIMITS[1])
-            # StepVelocity = np.clip(StepVelocity,
-            #                        self.smach.StepVelocity_LIMITS[0],
-            #                        self.smach.StepVelocity_LIMITS[1])
-            # LateralFraction = np.clip(LateralFraction,
-            #                           self.smach.LateralFraction_LIMITS[0],
-            #                           self.smach.LateralFraction_LIMITS[1])
-            # YawRate = np.clip(YawRate, self.smach.YawRate_LIMITS[0],
-            #                   self.smach.YawRate_LIMITS[1])
-            # ClearanceHeight = np.clip(ClearanceHeight,
-            #                           self.smach.ClearanceHeight_LIMITS[0],
-            #                           self.smach.ClearanceHeight_LIMITS[1])
-            # PenetrationDepth = np.clip(PenetrationDepth,
-            #                            self.smach.PenetrationDepth_LIMITS[0],
-            #                            self.smach.PenetrationDepth_LIMITS[1])
-
-            contacts = state[-4:]
-
             action = np.tanh(action)
 
-            # Mod Yaw Rate using Action
-            YawRate = action[0]
+            # Bezier params specced by action
+            StepLength = action[0]
+            StepVelocity = action[1]
+            LateralFraction = action[2]
+            YawRate = action[3]
+            ClearanceHeight = action[4]
+            PenetrationDepth = action[5]
+
+            # CLIP EVERYTHING
+            StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
+                                 self.smach.StepLength_LIMITS[1])
+            StepVelocity = np.clip(StepVelocity,
+                                   self.smach.StepVelocity_LIMITS[0],
+                                   self.smach.StepVelocity_LIMITS[1])
+            LateralFraction = np.clip(LateralFraction,
+                                      self.smach.LateralFraction_LIMITS[0],
+                                      self.smach.LateralFraction_LIMITS[1])
+            YawRate = np.clip(YawRate, self.smach.YawRate_LIMITS[0],
+                              self.smach.YawRate_LIMITS[1])
+            ClearanceHeight = np.clip(ClearanceHeight,
+                                      self.smach.ClearanceHeight_LIMITS[0],
+                                      self.smach.ClearanceHeight_LIMITS[1])
+            PenetrationDepth = np.clip(PenetrationDepth,
+                                       self.smach.PenetrationDepth_LIMITS[0],
+                                       self.smach.PenetrationDepth_LIMITS[1])
+
+            contacts = state[-4:]
 
             # Get Desired Foot Poses
             T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
@@ -451,10 +430,10 @@ class ARSAgent():
                                                PenetrationDepth, contacts)
 
             # Add DELTA to XYZ Foot Poses
-            T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
-            T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
-            T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
-            T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
+            T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+            T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+            T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
+            T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
             # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
             # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
             # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
