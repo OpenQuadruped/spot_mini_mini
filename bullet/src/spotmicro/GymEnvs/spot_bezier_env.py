@@ -43,12 +43,12 @@ class spotBezierEnv(spotGymEnv):
 
     def __init__(self,
                  distance_weight=1.0,
-                 rotation_weight=0.5,
-                 energy_weight=0.0005,
+                 rotation_weight=0.0,
+                 energy_weight=0.000,
                  shake_weight=0.00,
-                 drift_weight=2.0,
-                 rp_weight=1.0,
-                 rate_weight=0.0005,
+                 drift_weight=3.0,
+                 rp_weight=3.0,
+                 rate_weight=0.1,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
                  distance_limit=float("inf"),
@@ -81,7 +81,7 @@ class spotBezierEnv(spotGymEnv):
                  draw_foot_path=False,
                  height_field=False,
                  AutoStepper=True,
-                 action_dim=13):
+                 action_dim=10):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,
@@ -195,6 +195,8 @@ class spotBezierEnv(spotGymEnv):
         # get observation
         obs = self._get_observation()
 
+        orn = self.spot.GetBaseOrientation()
+
         # Return StepVelocity with the sign of StepLength
         DesiredVelicty = math.copysign(self.spot.StepVelocity / 4.0,
                                        self.spot.StepLength)
@@ -205,71 +207,27 @@ class spotBezierEnv(spotGymEnv):
         # DEBUG
         lt, at = self.spot.GetBaseTwist()
 
-        # Modification for lateral/fwd rewards
-        reward_max = 1.0
-        # FORWARD/LATERAL
-        # forward_reward = reward_max * np.exp(
-        #     -(fwd_speed - DesiredVelicty * np.cos(self.spot.LateralFraction))**
-        #     2 / (0.1))
-        # lateral_reward = reward_max * np.exp(
-        #     -(lat_speed - DesiredVelicty * np.sin(self.spot.LateralFraction))**
-        #     2 / (0.1))
-        # NOTE: Replaceing speed-based reward with movement-based reward
         # ONLY WORKS FOR MOVING PURELY FORWARD
         pos = self.spot.GetBasePosition()
-        if DesiredVelicty > 0:
-            forward_reward = pos[0] - self.prev_pos[0]
+
+        forward_reward = pos[0] - self.prev_pos[0]
+
+        # yaw_rate = obs[4]
+
+        rot_reward = 0.0
+
+        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+
+        if yaw < 0.0:
+            yaw += np.pi
         else:
-            forward_reward = -(pos[0] - self.prev_pos[0])
+            yaw -= np.pi
 
-        lateral_reward = pos[1] - self.prev_pos[1]
+        # penalty for nonzero PITCH and YAW(hidden) ONLY
+        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw))
 
-        self.prev_pos = pos
-
-        lateral_reward = np.sin(
-            self.spot.LateralFraction) * lateral_reward * 300
-        forward_reward = np.cos(
-            self.spot.LateralFraction) * forward_reward * 300
-
-        # print("FWD RWD: {:.2f}".format(forward_reward))
-        # print("LAT RWD: {:.2f}".format(lateral_reward))
-
-        # print("FWD SPEED: {:.2f} \t UNMOD: {:.2f} ".format(fwd_speed, lt[0]))
-
-        # print("LAT SPEED: {:.2f} \t UNMOD: {:.2f} ".format(lat_speed, lt[1]))
-
-        # print("ROLL: {:.2f}".format(obs[0]))
-        # print("PITCH: {:.2f}".format(obs[1]))
-
-        # print("GYRO X: {:.2f}".format(obs[2]))
-        # print("GYRO Y: {:.2f}".format(obs[3]))
-        # print("GYRO Z: {:.2f}".format(obs[4]))
-
-        # print("ACC X: {:.2f}".format(obs[5]))
-        # print("ACC Y: {:.2f}".format(obs[6]))
-        # print("ACC Z: {:.2f}".format(obs[7]))
-
-        # print("STEP LEN: {:.2f}".format(obs[8]))
-        # print("STEP VEL: {:.2f}".format(obs[9]))
-        # print("LAT FRAC: {:.2f}".format(obs[10]))
-        # print("YAW RATE: {:.2f}".format(obs[11]))
-        # print(
-        #     "LEG PHASES: \nFL: {:.2f} \tFR: {:.2f} \nBL: {:.2f} \tBR: {:.2f}".
-        #     format(obs[12], obs[13], obs[14], obs[15]))
-
-        # print("-----------------------------------------------")
-
-        forward_reward += lateral_reward
-
-        yaw_rate = obs[4]
-
-        # rot_reward = reward_max * np.exp(-(yaw_rate - self.spot.YawRate)**2 /
-        #                                  (0.1))
-
-        rot_reward = -abs(yaw_rate)
-
-        # penalty for nonzero PITCH ONLY
-        rp_reward = -(abs(obs[1]))
+        # print("YAW: {}".format(yaw))
         # print("RP RWD: {:.2f}".format(rp_reward))
         # print("ROLL: {} \t PITCH: {}".format(obs[0], obs[1]))
 
@@ -278,6 +236,8 @@ class spotBezierEnv(spotGymEnv):
 
         # penalty for nonzero rate (x,y,z)
         rate_reward = -(abs(obs[2]) + abs(obs[3]))
+
+        # print("RATES: {}".format(obs[2:5]))
 
         drift_reward = -abs(pos[1])
         energy_reward = -np.abs(

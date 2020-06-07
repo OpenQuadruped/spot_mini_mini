@@ -370,6 +370,10 @@ class Spot(object):
                 self.RealisticObservation()
         self.RealisticObservation()
 
+        # Set Foot Friction
+        for idx in self._foot_link_ids:
+            self.SetFootFriction(idx)
+
     def _RemoveDefaultJointDamping(self):
         num_joints = self._pybullet_client.getNumJoints(self.quadruped)
         for i in range(num_joints):
@@ -947,17 +951,16 @@ class Spot(object):
             self._pybullet_client.changeDynamics(
                 self.quadruped, link_id, localInertiaDiagonal=motor_inertia)
 
-    def SetFootFriction(self, foot_friction):
+    def SetFootFriction(self, link_id, foot_friction=100.0):
         """Set the lateral friction of the feet.
 
     Args:
       foot_friction: The lateral friction coefficient of the foot. This value is
         shared by all four feet.
     """
-        for link_id in self._foot_link_ids:
-            self._pybullet_client.changeDynamics(self.quadruped,
-                                                 link_id,
-                                                 lateralFriction=foot_friction)
+        self._pybullet_client.changeDynamics(self.quadruped,
+                                             link_id,
+                                             lateralFriction=foot_friction)
 
     # TODO(b/73748980): Add more API's to set other contact parameters.
     def SetFootRestitution(self, foot_restitution):

@@ -119,12 +119,14 @@ def main():
         action = sac.policy_net.get_action(state)
 
         # Bezier params specced by action
-        # StepLength = action[0]
-        # StepVelocity = action[1]
-        # LateralFraction = action[2]
-        YawRate = action[0]
-        # ClearanceHeight = action[4]
-        # PenetrationDepth = action[5]
+        CD_SCALE = 0.002
+        SLV_SCALE = 0.01
+        StepLength += action[0] * CD_SCALE
+        StepVelocity += action[1] * SLV_SCALE
+        LateralFraction += action[2] * SLV_SCALE
+        YawRate = action[3]
+        ClearanceHeight += action[4] * CD_SCALE
+        PenetrationDepth += action[5] * CD_SCALE
 
         # CLIP EVERYTHING
         StepLength = np.clip(StepLength, bz_step.StepLength_LIMITS[0],
@@ -152,14 +154,14 @@ def main():
                                       contacts)
         # Add DELTA to XYZ Foot Poses
         RESIDUALS_SCALE = 0.05
-        T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
-        T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
-        T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
-        T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
-        # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
-        # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
-        # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
-        # T_bf["BR"][3, 2] += action[4] * RESIDUALS_SCALE
+        # T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+        # T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+        # T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
+        # T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
+        T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+        T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+        T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+        T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
         joint_angles = spot.IK(orn, pos, T_bf)
         # Pass Joint Angles

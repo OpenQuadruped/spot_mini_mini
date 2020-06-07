@@ -71,7 +71,7 @@ def main():
                       "_policy"):
         print("Loading Existing agent")
         agent.load(models_path + "/" + file_name + str(agent_num))
-        agent.policy.episode_steps = np.inf
+        agent.policy.episode_steps = 2000
         policy = agent.policy
 
     # Evaluate untrained agent and init list for storage

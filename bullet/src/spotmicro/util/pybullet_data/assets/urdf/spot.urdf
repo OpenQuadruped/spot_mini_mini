@@ -152,7 +152,7 @@
     </collision>
     <inertial>
       <mass value="0.1"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="front_left_foot_link">
@@ -171,7 +171,7 @@
     </collision>
     <inertial>
       <mass value="0.1"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="front_left_toe_link">
@@ -187,11 +187,11 @@
         <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
-      <contact_coefficients mu="1000.0"/>
+      <contact_coefficients mu="100.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_front_left_shoulder" type="revolute">
@@ -199,7 +199,7 @@
     <child link="front_left_shoulder_link"/>
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="-0.093 -0.036 0"/>
-    <limit effort="1000.0" lower="-1.0" upper="1.0" velocity="0.7"/>
+    <limit effort="100.0" lower="-1.0" upper="1.0" velocity="0.7"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="motor_front_left_leg" type="revolute">
@@ -207,7 +207,7 @@
     <child link="front_left_leg_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0 -0.052 0"/>
-    <limit effort="1000.0" lower="-2.17" upper="0.97" velocity="0.5"/>
+    <limit effort="100.0" lower="-2.17" upper="0.97" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <joint name="front_left_leg_cover_joint" type="fixed">
@@ -220,7 +220,7 @@
     <child link="front_left_foot_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.01 0 -0.12"/>
-    <limit effort="1000.0" lower="-0.1" upper="2.59" velocity="0.5"/>
+    <limit effort="100.0" lower="-0.1" upper="2.59" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="front_left_toe" type="fixed">
@@ -273,7 +273,7 @@
     </collision>
     <inertial>
       <mass value="0.1"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="front_right_foot_link">
@@ -292,7 +292,7 @@
     </collision>
     <inertial>
       <mass value="0.1"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="front_right_toe_link">
@@ -308,11 +308,11 @@
         <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
-      <contact_coefficients mu="1000.0"/>
+      <contact_coefficients mu="100.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_front_right_shoulder" type="revolute">
@@ -320,7 +320,7 @@
     <child link="front_right_shoulder_link"/>
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="-0.093 0.036 0"/>
-    <limit effort="1000.0" lower="-1.0" upper="1.0" velocity="0.7"/>
+    <limit effort="100.0" lower="-1.0" upper="1.0" velocity="0.7"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="motor_front_right_leg" type="revolute">
@@ -328,7 +328,7 @@
     <child link="front_right_leg_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0 0.052 0"/>
-    <limit effort="1000.0" lower="-2.17" upper="0.97" velocity="0.5"/>
+    <limit effort="100.0" lower="-2.17" upper="0.97" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <joint name="front_right_leg_cover_joint" type="fixed">
@@ -341,7 +341,7 @@
     <child link="front_right_foot_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.01 0 -0.12"/>
-    <limit effort="1000.0" lower="-0.1" upper="2.59" velocity="0.5"/>
+    <limit effort="100.0" lower="-0.1" upper="2.59" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="front_right_toe" type="fixed">
@@ -394,7 +394,7 @@
     </collision>
     <inertial>
       <mass value="0.10"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="rear_left_foot_link">
@@ -413,7 +413,7 @@
     </collision>
     <inertial>
       <mass value="0.1"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="rear_left_toe_link">
@@ -429,11 +429,11 @@
         <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
-      <contact_coefficients mu="1000.0"/>
+      <contact_coefficients mu="100.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_rear_left_shoulder" type="revolute">
@@ -441,7 +441,7 @@
     <child link="rear_left_shoulder_link"/>
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="0.093 -0.036 0"/>
-    <limit effort="1000.0" lower="-1.0" upper="1.0" velocity="0.7"/>
+    <limit effort="100.0" lower="-1.0" upper="1.0" velocity="0.7"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="motor_rear_left_leg" type="revolute">
@@ -449,7 +449,7 @@
     <child link="rear_left_leg_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0 -0.052 0"/>
-    <limit effort="1000.0" lower="-2.17" upper="0.97" velocity="0.5"/>
+    <limit effort="100.0" lower="-2.17" upper="0.97" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <joint name="rear_left_leg_cover_joint" type="fixed">
@@ -462,7 +462,7 @@
     <child link="rear_left_foot_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.01 0 -0.12"/>
-    <limit effort="1000.0" lower="-0.1" upper="2.59" velocity="0.5"/>
+    <limit effort="100.0" lower="-0.1" upper="2.59" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="rear_left_toe" type="fixed">
@@ -515,7 +515,7 @@
     </collision>
     <inertial>
       <mass value="0.10"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="rear_right_foot_link">
@@ -534,7 +534,7 @@
     </collision>
     <inertial>
       <mass value="0.1"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <link name="rear_right_toe_link">
@@ -550,11 +550,11 @@
         <mesh filename="stl/foot.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <origin rpy="0 -0.40010 0" xyz="0 -0.01 0"/>
-      <contact_coefficients mu="1000.0"/>
+      <contact_coefficients mu="100.0"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="1000" ixy="0" ixz="0" iyy="1000" iyz="0" izz="1000"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_rear_right_shoulder" type="revolute">
@@ -562,7 +562,7 @@
     <child link="rear_right_shoulder_link"/>
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="0.093 0.036 0"/>
-    <limit effort="1000.0" lower="-1.0" upper="1.0" velocity="0.7"/>
+    <limit effort="100.0" lower="-1.0" upper="1.0" velocity="0.7"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="motor_rear_right_leg" type="revolute">
@@ -570,7 +570,7 @@
     <child link="rear_right_leg_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0 0.052 0"/>
-    <limit effort="1000.0" lower="-2.17" upper="0.97" velocity="0.5"/>
+    <limit effort="100.0" lower="-2.17" upper="0.97" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <joint name="rear_right_leg_cover_joint" type="fixed">
@@ -583,7 +583,7 @@
     <child link="rear_right_foot_link"/>
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.01 0 -0.12"/>
-    <limit effort="1000.0" lower="-0.1" upper="2.59" velocity="0.5"/>
+    <limit effort="100.0" lower="-0.1" upper="2.59" velocity="0.5"/>
     <dynamics damping="0.0" friction="0.5"/>
   </joint>
   <joint name="rear_right_toe" type="fixed">
