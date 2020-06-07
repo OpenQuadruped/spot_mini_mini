@@ -27,7 +27,7 @@ class SpotModel:
         # Length
         self.hip_x = 0.192
         # Width
-        self.hip_y = 0.075
+        self.hip_y = 0.085
 
         # Distance Between Feet
         # Length

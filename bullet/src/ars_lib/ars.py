@@ -127,12 +127,14 @@ def ParallelWorker(childPipe, env, nb_states):
                 action = np.tanh(action)
 
                 # Bezier params specced by action
-                # StepLength = action[0]
-                # StepVelocity = action[1]
-                # LateralFraction = action[2]
-                YawRate = action[0]
-                # ClearanceHeight = action[4]
-                # PenetrationDepth = action[5]
+                CD_SCALE = 0.002
+                SLV_SCALE = 0.01
+                StepLength += action[0] * CD_SCALE
+                StepVelocity += action[1] * SLV_SCALE
+                LateralFraction += action[2] * SLV_SCALE
+                YawRate = action[3]
+                ClearanceHeight += action[4] * CD_SCALE
+                PenetrationDepth += action[5] * CD_SCALE
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -159,14 +161,14 @@ def ParallelWorker(childPipe, env, nb_states):
                                               PenetrationDepth, contacts)
 
                 # Add DELTA to XYZ Foot Poses
-                T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
-                T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
-                T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
-                T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
-                # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
-                # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
-                # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
-                # T_bf["BR"][3, 2] += action[4] * RESIDUALS_SCALE
+                # T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+                # T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+                # T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
+                # T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
+                T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+                T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+                T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+                T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
                 # Pass Joint Angles
@@ -382,6 +384,12 @@ class ARSAgent():
         # f = []
         T_bf = copy.deepcopy(self.spot.WorldToFoot)
         T_b0 = copy.deepcopy(self.spot.WorldToFoot)
+        sl = []
+        sv = []
+        lf = []
+        yr = []
+        ch = []
+        pd = []
         while not done and timesteps < self.policy.episode_steps:
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
@@ -395,13 +403,23 @@ class ARSAgent():
             action = self.policy.evaluate(state, delta, direction)
             action = np.tanh(action)
 
+            # print("ACT: {}".format(action))
+
             # Bezier params specced by action
-            # StepLength = action[0]
-            # StepVelocity = action[1]
-            # LateralFraction = action[2]
-            YawRate = action[0]
-            # ClearanceHeight = action[4]
-            # PenetrationDepth = action[5]
+            CD_SCALE = 0.002
+            SLV_SCALE = 0.01
+            StepLength += action[0] * CD_SCALE
+            sl.append(action[0] * CD_SCALE)
+            StepVelocity += action[1] * SLV_SCALE
+            sv.append(action[1] * SLV_SCALE)
+            LateralFraction += action[2] * SLV_SCALE
+            lf.append(action[2])
+            YawRate = action[3]
+            yr.append(action[3])
+            ClearanceHeight += action[4] * CD_SCALE
+            ch.append(action[4] * CD_SCALE)
+            PenetrationDepth += action[5] * CD_SCALE
+            pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
             StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
@@ -430,14 +448,14 @@ class ARSAgent():
                                                PenetrationDepth, contacts)
 
             # Add DELTA to XYZ Foot Poses
-            T_bf["FL"][3, :3] += action[1:4] * RESIDUALS_SCALE
-            T_bf["FR"][3, :3] += action[4:7] * RESIDUALS_SCALE
-            T_bf["BL"][3, :3] += action[7:10] * RESIDUALS_SCALE
-            T_bf["BR"][3, :3] += action[10:13] * RESIDUALS_SCALE
-            # T_bf["FL"][3, 2] += action[1] * RESIDUALS_SCALE
-            # T_bf["FR"][3, 2] += action[2] * RESIDUALS_SCALE
-            # T_bf["BL"][3, 2] += action[3] * RESIDUALS_SCALE
-            # T_bf["BR"][3, 2] += action[4] * RESIDUALS_SCALE
+            # T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
+            # T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
+            # T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
+            # T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
+            T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+            T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+            T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+            T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
             # print("ACTIONS: {}".format(action))
 
@@ -449,11 +467,14 @@ class ARSAgent():
             next_state, reward, done, _ = self.env.step(action)
             sum_rewards += reward
             timesteps += 1
-        # plt.plot(0)
-        # plt.plot(alpha, label="alpha")
-        # plt.plot(h, label="h")
-        # plt.plot(f, label="f")
-        # plt.xlabel("iter")
+        # plt.plot()
+        # plt.plot(sl, label="Step Len")
+        # plt.plot(sv, label="Step Vel")
+        # plt.plot(lf, label="Lat Frac")
+        # plt.plot(yr, label="Yaw Rate")
+        # plt.plot(ch, label="Clear Height")
+        # plt.plot(pd, label="Pen Depth")
+        # plt.xlabel("dt")
         # plt.ylabel("value")
         # plt.title("TG Parameters by Policy")
         # plt.legend()

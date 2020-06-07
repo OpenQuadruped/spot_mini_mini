@@ -10,7 +10,7 @@ useTerrainFromPNG = 1
 useDeepLocoCSV = 2
 updateHeightfield = False
 
-heightfieldSource = useProgrammatic
+heightfieldSource = useTerrainFromPNG
 import random
 random.seed(10)
 

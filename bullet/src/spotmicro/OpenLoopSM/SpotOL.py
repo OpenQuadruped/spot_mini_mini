@@ -22,7 +22,7 @@ class BezierStepper():
                  LateralFraction=0.0,
                  YawRate=0.0,
                  StepVelocity=0.8,
-                 ClearanceHeight=0.04,
+                 ClearanceHeight=0.02,
                  PenetrationDepth=0.01,
                  episode_length=2000,
                  dt=0.01,
