@@ -5,7 +5,7 @@ import time
 import gym
 import numpy as np
 import pybullet
-import pybullet_data
+from spotmicro.util import pybullet_data
 from gym import spaces
 from gym.utils import seeding
 from pkg_resources import parse_version
@@ -14,6 +14,9 @@ import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.spot_gym_env import spotGymEnv
+import spotmicro.Kinematics.LieAlgebra as LA
+
+SENSOR_NOISE_STDDEV = spot.SENSOR_NOISE_STDDEV
 
 # Register as OpenAI Gym Environment
 register(
@@ -38,46 +41,48 @@ class spotBezierEnv(spotGymEnv):
         "video.frames_per_second": 50
     }
 
-    def __init__(self,
-                 distance_weight=1.0,
-                 rotation_weight=1.0,
-                 energy_weight=0.0005,
-                 shake_weight=0.005,
-                 drift_weight=2.0,
-                 rp_weight=0.1,
-                 rate_weight=0.1,
-                 urdf_root=pybullet_data.getDataPath(),
-                 urdf_version=None,
-                 distance_limit=float("inf"),
-                 observation_noise_stdev=SENSOR_NOISE_STDDEV,
-                 self_collision_enabled=True,
-                 motor_velocity_limit=np.inf,
-                 pd_control_enabled=False,
-                 leg_model_enabled=False,
-                 accurate_motor_model_enabled=False,
-                 remove_default_joint_damping=False,
-                 motor_kp=2.0,
-                 motor_kd=0.03,
-                 control_latency=0.0,
-                 pd_latency=0.0,
-                 torque_control_enabled=False,
-                 motor_overheat_protection=False,
-                 hard_reset=False,
-                 on_rack=False,
-                 render=True,
-                 num_steps_to_log=1000,
-                 action_repeat=1,
-                 control_time_step=None,
-                 env_randomizer=None,
-                 forward_reward_cap=float("inf"),
-                 reflection=True,
-                 log_path=None,
-                 desired_velocity=0.5,
-                 desired_rate=0.0,
-                 lateral=False,
-                 draw_foot_path=False,
-                 height_field=False,
-                 AutoStepper=True):
+    def __init__(
+            self,
+            distance_weight=1.0,
+            rotation_weight=0.0,
+            energy_weight=0.000,
+            shake_weight=0.00,
+            drift_weight=5.0,
+            rp_weight=2.0,
+            rate_weight=1.0,
+            urdf_root="~/Projects/minitaur/src/main/bullet/src/spotmicro/util/pybullet_data",
+            urdf_version=None,
+            distance_limit=float("inf"),
+            observation_noise_stdev=SENSOR_NOISE_STDDEV,
+            self_collision_enabled=True,
+            motor_velocity_limit=np.inf,
+            pd_control_enabled=False,
+            leg_model_enabled=False,
+            accurate_motor_model_enabled=False,
+            remove_default_joint_damping=False,
+            motor_kp=2.0,
+            motor_kd=0.03,
+            control_latency=0.0,
+            pd_latency=0.0,
+            torque_control_enabled=False,
+            motor_overheat_protection=False,
+            hard_reset=False,
+            on_rack=False,
+            render=True,
+            num_steps_to_log=1000,
+            action_repeat=1,
+            control_time_step=None,
+            env_randomizer=None,
+            forward_reward_cap=float("inf"),
+            reflection=True,
+            log_path=None,
+            desired_velocity=0.5,
+            desired_rate=0.0,
+            lateral=False,
+            draw_foot_path=False,
+            height_field=False,
+            AutoStepper=True,
+            action_dim=1):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,
@@ -120,13 +125,25 @@ class spotBezierEnv(spotGymEnv):
             height_field=height_field,
             AutoStepper=AutoStepper)
 
-    def step(self, action, smach):
+        # Residuals + Clearance Height + Penetration Depth
+        action_high = np.array([self._action_bound] * action_dim)
+        self.action_space = spaces.Box(-action_high, action_high)
+        print("Action SPACE: {}".format(self.action_space))
+
+        self.prev_pos = np.array([0.0, 0.0, 0.0])
+
+    def pass_joint_angles(self, ja):
+        """ For executing joint angles
+        """
+        self.ja = ja
+
+    def step(self, action):
         """Step forward the simulation, given the action.
 
     Args:
       action: A list of desired motor angles for eight motors.
       smach: the bezier state machine containing simulated
-      		 random controll inputs
+             random controll inputs
 
     Returns:
       observations: The angles, velocities and torques of all motors.
@@ -138,6 +155,9 @@ class spotBezierEnv(spotGymEnv):
       ValueError: The action dimension is not the same as the number of motors.
       ValueError: The magnitude of actions is out of bounds.
     """
+        # Discard all but joint angles
+        action = self.ja
+
         self._last_base_position = self.spot.GetBasePosition()
         self._last_base_orientation = self.spot.GetBaseOrientation()
         # print("ACTION:")
@@ -160,7 +180,7 @@ class spotBezierEnv(spotGymEnv):
         action = self._transform_action_to_motor_command(action)
         self.spot.Step(action)
         # NOTE: SMACH is passed to the reward method
-        reward = self._reward(smach)
+        reward = self._reward()
         done = self._termination()
         self._env_step_counter += 1
 
@@ -169,45 +189,47 @@ class spotBezierEnv(spotGymEnv):
             self.DrawFootPath()
         return np.array(self._get_observation()), reward, done, {}
 
-    def _reward(self, smach):
-        # Return simulated controller values for reward calc
-        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = smach.return_bezier_params(
-        )
+    def return_state(self):
+        return np.array(self._get_observation())
 
-        # Return StepVelocity with the sign of StepLength
-        DesiredVelicty = math.copysign(StepVelocity, StepLength)
-
-        current_base_position = self.spot.GetBasePosition()
-
+    def _reward(self):
         # get observation
         obs = self._get_observation()
-        # forward_reward = current_base_position[0] - self._last_base_position[0]
 
-        # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
-        fwd_speed = self.spot.prev_lin_twist[0]
-        lat_speed = self.spot.prev_lin_twist[1]
-        # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
-        #     fwd_speed, self.desired_velocity))
-        # self.desired_velocity = 0.4
+        orn = self.spot.GetBaseOrientation()
 
-        # Modification for lateral/fwd rewards
-        reward_max = 1.0
-        # FORWARD/LATERAL
-        forward_reward = reward_max * np.exp(
-            -(fwd_speed - self.StepVelocity)**2 /
-            (0.1)) * np.cos(LateralFraction)
-        lateral_reward = reward_max * np.exp(
-            -(lat_speed - self.StepVelocity)**2 /
-            (0.1)) * np.sin(LateralFraction)
+        # Return StepVelocity with the sign of StepLength
+        DesiredVelicty = math.copysign(self.spot.StepVelocity / 4.0,
+                                       self.spot.StepLength)
 
-        forward_reward += lateral_reward
+        fwd_speed = self.spot.prev_lin_twist[0]  # vx
+        lat_speed = self.spot.prev_lin_twist[1]  # vy
 
-        yaw_rate = obs[4]
+        # DEBUG
+        lt, at = self.spot.GetBaseTwist()
 
-        rot_reward = reward_max * np.exp(-(yaw_rate - YawRate)**2 / (0.1))
+        # ONLY WORKS FOR MOVING PURELY FORWARD
+        pos = self.spot.GetBasePosition()
 
-        # penalty for nonzero roll, pitch
-        rp_reward = -(abs(obs[0]) + abs(obs[1]))
+        forward_reward = pos[0] - self.prev_pos[0]
+
+        # yaw_rate = obs[4]
+
+        rot_reward = 0.0
+
+        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+
+        if yaw < 0.0:
+            yaw += np.pi
+        else:
+            yaw -= np.pi
+
+        # penalty for nonzero PITCH and YAW(hidden) ONLY
+        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw))
+
+        # print("YAW: {}".format(yaw))
+        # print("RP RWD: {:.2f}".format(rp_reward))
         # print("ROLL: {} \t PITCH: {}".format(obs[0], obs[1]))
 
         # penalty for nonzero acc(z) - UNRELIABLE ON IMU
@@ -216,9 +238,9 @@ class spotBezierEnv(spotGymEnv):
         # penalty for nonzero rate (x,y,z)
         rate_reward = -(abs(obs[2]) + abs(obs[3]))
 
-        drift_reward = 0
+        # print("RATES: {}".format(obs[2:5]))
 
-        self._last_base_position = current_base_position
+        drift_reward = -abs(pos[1])
         energy_reward = -np.abs(
             np.dot(self.spot.GetMotorTorques(),
                    self.spot.GetMotorVelocities())) * self._time_step

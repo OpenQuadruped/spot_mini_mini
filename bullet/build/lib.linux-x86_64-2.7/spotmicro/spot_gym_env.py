@@ -5,15 +5,16 @@ import time
 import gym
 import numpy as np
 import pybullet
-import pybullet_data
+from spotmicro.util import pybullet_data
 from gym import spaces
 from gym.utils import seeding
 from pkg_resources import parse_version
 from spotmicro import spot
 import pybullet_utils.bullet_client as bullet_client
 from gym.envs.registration import register
-from mini_bullet.heightfield import HeightField
+from spotmicro.heightfield import HeightField
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
+import spotmicro.Kinematics.LieAlgebra as LA
 
 NUM_SUBSTEPS = 5
 NUM_MOTORS = 12
@@ -266,6 +267,12 @@ class spotGymEnv(gym.Env):
         self.viewer = None
         self._hard_reset = hard_reset  # This assignment need to be after reset()
         self.goal_reached = False
+        # Generate HeightField or not
+        if self.height_field:
+            hf = HeightField()
+            # Do 3x for extra roughness
+            hf._generate_field(self)
+            hf._generate_field(self)
 
     def set_env_randomizer(self, env_randomizer):
         self._env_randomizer = env_randomizer
@@ -283,10 +290,6 @@ class spotGymEnv(gym.Env):
             self.StateMachine = BezierStepper(dt=self._time_step)
             # Shuffle order of states
             self.StateMachine.reshuffle()
-        # Generate HeightField or not
-        if self.height_field:
-            hf = HeightField()
-            hf._generate_field(self)
 
         self._pybullet_client.configureDebugVisualizer(
             self._pybullet_client.COV_ENABLE_RENDERING, 0)
@@ -303,7 +306,7 @@ class spotGymEnv(gym.Env):
                 self._pybullet_client.configureDebugVisualizer(
                     self._pybullet_client.COV_ENABLE_PLANAR_REFLECTION,
                     self._ground_id)
-            self._pybullet_client.setGravity(0, 0, -10)
+            self._pybullet_client.setGravity(0, 0, -9.81)
             acc_motor = self._accurate_motor_model_enabled
             motor_protect = self._motor_overheat_protection
             if self._urdf_version not in spot_URDF_VERSION_MAP:
@@ -522,7 +525,7 @@ class spotGymEnv(gym.Env):
         local_up = rot_mat[6:]
         pos = self.spot.GetBasePosition()
         #  or pos[2] < 0.13
-        return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.85)
+        return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.75)
 
     def _termination(self):
         position = self.spot.GetBasePosition()
@@ -544,9 +547,28 @@ class spotGymEnv(gym.Env):
         obs = self._get_observation()
         # forward_reward = current_base_position[0] - self._last_base_position[0]
 
+        # # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
+        # GETTING TWIST IN BODY FRAME
+        pos = self.spot.GetBasePosition()
+        orn = self.spot.GetBaseOrientation()
+        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+        rpy = LA.RPY(roll, pitch, yaw)
+        R, _ = LA.TransToRp(rpy)
+        T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
+        T_bw = LA.TransInv(T_wb)
+        Adj_Tbw = LA.Adjoint(T_bw)
+
+        Vw = np.concatenate(
+            (self.spot.prev_ang_twist, self.spot.prev_lin_twist))
+        Vb = np.dot(Adj_Tbw, Vw)
+
+        # New Twist in Body Frame
         # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN
-        fwd_speed = self.spot.prev_lin_twist[0]
-        lat_speed = self.spot.prev_lin_twist[1]
+        fwd_speed = -Vb[3]  # vx
+        lat_speed = -Vb[4]  # vy
+        # fwd_speed = self.spot.prev_lin_twist[0]
+        # lat_speed = self.spot.prev_lin_twist[1]
         # print("FORWARD SPEED: {} \t STATE SPEED: {}".format(
         #     fwd_speed, self.desired_velocity))
         # self.desired_velocity = 0.4

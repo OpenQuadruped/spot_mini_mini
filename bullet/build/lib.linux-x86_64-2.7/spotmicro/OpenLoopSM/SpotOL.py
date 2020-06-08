@@ -10,34 +10,41 @@ LAT = 1
 ROT = 2
 COMBI = 3
 
+FWD = 0
+ALL = 1
+
 
 class BezierStepper():
     def __init__(self,
                  pos=np.array([0.0, 0.0, 0.0]),
                  orn=np.array([0.0, 0.0, 0.0]),
-                 StepLength=0.001,
+                 StepLength=0.03,
                  LateralFraction=0.0,
                  YawRate=0.0,
-                 StepVelocity=0.8,
-                 ClearanceHeight=0.04,
+                 StepVelocity=0.5,
+                 ClearanceHeight=0.02,
                  PenetrationDepth=0.01,
                  episode_length=2000,
                  dt=0.01,
-                 num_shuffles=2):
+                 num_shuffles=2,
+                 mode=FWD):
         self.pos = pos
         self.orn = orn
-        self.StepLength = StepLength
-        self.StepLength_LIMITS = [-0.06, 0.06]
+        self.desired_StepLength = StepLength
+        self.StepLength = 0.0
+        self.StepLength_LIMITS = [-0.05, 0.05]
         self.LateralFraction = LateralFraction
         self.LateralFraction_LIMITS = [-np.pi / 2.0, np.pi / 2.0]
         self.YawRate = YawRate
         self.YawRate_LIMITS = [-1.0, 1.0]
         self.StepVelocity = StepVelocity
-        self.StepVelocity_LIMITS = [0.1, 1.5]
+        self.StepVelocity_LIMITS = [0.3, 1.5]
         self.ClearanceHeight = ClearanceHeight
-        self.ClearanceHeight_LIMITS = [0.0, 0.1]
+        self.ClearanceHeight_LIMITS = [0.0, 0.05]
         self.PenetrationDepth = PenetrationDepth
-        self.PenetrationDepth_LIMITS = [0.0, 0.05]
+        self.PenetrationDepth_LIMITS = [0.0, 0.02]
+
+        self.mode = mode
 
         self.dt = dt
 
@@ -67,6 +74,10 @@ class BezierStepper():
         # Divide by number of states (see RL_SM())
         self.time_per_episode = int(self.max_time / len(self.order))
 
+    def ramp_up(self):
+        if self.StepLength < self.desired_StepLength:
+            self.StepLength += self.desired_StepLength * self.dt
+
     def reshuffle(self):
         self.time = 0
         # Make sure FWD/BWD is always first state
@@ -91,8 +102,6 @@ class BezierStepper():
 
             self.current_state = self.order[index]
 
-        self.time += 1
-
     def StateMachine(self):
         """ State Machined used for training robust RL on top of OL gait.
 
@@ -115,25 +124,43 @@ class BezierStepper():
             NOTE: the RL is solely responsible for modulating Clearance Height
                   and Penetration Depth
         """
+        if self.mode is ALL:
+            self.which_state()
 
-        self.which_state()
-
-        if self.current_state == FB:
-            # print("FORWARD/BACKWARD")
-            self.FB()
-        elif self.current_state == LAT:
-            # print("LATERAL")
-            self.LAT()
-        elif self.current_state == ROT:
-            # print("ROTATION")
-            self.ROT()
-        elif self.current_state == COMBI:
-            # print("COMBINED")
-            self.COMBI()
+            if self.current_state == FB:
+                # print("FORWARD/BACKWARD")
+                self.FB()
+            elif self.current_state == LAT:
+                # print("LATERAL")
+                self.LAT()
+            elif self.current_state == ROT:
+                # print("ROTATION")
+                self.ROT()
+            elif self.current_state == COMBI:
+                # print("COMBINED")
+                self.COMBI()
 
         return self.return_bezier_params()
 
     def return_bezier_params(self):
+        # First, Clip Everything
+        self.StepLength = np.clip(self.StepLength, self.StepLength_LIMITS[0],
+                                  self.StepLength_LIMITS[1])
+        self.StepVelocity = np.clip(self.StepVelocity,
+                                    self.StepVelocity_LIMITS[0],
+                                    self.StepVelocity_LIMITS[1])
+        self.LateralFraction = np.clip(self.LateralFraction,
+                                       self.LateralFraction_LIMITS[0],
+                                       self.LateralFraction_LIMITS[1])
+        self.YawRate = np.clip(self.YawRate, self.YawRate_LIMITS[0],
+                               self.YawRate_LIMITS[1])
+        self.ClearanceHeight = np.clip(self.ClearanceHeight,
+                                       self.ClearanceHeight_LIMITS[0],
+                                       self.ClearanceHeight_LIMITS[1])
+        self.PenetrationDepth = np.clip(self.PenetrationDepth,
+                                        self.PenetrationDepth_LIMITS[0],
+                                        self.PenetrationDepth_LIMITS[1])
+        # Then, return
         return self.pos, self.orn, self.StepLength, self.LateralFraction,\
             self.YawRate, self.StepVelocity,\
             self.ClearanceHeight, self.PenetrationDepth

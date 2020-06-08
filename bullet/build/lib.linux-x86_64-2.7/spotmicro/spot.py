@@ -9,11 +9,15 @@ import re
 import numpy as np
 from . import motor
 from spotmicro.util import pybullet_data
+print(pybullet_data.getDataPath())
 from spotmicro.Kinematics.SpotKinematics import SpotModel
+import spotmicro.Kinematics.LieAlgebra as LA
 
 INIT_POSITION = [0, 0, 0.21]
 INIT_RACK_POSITION = [0, 0, 1]
-INIT_ORIENTATION = [0, 0, 0, 1]
+# NOTE: URDF IS FACING THE WRONG WAY
+# TEMP FIX
+INIT_ORIENTATION = [0, 0, 1, 0]
 OVERHEAT_SHUTDOWN_TORQUE = 2.45
 OVERHEAT_SHUTDOWN_TIME = 1.0
 # -math.pi / 5
@@ -41,8 +45,7 @@ for name in MOTOR_NAMES:
         MOTOR_LIMITS_BY_NAME[name] = [-0.1, 2.59]
 
 FOOT_NAMES = [
-    "front_left_toe", "front_right_toe", "rear_left_toe",
-    "rear_right_toe"
+    "front_left_toe", "front_right_toe", "rear_left_toe", "rear_right_toe"
 ]
 
 _CHASSIS_NAME_PATTERN = re.compile(r"chassis\D*")
@@ -143,9 +146,17 @@ class Spot(object):
     """
         # SPOT MODEL
         self.spot = SpotModel()
+        # Control Inputs
+        self.StepLength = 0.0
+        self.StepVelocity = 0.0
+        self.LateralFraction = 0.0
+        self.YawRate = 0.0
+        # Leg Phases
+        self.LegPhases = [0.0, 0.0, 0.0, 0.0]
         # used to calculate minitaur acceleration
         self.init_leg = INIT_LEG_POS
         self.init_foot = INIT_FOOT_POS
+        self.prev_ang_twist = np.array([0, 0, 0])
         self.prev_lin_twist = np.array([0, 0, 0])
         self.prev_lin_acc = np.array([0, 0, 0])
         self.num_motors = 12
@@ -360,6 +371,11 @@ class Spot(object):
                 self.RealisticObservation()
         self.RealisticObservation()
 
+        # Set Foot Friction
+        for idx in self._foot_link_ids:
+            self.SetFootFriction(idx)
+            # self.SetFootRestitution(idx)
+
     def _RemoveDefaultJointDamping(self):
         num_joints = self._pybullet_client.getNumJoints(self.quadruped)
         for i in range(num_joints):
@@ -501,7 +517,7 @@ class Spot(object):
                                                4:3 * self.num_motors + 7]),
             self._observation_noise_stdev[4])
 
-    def GetBaseTwitst(self):
+    def GetBaseTwist(self):
         """Get the Twist of minitaur's base.
     Returns:
       The Twist of the minitaur's base.
@@ -525,22 +541,13 @@ class Spot(object):
     """
         upper_bound = np.array([0.0] * self.GetObservationDimension())
         # roll, pitch
-        upper_bound[0:2] = np.pi / 2.0
+        upper_bound[0:2] = 2.0 * np.pi
         # acc, rate in x,y,z
         upper_bound[2:8] = np.inf
-
-        # 8:10 are velocity and rate bounds, min and max are +-10
-        # upper_bound[8:10] = 10
-
-        # NOTE: ORIGINAL BELOW
-        # upper_bound[10:10 + self.num_motors] = math.pi  # Joint angle.
-        # upper_bound[self.num_motors + 10:2 * self.num_motors + 10] = (
-        #     motor.MOTOR_SPEED_LIMIT)  # Joint velocity.
-        # upper_bound[2 * self.num_motors + 10:3 * self.num_motors + 10] = (
-        #     motor.OBSERVED_TORQUE_LIMIT)  # Joint torque.
-        # upper_bound[3 *
-        #             self.num_motors:] = 1.0  # Quaternion of base orientation.
-        # print("UPPER BOUND{}".format(upper_bound))
+        # Leg Phases
+        upper_bound[8:12] = 2.0
+        # Contacts
+        upper_bound[12:] = 1.0
         return upper_bound
 
     def GetObservationLowerBound(self):
@@ -575,27 +582,110 @@ class Spot(object):
       # NOTE: use True version for perfect data, or other for realistic data
     """
         observation = []
-        ori = self.GetBaseOrientation()
-        # Get roll and pitch
+        # GETTING TWIST IN BODY FRAME
+        pos = self.GetBasePosition()
+        orn = self.GetBaseOrientation()
+        roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
+            [orn[0], orn[1], orn[2], orn[3]])
+        rpy = LA.RPY(roll, pitch, yaw)
+        R, _ = LA.TransToRp(rpy)
+        T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
+        T_bw = LA.TransInv(T_wb)
+        Adj_Tbw = LA.Adjoint(T_bw)
+
+        # Get Linear and Angular Twist in WORLD FRAME
+        lin_twist, ang_twist = self.GetBaseTwist()
+
+        Vw = np.concatenate((ang_twist, lin_twist))
+        Vb = np.dot(Adj_Tbw, Vw)
+
         roll, pitch, _ = self._pybullet_client.getEulerFromQuaternion(
-            [ori[0], ori[1], ori[2], ori[3]])
+            [orn[0], orn[1], orn[2], orn[3]])
 
-        # Get linear accelerations and angular rates
-        lt, ang_twist = self.GetBaseTwitst()
-        lin_twist = np.array([lt[0], lt[1], lt[2]])
         # Get linear accelerations
-        lin_acc = self.prev_lin_twist - lin_twist
-        # if lin_acc.all() == 0.0:
-        #     lin_acc = self.prev_lin_acc
+        lin_twist = -Vb[3:]
+        lin_acc = lin_twist - self.prev_lin_twist
+        if lin_acc.all() == 0.0:
+            lin_acc = self.prev_lin_acc
         self.prev_lin_acc = lin_acc
-        # print("LIN ACC: ", lin_acc)
+        # print("LIN TWIST: ", lin_twist)
         self.prev_lin_twist = lin_twist
+        self.prev_ang_twist = Vb[:3]
 
-        # order: roll, pitch, gyro(x,y,z)
+        ang_twist = self.prev_ang_twist
+
+        # Get Contacts
+        CONTACT = list(
+            self._pybullet_client.getContactPoints(self.quadruped))
+
+        FLC = 0
+        FRC = 0
+        BLC = 0
+        BRC = 0
+
+        if len(CONTACT) > 0:
+            for i in range(len(CONTACT)):
+                Contact_Link_Index = CONTACT[i][3]
+                if Contact_Link_Index == self._foot_id_list[0]:
+                    FLC = 1
+                    # print("FL CONTACT")
+                if Contact_Link_Index == self._foot_id_list[1]:
+                    FRC = 1
+                    # print("FR CONTACT")
+                if Contact_Link_Index == self._foot_id_list[2]:
+                    BLC = 1
+                    # print("BL CONTACT")
+                if Contact_Link_Index == self._foot_id_list[3]:
+                    BRC = 1
+                    # print("BR CONTACT")
+        # order: roll, pitch, gyro(x,y,z), acc(x, y, z)
         observation.append(roll)
         observation.append(pitch)
         observation.extend(list(ang_twist))
+        observation.extend(list(lin_acc))
+        # Control Input
+        # observation.append(self.StepLength)
+        # observation.append(self.StepVelocity)
+        # observation.append(self.LateralFraction)
+        # observation.append(self.YawRate)
+        observation.extend(self.LegPhases)
+        observation.append(FLC)
+        observation.append(FRC)
+        observation.append(BLC)
+        observation.append(BRC)
         return observation
+
+    def GetControlInput(self, controller):
+        """ Store Control Input as Observation
+        """
+        _, _, StepLength, LateralFraction, YawRate, StepVelocity, _, _ = controller.return_bezier_params(
+        )
+
+        self.StepLength = StepLength
+        self.StepVelocity = StepVelocity
+        self.LateralFraction = LateralFraction
+        self.YawRate = YawRate
+
+    def GetLegPhases(self, TrajectoryGenerator):
+        """ Leg phases according to TG from 0->2
+            0->1: Stance
+            1->2 Swing
+        """
+        if self.StepVelocity != 0.0:
+            Tswing = 2.0 * abs(self.StepLength) / abs(self.StepVelocity)
+        else:
+            Tswing = 0.0
+        for i in range(4):
+            TrajectoryGenerator.GetPhase(i, TrajectoryGenerator.Tstance,
+                                         Tswing)
+
+        self.LegPhases = TrajectoryGenerator.Phases
+
+    def GetExternalObservations(self, TrajectoryGenerator, controller):
+        """ Augment State Space
+        """
+        self.GetControlInput(controller)
+        self.GetLegPhases(TrajectoryGenerator)
 
     def ConvertFromLegModel(self, action):
         # TODO
@@ -863,30 +953,28 @@ class Spot(object):
             self._pybullet_client.changeDynamics(
                 self.quadruped, link_id, localInertiaDiagonal=motor_inertia)
 
-    def SetFootFriction(self, foot_friction):
+    def SetFootFriction(self, link_id, foot_friction=100.0):
         """Set the lateral friction of the feet.
 
     Args:
       foot_friction: The lateral friction coefficient of the foot. This value is
         shared by all four feet.
     """
-        for link_id in self._foot_link_ids:
-            self._pybullet_client.changeDynamics(self.quadruped,
-                                                 link_id,
-                                                 lateralFriction=foot_friction)
+        self._pybullet_client.changeDynamics(self.quadruped,
+                                             link_id,
+                                             lateralFriction=foot_friction)
 
     # TODO(b/73748980): Add more API's to set other contact parameters.
-    def SetFootRestitution(self, foot_restitution):
+    def SetFootRestitution(self, link_id, foot_restitution=1.0):
         """Set the coefficient of restitution at the feet.
 
     Args:
       foot_restitution: The coefficient of restitution (bounciness) of the feet.
         This value is shared by all four feet.
     """
-        for link_id in self._foot_link_ids:
-            self._pybullet_client.changeDynamics(self.quadruped,
-                                                 link_id,
-                                                 restitution=foot_restitution)
+        self._pybullet_client.changeDynamics(self.quadruped,
+                                             link_id,
+                                             restitution=foot_restitution)
 
     def SetJointFriction(self, joint_frictions):
         for knee_joint_id, friction in zip(self._foot_link_ids,

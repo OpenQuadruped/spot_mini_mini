@@ -348,6 +348,7 @@ class BezierGait():
             self.TD = False
             self.time = 0.0
             self.time_since_last_TD = 0.0
+            YawRate = 0.0
 
         # Check contacts
         if contacts[0] == 1 and Tswing > dt:

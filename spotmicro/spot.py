@@ -9,6 +9,7 @@ import re
 import numpy as np
 from . import motor
 from spotmicro.util import pybullet_data
+print(pybullet_data.getDataPath())
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 import spotmicro.Kinematics.LieAlgebra as LA
 

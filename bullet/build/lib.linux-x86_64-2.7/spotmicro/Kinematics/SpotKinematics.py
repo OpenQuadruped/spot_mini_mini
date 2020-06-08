@@ -27,16 +27,16 @@ class SpotModel:
         # Length
         self.hip_x = 0.192
         # Width
-        self.hip_y = 0.075
+        self.hip_y = 0.085
 
         # Distance Between Feet
         # Length
         self.foot_x = 0.192
         # Width
-        self.foot_y = 0.18
+        self.foot_y = 0.17
 
         # Body Height
-        self.height = 0.15
+        self.height = 0.135
 
         # Joint Parameters
         self.hip_lim = hip_lim
