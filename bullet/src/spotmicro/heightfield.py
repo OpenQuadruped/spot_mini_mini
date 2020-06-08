@@ -53,7 +53,7 @@ class HeightField():
             env.pybullet_client.resetBasePositionAndOrientation(
                 terrain, [0, 0, 0], [0, 0, 0, 1])
             env.pybullet_client.changeDynamics(terrain, -1,
-                                               lateralFriction=10.0)
+                                               lateralFriction=100.0)
 
         if heightfieldSource == useDeepLocoCSV:
             terrainShape = env.pybullet_client.createCollisionShape(
@@ -65,12 +65,12 @@ class HeightField():
             env.pybullet_client.resetBasePositionAndOrientation(
                 terrain, [0, 0, 0], [0, 0, 0, 1])
             env.pybullet_client.changeDynamics(terrain, -1,
-                                               lateralFriction=10.0)
+                                               lateralFriction=100.0)
 
         if heightfieldSource == useTerrainFromPNG:
             terrainShape = env.pybullet_client.createCollisionShape(
                 shapeType=env.pybullet_client.GEOM_HEIGHTFIELD,
-                meshScale=[.05, .05, 4],
+                meshScale=[.05, .05, 2],
                 fileName="heightmaps/wm_height_out.png")
             textureId = env.pybullet_client.loadTexture(
                 "heightmaps/gimp_overlay_out.png")
@@ -79,9 +79,9 @@ class HeightField():
                                                   -1,
                                                   textureUniqueId=textureId)
             env.pybullet_client.resetBasePositionAndOrientation(
-                terrain, [0, 0, 0.2], [0, 0, 0, 1])
+                terrain, [0, 0, 0.1], [0, 0, 0, 1])
             env.pybullet_client.changeDynamics(terrain, -1,
-                                               lateralFriction=10.0)
+                                               lateralFriction=100.0)
 
         self.hf_id = terrainShape
         print("TERRAIN SHAPE: {}".format(terrainShape))

@@ -433,7 +433,7 @@ class ARSAgent():
             # LateralFraction += action[2] * CD_SCALE
             # lf.append(action[2] * CD_SCALE)
             YawRate = action[0]
-            # yr.append(action[3])
+            yr.append(YawRate)
             # ClearanceHeight += action[4] * CD_SCALE
             # ch.append(action[4] * CD_SCALE)
             # PenetrationDepth += action[5] * CD_SCALE
@@ -485,18 +485,18 @@ class ARSAgent():
             next_state, reward, done, _ = self.env.step(action)
             sum_rewards += reward
             timesteps += 1
-        # plt.plot()
+        plt.plot()
         # plt.plot(sl, label="Step Len")
         # plt.plot(sv, label="Step Vel")
         # plt.plot(lf, label="Lat Frac")
-        # plt.plot(yr, label="Yaw Rate")
+        plt.plot(yr, label="Yaw Rate")
         # plt.plot(ch, label="Clear Height")
         # plt.plot(pd, label="Pen Depth")
-        # plt.xlabel("dt")
-        # plt.ylabel("value")
-        # plt.title("TG Parameters by Policy")
-        # plt.legend()
-        # plt.show()
+        plt.xlabel("dt")
+        plt.ylabel("value")
+        plt.title("TG Parameters by Policy")
+        plt.legend()
+        plt.show()
         self.TGP.reset()
         self.smach.reshuffle()
         self.smach.PenetrationDepth = self.BasePenetrationDepth
