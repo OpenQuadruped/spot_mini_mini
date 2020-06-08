@@ -373,6 +373,7 @@ class Spot(object):
         # Set Foot Friction
         for idx in self._foot_link_ids:
             self.SetFootFriction(idx)
+            # self.SetFootRestitution(idx)
 
     def _RemoveDefaultJointDamping(self):
         num_joints = self._pybullet_client.getNumJoints(self.quadruped)
@@ -963,17 +964,16 @@ class Spot(object):
                                              lateralFriction=foot_friction)
 
     # TODO(b/73748980): Add more API's to set other contact parameters.
-    def SetFootRestitution(self, foot_restitution):
+    def SetFootRestitution(self, link_id, foot_restitution=1.0):
         """Set the coefficient of restitution at the feet.
 
     Args:
       foot_restitution: The coefficient of restitution (bounciness) of the feet.
         This value is shared by all four feet.
     """
-        for link_id in self._foot_link_ids:
-            self._pybullet_client.changeDynamics(self.quadruped,
-                                                 link_id,
-                                                 restitution=foot_restitution)
+        self._pybullet_client.changeDynamics(self.quadruped,
+                                             link_id,
+                                             restitution=foot_restitution)
 
     def SetJointFriction(self, joint_frictions):
         for knee_joint_id, friction in zip(self._foot_link_ids,

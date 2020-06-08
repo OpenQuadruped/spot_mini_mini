@@ -21,16 +21,17 @@ class BezierStepper():
                  StepLength=0.03,
                  LateralFraction=0.0,
                  YawRate=0.0,
-                 StepVelocity=0.8,
+                 StepVelocity=0.5,
                  ClearanceHeight=0.02,
                  PenetrationDepth=0.01,
                  episode_length=2000,
                  dt=0.01,
                  num_shuffles=2,
-                 mode=ALL):
+                 mode=FWD):
         self.pos = pos
         self.orn = orn
-        self.StepLength = StepLength
+        self.desired_StepLength = StepLength
+        self.StepLength = 0.0
         self.StepLength_LIMITS = [-0.05, 0.05]
         self.LateralFraction = LateralFraction
         self.LateralFraction_LIMITS = [-np.pi / 2.0, np.pi / 2.0]
@@ -72,6 +73,10 @@ class BezierStepper():
 
         # Divide by number of states (see RL_SM())
         self.time_per_episode = int(self.max_time / len(self.order))
+
+    def ramp_up(self):
+        if self.StepLength < self.desired_StepLength:
+            self.StepLength += self.desired_StepLength * self.dt
 
     def reshuffle(self):
         self.time = 0
