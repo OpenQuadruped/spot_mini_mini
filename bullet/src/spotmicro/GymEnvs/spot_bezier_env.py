@@ -81,7 +81,7 @@ class spotBezierEnv(spotGymEnv):
                  draw_foot_path=False,
                  height_field=False,
                  AutoStepper=True,
-                 action_dim=1):
+                 action_dim=16):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,
