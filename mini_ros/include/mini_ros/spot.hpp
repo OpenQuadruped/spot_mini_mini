@@ -20,7 +20,7 @@ namespace spot
     // constexpr allows fcn to be run at compile time and interface with 
     // static_assert tests.
     // Note high default epsilon since using controller
-    constexpr bool almost_equal(double d1, double d2, double epsilon=1.0e-3)
+    constexpr bool almost_equal(double d1, double d2, double epsilon=1.0e-1)
     {
         if (fabs(d1 - d2) < epsilon)
         {
