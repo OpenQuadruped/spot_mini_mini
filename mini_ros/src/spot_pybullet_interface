@@ -21,7 +21,7 @@ from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 
 STEPLENGTH_SCALE = 0.03
-Z_SCALE = 0.05
+Z_SCALE = 0.08
 RPY_SCALE = 0.5
 
 
@@ -102,8 +102,12 @@ class SpotCommander():
 
         if self.mini_cmd.motion != "Stop":
             if self.mini_cmd.movement == "Stepping":
-                StepLength = (self.mini_cmd.x_velocity + abs(
-                    self.mini_cmd.y_velocity * 0.5)) * STEPLENGTH_SCALE
+                StepLength = self.mini_cmd.x_velocity + abs(
+                    self.mini_cmd.y_velocity * 0.5)
+                StepLength = np.clip(StepLength, -1.0, 1.0)
+                StepLength *= STEPLENGTH_SCALE
+                if StepLength < 0.0:
+                    self.mini_cmd.z = 0.5
                 LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
                 YawRate = self.mini_cmd.rate
                 # TODO: integrate into controller
@@ -157,7 +161,7 @@ class SpotCommander():
 def main():
     """ The main() function. """
     mini_commander = SpotCommander()
-    rate = rospy.Rate(200)
+    rate = rospy.Rate(np.inf)
     while not rospy.is_shutdown():
         # This is called continuously. Has timeout functionality too
         mini_commander.move()
