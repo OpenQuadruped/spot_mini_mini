@@ -12,14 +12,14 @@
 #include <string>
 #include <vector>
 
-#include <mini_ros/minitaur.hpp>
+#include <mini_ros/spot.hpp>
 #include <mini_ros/teleop.hpp>
 #include "mini_ros/MiniCmd.h"
 #include "std_srvs/Empty.h"
 #include "std_msgs/Bool.h"
 
 // Global Vars
-mini::Minitaur minitaur = mini::Minitaur();
+spot::Spot spot_mini = spot::Spot();
 bool teleop_flag = false;
 bool motion_flag = false;
 bool ESTOP = false;
@@ -39,14 +39,14 @@ void teleop_callback(const geometry_msgs::Twist &tw)
   * changing the message, in the case that another node is also listening to it.
   */
   
-  minitaur.update_command(tw.linear.x, tw.angular.z);
+  spot_mini.update_command(tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z);
 }
 
 void estop_callback(const std_msgs::Bool &estop)
 { 
   if (estop.data)
   {
-    minitaur.update_command(0.0, 0.0);
+    spot_mini.update_command(0.0, 0.0, 0.0, 0.0);
     motion_flag = true;
     if (!ESTOP)
     {
@@ -67,7 +67,7 @@ bool swm_callback(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 /// Switches the Movement mode from FB (Forward/Backward) to LR (Left/Right)
 /// and vice versa
 {
-    minitaur.switch_movement();
+    spot_mini.switch_movement();
     motion_flag = true;
     return true;
 }
@@ -76,7 +76,7 @@ bool swm_callback(std_srvs::Empty::Request&, std_srvs::Empty::Response&)
 int main(int argc, char** argv)
 /// The Main Function ///
 {
-    ROS_INFO("STARTING NODE: Minitaur State Machine");
+    ROS_INFO("STARTING NODE: spot_mini State Machine");
 
     // Vars
     double frequency = 5;
@@ -101,9 +101,15 @@ int main(int argc, char** argv)
     // Init MiniCmd
     mini_ros::MiniCmd mini_cmd;
     // Placeholder
-    mini_cmd.velocity = 0.0;
+    mini_cmd.x_velocity = 0.0;
+    mini_cmd.y_velocity = 0.0;
     mini_cmd.rate = 0.0;
+    mini_cmd.roll = 0.0;
+    mini_cmd.pitch = 0.0;
+    mini_cmd.yaw = 0.0;
+    mini_cmd.z = 0.0;
     mini_cmd.motion = "Stop";
+    mini_cmd.movement = "Stepping";
 
     ros::Rate rate(frequency);
     current_time = ros::Time::now();
@@ -114,50 +120,45 @@ int main(int argc, char** argv)
         ros::spinOnce();
         current_time = ros::Time::now();
 
-        mini::MiniCommand cmd = minitaur.return_command();
+        spot::SpotCommand cmd = spot_mini.return_command();
 
         // Condition for sending non-stop command
         if (!motion_flag and !(current_time.toSec() - last_time.toSec() > timeout) and !ESTOP)
         {
-          mini_cmd.velocity = cmd.velocity;
+          mini_cmd.x_velocity = cmd.x_velocity;
+          mini_cmd.y_velocity = cmd.y_velocity;
           mini_cmd.rate = cmd.rate;
+          mini_cmd.roll = cmd.roll;
+          mini_cmd.pitch = cmd.pitch;
+          mini_cmd.yaw = cmd.yaw;
+          mini_cmd.z = cmd.z;
           // Now convert enum to string
-          if (cmd.motion == mini::Forward)
+          // Motion
+          if (cmd.motion == spot::Go)
           {
-            mini_cmd.motion = "Forward";
-          } else if (cmd.motion == mini::Backward)
-          {
-            mini_cmd.motion = "Backward";
-          } else if (cmd.motion == mini::Left)
-          {
-            mini_cmd.motion = "Left";
-          } else if (cmd.motion == mini::Right)
-          {
-            mini_cmd.motion = "Right";
-          } else if (cmd.motion == mini::CW)
-          {
-            mini_cmd.motion = "CW";
-          } else if (cmd.motion == mini::CCW)
-          {
-            mini_cmd.motion = "CCW";
-          } else if (cmd.motion == mini::Stop)
+            mini_cmd.motion = "Go";
+          } else
           {
             mini_cmd.motion = "Stop";
-          } else if (cmd.motion == mini::Recover)
+          }
+          // Movement
+          if (cmd.movement == spot::Stepping)
           {
-            mini_cmd.motion = "Recover";
-          } else if (cmd.motion == mini::ForwardLeft)
+            mini_cmd.movement = "Stepping";
+          } else
           {
-            mini_cmd.motion = "ForwardLeft";
-          } else if (cmd.motion == mini::ForwardRight)
-          {
-            mini_cmd.motion = "ForwardRight";
+            mini_cmd.movement = "Viewing";
           }
 
         } else
         {
-          mini_cmd.velocity = 0.0;
+          mini_cmd.x_velocity = 0.0;
+          mini_cmd.y_velocity = 0.0;
           mini_cmd.rate = 0.0;
+          mini_cmd.roll = 0.0;
+          mini_cmd.pitch = 0.0;
+          mini_cmd.yaw = 0.0;
+          mini_cmd.z = 0.0;
           mini_cmd.motion = "Stop";
         }
 
