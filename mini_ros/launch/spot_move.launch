@@ -25,7 +25,7 @@
 </node>
 
 <!-- Policy Node -->
-<!-- <node name="policies" pkg="mini_ros" type="policies" output="screen"/> -->
+<!-- <node name="spot_pybullet" pkg="mini_ros" type="spot_pybullet_interface" output="screen"/> -->
 
 
 <!-- NOTE:
@@ -33,6 +33,9 @@
           - Get Number (you will see something like jsX): ls /dev/input/
           - Make available to ROS: sudo chmod a+rw /dev/input/jsX
           - Make sure <param name="dev" type="string" value="/dev/input/jsX" /> is correct in launch
+
+        You can ignore this msg: [ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!
+        It just means your controller is missing some functionality, but this package doesn't use it. 
 -->
 
 </launch>

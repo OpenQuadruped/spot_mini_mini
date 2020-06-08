@@ -21,7 +21,7 @@ namespace tele
 		twist.linear.x = l_scale_*joy->axes[linear_x_];
 		twist.linear.y = l_scale_*joy->axes[linear_y_];
 		// NOTE: used to control robot height
-		twist.linear.z = l_scale_*joy->axes[linear_z_];
+		twist.linear.z = -l_scale_*joy->axes[linear_z_];
 		twist.angular.z = a_scale_*joy->axes[angular_];
 		
 

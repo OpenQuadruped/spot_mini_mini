@@ -49,8 +49,8 @@ namespace spot
 				cmd.x_velocity = 0.0;
 				cmd.y_velocity = 0.0;
 				cmd.rate = 0.0;
-				cmd.roll = vx;
-		        cmd.pitch = vy;
+				cmd.roll = vy;
+		        cmd.pitch = vx;
 		        cmd.yaw = w;
 		        cmd.z = z;
 			}

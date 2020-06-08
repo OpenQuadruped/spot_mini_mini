@@ -1,0 +1,172 @@
+#!/usr/bin/env python
+"""
+DESCRIPTION:
+
+SUBSCRIBERS:
+"""
+from __future__ import division
+import torch
+import os
+import rospy
+import numpy as np
+from mini_ros.msg import MiniCmd
+import copy
+
+import sys
+
+sys.path.append('../../')
+
+from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
+from spotmicro.Kinematics.SpotKinematics import SpotModel
+from spotmicro.GaitGenerator.Bezier import BezierGait
+
+STEPLENGTH_SCALE = 0.03
+Z_SCALE = 0.05
+RPY_SCALE = 0.5
+
+
+class SpotCommander():
+    def __init__(self):
+
+        rospy.init_node('Policies', anonymous=True)
+        self.agents = {}
+        # self.movetypes = [
+        #     "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
+        # ]
+        self.movetypes = ["Stop"]
+        self.mini_cmd = MiniCmd()
+        self.mini_cmd.x_velocity = 0.0
+        self.mini_cmd.y_velocity = 0.0
+        self.mini_cmd.rate = 0.0
+        self.mini_cmd.roll = 0.0
+        self.mini_cmd.pitch = 0.0
+        self.mini_cmd.yaw = 0.0
+        self.mini_cmd.z = 0.0
+        self.mini_cmd.motion = "Stop"
+        self.mini_cmd.movement = "Stepping"
+
+        self.load_spot()
+        # print("AGENTS: ", self.agents)
+        # callback from mini_cmd topic
+        self.sub = rospy.Subscriber('mini_cmd', MiniCmd, self.callback)
+        print("READY TO GO!")
+
+    def load_spot(self):
+
+        self.env = spotBezierEnv(render=True,
+                                 on_rack=False,
+                                 height_field=False,
+                                 draw_foot_path=False)
+
+        self.env.reset()
+
+        seed = 0
+        # Set seeds
+        self.env.seed(seed)
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+
+        state_dim = self.env.observation_space.shape[0]
+        print("STATE DIM: {}".format(state_dim))
+        action_dim = self.env.action_space.shape[0]
+        print("ACTION DIM: {}".format(action_dim))
+        max_action = float(self.env.action_space.high[0])
+        print("RECORDED MAX ACTION: {}".format(max_action))
+
+        self.state = self.env.reset()
+
+        # Load Spot Model
+        self.spot = SpotModel()
+
+        self.T_bf0 = self.spot.WorldToFoot
+        self.T_bf = copy.deepcopy(self.T_bf0)
+
+        self.bzg = BezierGait(dt=self.env._time_step)
+
+    def callback(self, mini_cmd):
+        """ Reads the desired Minitaur command and passes it for execution
+
+            Args: mini_cmd
+        """
+        try:
+            # Update mini_cmd
+            self.mini_cmd = mini_cmd
+            # log input data as debug-level message
+            rospy.logdebug(mini_cmd)
+        except rospy.ROSInterruptException:
+            pass
+
+    def move(self):
+        """ Turn joystick inputs into commands
+        """
+
+        if self.mini_cmd.motion != "Stop":
+            if self.mini_cmd.movement == "Stepping":
+                StepLength = (self.mini_cmd.x_velocity + abs(
+                    self.mini_cmd.y_velocity * 0.5)) * STEPLENGTH_SCALE
+                LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
+                YawRate = self.mini_cmd.rate
+                # TODO: integrate into controller
+                StepVelocity = 0.4
+                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
+                orn = np.array([0.0, 0.0, 0.0])
+            else:
+                StepLength = 0.0
+                LateralFraction = 0.0
+                YawRate = 0.0
+                # TODO: integrate into controller
+                StepVelocity = 0.4
+                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
+                orn = np.array([
+                    self.mini_cmd.roll * RPY_SCALE,
+                    self.mini_cmd.pitch * RPY_SCALE,
+                    self.mini_cmd.yaw * RPY_SCALE
+                ])
+        else:
+            StepLength = 0.0
+            LateralFraction = 0.0
+            YawRate = 0.0
+            # TODO: integrate into controller
+            StepVelocity = 0.4
+            pos = np.array([0.0, 0.0, 0.0])
+            orn = np.array([0.0, 0.0, 0.0])
+
+        # TODO: integrate into controller
+        ClearanceHeight = 0.02
+        PenetrationDepth = 0.01
+
+        contacts = self.state[-4:]
+
+        self.T_bf = self.bzg.GenerateTrajectory(StepLength, LateralFraction,
+                                                YawRate, StepVelocity,
+                                                self.T_bf0, self.T_bf,
+                                                ClearanceHeight,
+                                                PenetrationDepth, contacts)
+
+        joint_angles = self.spot.IK(orn, pos, self.T_bf)
+        self.env.pass_joint_angles(joint_angles.reshape(-1))
+        # Get External Observations
+        # TODO
+        # self.env.spot.GetExternalObservations(bzg, bz_step)
+        # Step
+        action = self.env.action_space.sample()
+        action[:] = 0.0
+        self.state, reward, done, _ = self.env.step(action)
+
+
+def main():
+    """ The main() function. """
+    mini_commander = SpotCommander()
+    rate = rospy.Rate(200)
+    while not rospy.is_shutdown():
+        # This is called continuously. Has timeout functionality too
+        mini_commander.move()
+        rate.sleep()
+        # rospy.spin()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
