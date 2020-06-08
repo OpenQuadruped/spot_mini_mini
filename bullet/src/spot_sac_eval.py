@@ -6,6 +6,10 @@ from sac_lib import SoftActorCritic, NormalizedActions, ReplayBuffer, PolicyNetw
 import copy
 from gym import spaces
 
+import sys
+
+sys.path.append('../../')
+
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait

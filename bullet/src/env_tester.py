@@ -4,6 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
+import sys
+
+sys.path.append('../../')
+
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
