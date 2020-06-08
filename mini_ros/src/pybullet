@@ -16,7 +16,7 @@ import torch
 import os
 
 
-class MiniCommander():
+class SpotCommander():
     def __init__(self):
 
         rospy.init_node('Policies', anonymous=True)
@@ -134,7 +134,7 @@ class MiniCommander():
 
 def main():
     """ The main() function. """
-    mini_commander = MiniCommander()
+    mini_commander = SpotCommander()
     rate = rospy.Rate(200)
     while not rospy.is_shutdown():
         # This is called continuously. Has timeout functionality too

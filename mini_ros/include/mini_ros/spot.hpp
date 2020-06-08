@@ -1,11 +1,11 @@
-#ifndef MINITAUR_INCLUDE_GUARD_HPP
-#define MINITAUR_INCLUDE_GUARD_HPP
+#ifndef SPOT_INCLUDE_GUARD_HPP
+#define SPOT_INCLUDE_GUARD_HPP
 /// \file
-/// \brief MINITAURs library which contains high-level control functionality for the Ghost Minitaur.
+/// \brief Spots library which contains high-level control functionality for the Spot Mini Mini.
 #include <vector>
 #include <ros/ros.h>
 
-namespace mini
+namespace spot
 {
 
     /// \brief approximately compare two floating-point numbers using
@@ -30,40 +30,47 @@ namespace mini
         }
     }
 
-    enum Motion {Forward, Backward, Left, Right, CW, CCW, Stop, Recover, ForwardLeft, ForwardRight};
-    enum Movement {FB, LR};
+    enum Motion {Go, Stop};
+    enum Movement {Stepping, Viewing};
 
     // \brief Struct to store the commanded type of motion, velocity and rate
-    struct MiniCommand
+    struct SpotCommand
     {
         Motion motion = Stop;
-        double velocity = 0.0;
+        Movement movement = Stepping;
+        double x_velocity = 0.0;
+        double y_velocity = 0.0;
         double rate = 0.0;
+        double roll = 0.0;
+        double pitch = 0.0;
+        double yaw = 0.0;
+        double z = 0.0;
     };
 
-    // \brief Minitaur class responsible for high-level motion commands
-    class Minitaur
+    // \brief Spot class responsible for high-level motion commands
+    class Spot
     {
 
     public:
-        // \brief Constructor for Minitaur class
-        Minitaur();
+        // \brief Constructor for Spot class
+        Spot();
 
-        // \brief updates the type and velocity of motion to be commanded to the minitaur
-        // \param v: linear velocity
+        // \brief updates the type and velocity of motion to be commanded to the Spot
+        // \param vx: linear velocity (x)
+        // \param vy: linear velocity (y)
+        // \param z: robot height
         // \param w: angular velocity
-        void update_command(const double & v, const double & w);
+        void update_command(const double & vx, const double & vy, const double & z, const double & w);
 
         // \brief changes the commanded motion from Forward/Backward to Left/Right or vice-versa
         void switch_movement();
 
-        // \brief returns the Minitaur's current command (Motion, v,w) for external use
-        // \returns MiniCommand
-        MiniCommand return_command();
+        // \brief returns the Spot's current command (Motion, v,w) for external use
+        // \returns SpotCommand
+        SpotCommand return_command();
 
     private:
-        MiniCommand cmd;
-        Movement movement;
+        SpotCommand cmd;
     };
     
 }

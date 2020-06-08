@@ -15,13 +15,15 @@ namespace tele
     {
     public:
         // \brief Teleop constructor that defines the axes used for control and sets their scaling factor
-        // \param linear: joystick axis assigned to linear velocity
+        // \param linear_x: joystick axis assigned to linear velocity (x)
+        // \param linear_y: joystick axis assigned to linear velocity (y)
+        // \param linear_z: joystick axis assigned to robot height [overloading]
         // \param angular: joystick axis assigned to angular velocity
         // \param l_scale: scaling factor for linear velocity
         // \param a_scale: scaling factor for angular velocity
         // \param sw: button for switch_trigger
         // \param es: button for ESTOP
-        Teleop(const int & linear, const int & angular, const double & l_scale, const double & a_scale, const int & sw, const int & es);
+        Teleop(const int & linear_x, const int & linear_y, const int & linear_z, const int & angular, const double & l_scale, const double & a_scale, const int & sw, const int & es);
 
         // \brief Takes a Joy messages and converts it to linear and angular velocity (Twist)
         // \param joy: sensor_msgs describing Joystick inputs
@@ -41,7 +43,9 @@ namespace tele
 
     private:
 
-        int linear_ = 0;
+        int linear_x_ = 0;
+        int linear_y_ = 0;
+        int linear_z_ = 0;
         int angular_= 1;
         int sw_ = 0;
         int es_ = 1;
