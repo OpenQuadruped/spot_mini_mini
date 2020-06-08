@@ -46,9 +46,9 @@ class spotBezierEnv(spotGymEnv):
                  rotation_weight=0.0,
                  energy_weight=0.000,
                  shake_weight=0.00,
-                 drift_weight=3.0,
-                 rp_weight=3.0,
-                 rate_weight=0.1,
+                 drift_weight=5.0,
+                 rp_weight=2.0,
+                 rate_weight=1.0,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
                  distance_limit=float("inf"),
@@ -81,7 +81,7 @@ class spotBezierEnv(spotGymEnv):
                  draw_foot_path=False,
                  height_field=False,
                  AutoStepper=True,
-                 action_dim=10):
+                 action_dim=1):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,

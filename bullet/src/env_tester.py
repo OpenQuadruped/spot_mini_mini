@@ -72,6 +72,8 @@ def main():
     t = 0
     while t < (int(max_timesteps)):
 
+        bz_step.ramp_up()
+
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
         )
 

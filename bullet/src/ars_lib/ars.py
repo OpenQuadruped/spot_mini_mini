@@ -8,6 +8,7 @@ from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import TransToRp
 import copy
+from scipy.signal import savgol_filter as sv_filt
 
 np.random.seed(0)
 
@@ -29,7 +30,13 @@ Y_SCALE = 0.1
 CH_SCALE = 0.007
 PD_SCALE = 0.0025
 
-RESIDUALS_SCALE = 0.02
+CD_SCALE = 0.001
+SLV_SCALE = 0.01
+
+RESIDUALS_SCALE = 0.001
+
+# Filter actions
+alpha = 0.7
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -110,7 +117,11 @@ def ParallelWorker(childPipe, env, nb_states):
             done = False
             T_bf = copy.deepcopy(spot.WorldToFoot)
             T_b0 = copy.deepcopy(spot.WorldToFoot)
+            action = env.action_space.sample()
+            action[:] = 0.0
+            old_act = action
             while not done and timesteps < policy.episode_steps:
+                smach.ramp_up()
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
                 )
 
@@ -126,15 +137,17 @@ def ParallelWorker(childPipe, env, nb_states):
 
                 action = np.tanh(action)
 
+                # EXP FILTER
+                action = alpha * old_act + (1.0 - alpha) * action
+                old_act = action
+
                 # Bezier params specced by action
-                CD_SCALE = 0.002
-                SLV_SCALE = 0.01
-                StepLength += action[0] * CD_SCALE
-                StepVelocity += action[1] * SLV_SCALE
-                LateralFraction += action[2] * SLV_SCALE
-                YawRate = action[3]
-                ClearanceHeight += action[4] * CD_SCALE
-                PenetrationDepth += action[5] * CD_SCALE
+                # StepLength += action[0] * CD_SCALE
+                # StepVelocity += action[1] * SLV_SCALE
+                # LateralFraction += action[2] * CD_SCALE
+                YawRate = action[0]
+                # ClearanceHeight += action[4] * CD_SCALE
+                # PenetrationDepth += action[5] * CD_SCALE
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -165,10 +178,10 @@ def ParallelWorker(childPipe, env, nb_states):
                 # T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
                 # T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
                 # T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
-                T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
-                T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
-                T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
-                T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
+                # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+                # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+                # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+                # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
                 # Pass Joint Angles
@@ -201,7 +214,7 @@ class Policy():
             # used to update weights, sorted by highest rwrd
             num_best_deltas=16,
             # number of timesteps per episode per rollout
-            episode_steps=5000,
+            episode_steps=2000,
             # weight of sampled exploration noise
             expl_noise=0.01,
             # for seed gen
@@ -390,7 +403,11 @@ class ARSAgent():
         yr = []
         ch = []
         pd = []
+        action = self.env.action_space.sample()
+        action[:] = 0.0
+        old_act = action
         while not done and timesteps < self.policy.episode_steps:
+            self.smach.ramp_up()
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
 
@@ -402,24 +419,25 @@ class ARSAgent():
             state = self.normalizer.normalize(state)
             action = self.policy.evaluate(state, delta, direction)
             action = np.tanh(action)
+            # EXP FILTER
+            action = alpha * old_act + (1.0 - alpha) * action
+            old_act = action
 
             # print("ACT: {}".format(action))
 
             # Bezier params specced by action
-            CD_SCALE = 0.002
-            SLV_SCALE = 0.01
-            StepLength += action[0] * CD_SCALE
-            sl.append(action[0] * CD_SCALE)
-            StepVelocity += action[1] * SLV_SCALE
-            sv.append(action[1] * SLV_SCALE)
-            LateralFraction += action[2] * SLV_SCALE
-            lf.append(action[2])
-            YawRate = action[3]
-            yr.append(action[3])
-            ClearanceHeight += action[4] * CD_SCALE
-            ch.append(action[4] * CD_SCALE)
-            PenetrationDepth += action[5] * CD_SCALE
-            pd.append(action[5] * CD_SCALE)
+            # StepLength += action[0] * CD_SCALE
+            # sl.append(action[0] * CD_SCALE)
+            # StepVelocity += action[1] * SLV_SCALE
+            # sv.append(action[1] * SLV_SCALE)
+            # LateralFraction += action[2] * CD_SCALE
+            # lf.append(action[2] * CD_SCALE)
+            YawRate = action[0]
+            # yr.append(action[3])
+            # ClearanceHeight += action[4] * CD_SCALE
+            # ch.append(action[4] * CD_SCALE)
+            # PenetrationDepth += action[5] * CD_SCALE
+            # pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
             StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
@@ -452,10 +470,10 @@ class ARSAgent():
             # T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
             # T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
             # T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
-            T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
-            T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
-            T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
-            T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
+            # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
+            # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
+            # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
+            # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
             # print("ACTIONS: {}".format(action))
 
