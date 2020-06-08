@@ -27,4 +27,12 @@
 <!-- Policy Node -->
 <!-- <node name="policies" pkg="mini_ros" type="policies" output="screen"/> -->
 
+
+<!-- NOTE:
+        Setting Up Joystick:
+          - Get Number (you will see something like jsX): ls /dev/input/
+          - Make available to ROS: sudo chmod a+rw /dev/input/jsX
+          - Make sure <param name="dev" type="string" value="/dev/input/jsX" /> is correct in launch
+-->
+
 </launch>
