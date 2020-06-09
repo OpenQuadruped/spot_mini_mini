@@ -434,10 +434,10 @@ class ARSAgent():
             # lf.append(action[2] * CD_SCALE)
             YawRate = action[0]
             yr.append(YawRate)
-            ClearanceHeight += action[1] * CD_SCALE
-            ch.append(action[4] * CD_SCALE)
-            PenetrationDepth += action[2] * CD_SCALE
-            pd.append(action[5] * CD_SCALE)
+            # ClearanceHeight += action[1] * CD_SCALE
+            # ch.append(action[4] * CD_SCALE)
+            # PenetrationDepth += action[2] * CD_SCALE
+            # pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
             StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
@@ -466,10 +466,10 @@ class ARSAgent():
                                                PenetrationDepth, contacts)
 
             # Add DELTA to XYZ Foot Poses
-            T_bf["FL"][3, :3] += action[3:6] * RESIDUALS_SCALE
-            T_bf["FR"][3, :3] += action[6:9] * RESIDUALS_SCALE
-            T_bf["BL"][3, :3] += action[9:12] * RESIDUALS_SCALE
-            T_bf["BR"][3, :3] += action[12:15] * RESIDUALS_SCALE
+            # T_bf["FL"][3, :3] += action[3:6] * RESIDUALS_SCALE
+            # T_bf["FR"][3, :3] += action[6:9] * RESIDUALS_SCALE
+            # T_bf["BL"][3, :3] += action[9:12] * RESIDUALS_SCALE
+            # T_bf["BR"][3, :3] += action[12:15] * RESIDUALS_SCALE
             # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
             # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
             # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
