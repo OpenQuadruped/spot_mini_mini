@@ -44,16 +44,16 @@ class HeightField():
 
             terrainShape = env.pybullet_client.createCollisionShape(
                 shapeType=env.pybullet_client.GEOM_HEIGHTFIELD,
-                meshScale=[.07, .07, 1.2],
+                meshScale=[.05, .05, 1.0],
                 heightfieldTextureScaling=(numHeightfieldRows - 1) / 2,
                 heightfieldData=heightfieldData,
                 numHeightfieldRows=numHeightfieldRows,
                 numHeightfieldColumns=numHeightfieldColumns)
             terrain = env.pybullet_client.createMultiBody(0, terrainShape)
             env.pybullet_client.resetBasePositionAndOrientation(
-                terrain, [0, 0, 0], [0, 0, 0, 1])
+                terrain, [0, 0, 0.0], [0, 0, 0, 1])
             env.pybullet_client.changeDynamics(terrain, -1,
-                                               lateralFriction=100.0)
+                                               lateralFriction=1.0)
 
         if heightfieldSource == useDeepLocoCSV:
             terrainShape = env.pybullet_client.createCollisionShape(
@@ -65,12 +65,12 @@ class HeightField():
             env.pybullet_client.resetBasePositionAndOrientation(
                 terrain, [0, 0, 0], [0, 0, 0, 1])
             env.pybullet_client.changeDynamics(terrain, -1,
-                                               lateralFriction=100.0)
+                                               lateralFriction=1.0)
 
         if heightfieldSource == useTerrainFromPNG:
             terrainShape = env.pybullet_client.createCollisionShape(
                 shapeType=env.pybullet_client.GEOM_HEIGHTFIELD,
-                meshScale=[.05, .05, 1.7],
+                meshScale=[.05, .05, 2.5],
                 fileName="heightmaps/wm_height_out.png")
             textureId = env.pybullet_client.loadTexture(
                 "heightmaps/gimp_overlay_out.png")
@@ -81,7 +81,7 @@ class HeightField():
             env.pybullet_client.resetBasePositionAndOrientation(
                 terrain, [0, 0, 0.1], [0, 0, 0, 1])
             env.pybullet_client.changeDynamics(terrain, -1,
-                                               lateralFriction=100.0)
+                                               lateralFriction=1.0)
 
         self.hf_id = terrainShape
         print("TERRAIN SHAPE: {}".format(terrainShape))

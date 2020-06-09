@@ -97,6 +97,7 @@ class Spot(object):
                  pd_control_enabled=False,
                  accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
+                 max_force=100.0,
                  motor_kp=1.0,
                  motor_kd=0.02,
                  pd_latency=0.0,
@@ -169,7 +170,7 @@ class Spot(object):
         self._motor_direction = np.ones(self.num_motors)
         self._observed_motor_torques = np.zeros(self.num_motors)
         self._applied_motor_torques = np.zeros(self.num_motors)
-        self._max_force = 3.5
+        self._max_force = max_force
         self._pd_latency = pd_latency
         self._control_latency = control_latency
         self._observation_noise_stdev = observation_noise_stdev

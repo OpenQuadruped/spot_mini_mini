@@ -18,11 +18,11 @@ class BezierStepper():
     def __init__(self,
                  pos=np.array([0.0, 0.0, 0.0]),
                  orn=np.array([0.0, 0.0, 0.0]),
-                 StepLength=0.03,
+                 StepLength=0.025,
                  LateralFraction=0.0,
                  YawRate=0.0,
-                 StepVelocity=0.5,
-                 ClearanceHeight=0.02,
+                 StepVelocity=0.1,
+                 ClearanceHeight=0.03,
                  PenetrationDepth=0.01,
                  episode_length=2000,
                  dt=0.01,
@@ -31,14 +31,14 @@ class BezierStepper():
         self.pos = pos
         self.orn = orn
         self.desired_StepLength = StepLength
-        self.StepLength = 0.0
+        self.StepLength = StepLength
         self.StepLength_LIMITS = [-0.05, 0.05]
         self.LateralFraction = LateralFraction
         self.LateralFraction_LIMITS = [-np.pi / 2.0, np.pi / 2.0]
         self.YawRate = YawRate
         self.YawRate_LIMITS = [-1.0, 1.0]
         self.StepVelocity = StepVelocity
-        self.StepVelocity_LIMITS = [0.3, 1.5]
+        self.StepVelocity_LIMITS = [0.1, 1.5]
         self.ClearanceHeight = ClearanceHeight
         self.ClearanceHeight_LIMITS = [0.0, 0.05]
         self.PenetrationDepth = PenetrationDepth

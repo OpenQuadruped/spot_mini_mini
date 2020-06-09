@@ -10,7 +10,7 @@ SWING = 1
 
 
 class BezierGait():
-    def __init__(self, dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tstance=0.25):
+    def __init__(self, dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tswing=0.15):
         # Phase Lag Per Leg: FL, FR, BL, BR
         # Reference Leg is FL, always 0
         self.dSref = dSref
@@ -35,7 +35,7 @@ class BezierGait():
         self.TD = False
 
         # Stance Time
-        self.Tstance = Tstance
+        self.Tswing = Tswing
 
         # Reference Leg
         self.ref_idx = 0
@@ -68,12 +68,15 @@ class BezierGait():
 
         # NOTE: PAPER WAS MISSING THIS LOGIC!!
         if ti < -Tswing:
-            ti = Tstance
+            ti += Tstride
 
         # STANCE
         if ti >= 0.0 and ti <= Tstance:
             StanceSwing = STANCE
-            Stnphase = ti / float(Tstance)
+            if Tstance == 0.0:
+                Stnphase = 0.0
+            else:
+                Stnphase = ti / float(Tstance)
             if index == self.ref_idx:
                 # print("STANCE REF: {}".format(Stnphase))
                 self.StanceSwing = StanceSwing
@@ -89,6 +92,7 @@ class BezierGait():
         if Sw_phase >= 1.0:
             Sw_phase = 1.0
         if index == self.ref_idx:
+            # print("SWING REF: {}".format(Sw_phase))
             self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
             # REF Touchdown at End of Swing
@@ -120,9 +124,9 @@ class BezierGait():
         # So that we get time_since_last_TD = 0.0
         self.time += dt
 
-        # If Tstride = Tstance, Tswing = 0
+        # If Tstride = Tswing, Tstance = 0
         # RESET ALL
-        if Tstride < self.Tstance + dt:
+        if Tstride < self.Tswing + dt:
             self.time = 0.0
             self.time_since_last_TD = 0.0
             self.TD_time = 0.0
@@ -298,14 +302,15 @@ class BezierGait():
         return coord
 
     def GetFootStep(self, L, LateralFraction, YawRate, clearance_height,
-                    penetration_depth, Tswing, T_bf, index, key):
-        phase, StanceSwing = self.GetPhase(index, self.Tstance, Tswing)
+                    penetration_depth, Tstance, T_bf, index, key):
+        phase, StanceSwing = self.GetPhase(index, Tstance, self.Tswing)
         if StanceSwing == SWING:
             stored_phase = phase + 1.0
         else:
             stored_phase = phase
         # Just for keeping track
         self.Phases[index] = stored_phase
+        # print("LEG: {} \t PHASE: {}".format(index, stored_phase))
         if StanceSwing == STANCE:
             return self.StanceStep(phase, L, LateralFraction, YawRate,
                                    penetration_depth, T_bf, key, index)
@@ -324,12 +329,12 @@ class BezierGait():
                            penetration_depth=0.01,
                            contacts=[0, 0, 0, 0],
                            dt=None):
-        # First, get Tswing from desired speed and stride length
+        # First, get Tstance from desired speed and stride length
         # NOTE: L is HALF of stride length
         if vel != 0.0:
-            Tswing = 2.0 * abs(L) / abs(vel)
+            Tstance = 2.0 * abs(L) / abs(vel)
         else:
-            Tswing = 0.0
+            Tstance = 0.0
             L = 0.0
             self.TD = False
             self.time = 0.0
@@ -342,19 +347,22 @@ class BezierGait():
         YawRate *= dt
 
         # Catch infeasible timesteps
-        if Tswing < dt:
-            Tswing = 0.0
+        if Tstance < dt:
+            Tstance = 0.0
             L = 0.0
             self.TD = False
             self.time = 0.0
             self.time_since_last_TD = 0.0
             YawRate = 0.0
+        # NOTE: MUCH MORE STABLE WITH THIS
+        elif Tstance > 1.3 * self.Tswing:
+            Tstance = 1.3 * self.Tswing
 
         # Check contacts
-        if contacts[0] == 1 and Tswing > dt:
+        if contacts[0] == 1 and Tstance > dt:
             self.TD = True
 
-        self.Increment(dt, Tswing + self.Tstance)
+        self.Increment(dt, Tstance + self.Tswing)
 
         T_bf = copy.deepcopy(T_bf_)
         for i, (key, Tbf_in) in enumerate(T_bf_.items()):
@@ -369,9 +377,13 @@ class BezierGait():
             if key == "BR":
                 self.dSref[i] = 0.0
             _, p_bf = TransToRp(Tbf_in)
-            step_coord = self.GetFootStep(L, LateralFraction, YawRate,
-                                          clearance_height, penetration_depth,
-                                          Tswing, p_bf, i, key)
+            if Tstance > 0.0:
+                step_coord = self.GetFootStep(L, LateralFraction, YawRate,
+                                              clearance_height,
+                                              penetration_depth, Tstance, p_bf,
+                                              i, key)
+            else:
+                step_coord = np.array([0.0, 0.0, 0.0])
             T_bf[key][0, 3] = Tbf_in[0, 3] + step_coord[0]
             T_bf[key][1, 3] = Tbf_in[1, 3] + step_coord[1]
             T_bf[key][2, 3] = Tbf_in[2, 3] + step_coord[2]
