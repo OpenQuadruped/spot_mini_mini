@@ -26,28 +26,31 @@ Assuming you have a Logitech Joystick:
 `A`: switch between stepping and RPY
 `X`: E-STOP (engage and disengage)
 **Stepping Mode**:
-    - `Right Stick Up/Down`: Step Length
-    - `Right Stick Left/Right`: Lateral Fraction
-    - `Left Stick Up/Down`: Robot Height
-    - `Left Stick Left/Right`: Yaw Rate
-    - `Arrow Pad Up/Down` (DISCRETE): Step Height
-    - `Arrow Pad Left/Right` (DISCRETE): Step Depth
-    - `Bottom Right/Left Bumpers`: Step Velocity (modulate)
-    - `Top Right/Left Bumpers`: reset all to default
+-`Right Stick Up/Down`: Step Length
+-`Right Stick Left/Right`: Lateral Fraction
+-`Left Stick Up/Down`: Robot Height
+-`Left Stick Left/Right`: Yaw Rate
+-`Arrow Pad Up/Down` (DISCRETE): Step Height
+-`Arrow Pad Left/Right` (DISCRETE): Step Depth
+-`Bottom Right/Left Bumpers`: Step Velocity (modulate)
+-`Top Right/Left Bumpers`: reset all to default
 **Viewing Mode**:
-    - `Right Stick Up/Down`: Pitch
-    - `Right Stick Left/Right`: Roll
-    - `Left Stick Up/Down`: Robot Height
-    - `Left Stick Left/Right`: Yaw
+-`Right Stick Up/Down`: Pitch
+-`Right Stick Left/Right`: Roll
+-`Left Stick Up/Down`: Robot Height
+-`Left Stick Left/Right`: Yaw
 
 Changing `Step Velocity` while moving forward:
+
 ![SVMOD](mini_ros/media/stepvel_mod.gif)
 
 All Controls:
+
 ![AC](mini_ros/media/all_controls.gif)
 
 ### Reinforcement Learning
 I've found that the Bezier Curve gait lends itself well to optimization via RL. Notice that the open-loop forward command drifts significantly over time:
+
 ![DRIFT](bullet/media/spot_drift.gif)
 
 With a one-dimensional action space (`Yaw Rate`), and a 16-dimensional observation space (`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)), an `Augmented Random Search` agent (linear) was able to correct the trajectory:
