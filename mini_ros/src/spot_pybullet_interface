@@ -20,7 +20,7 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 
-STEPLENGTH_SCALE = 0.03
+STEPLENGTH_SCALE = 0.05
 Z_SCALE = 0.08
 RPY_SCALE = 0.5
 SV_SCALE = 1.0
@@ -48,13 +48,13 @@ class SpotCommander():
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
         # Stock, use bumper btns to change
-        self.BaseStepVelocity = 0.8
-        self.StepVelocity = 0.8
+        self.BaseStepVelocity = 0.4
+        self.StepVelocity = 0.4
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.03
-        self.BasePenetrationDepth = 0.01
+        self.BaseClearanceHeight = 0.02
+        self.BasePenetrationDepth = 0.005
         self.ClearanceHeight = 0.02
-        self.PenetrationDepth = 0.02
+        self.PenetrationDepth = 0.005
 
         self.load_spot()
         # mini_cmd_cb from mini_cmd topic
@@ -88,6 +88,8 @@ class SpotCommander():
 
         # Load Spot Model
         self.spot = SpotModel()
+
+        self.dt = self.env._time_step
 
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
@@ -127,14 +129,13 @@ class SpotCommander():
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = np.clip(
                 self.BaseStepVelocity +
-                (self.mini_cmd.faster + self.mini_cmd.slower) * SV_SCALE, 0.3,
+                (self.mini_cmd.faster + self.mini_cmd.slower) * SV_SCALE, 0.1,
                 1.5)
             if self.mini_cmd.movement == "Stepping":
                 StepLength = self.mini_cmd.x_velocity + abs(
                     self.mini_cmd.y_velocity)
                 StepLength = np.clip(StepLength, -1.0, 1.0)
                 StepLength *= STEPLENGTH_SCALE
-                StepLength *= self.StepVelocity / self.BaseStepVelocity
                 if StepLength < 0.0:
                     self.mini_cmd.z = 0.5
                 LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
@@ -199,7 +200,7 @@ class SpotCommander():
 def main():
     """ The main() function. """
     mini_commander = SpotCommander()
-    rate = rospy.Rate(np.inf)
+    rate = rospy.Rate(1.0 / mini_commander.dt)
     while not rospy.is_shutdown():
         # This is called continuously. Has timeout functionality too
         mini_commander.move()
