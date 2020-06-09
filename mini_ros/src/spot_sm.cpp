@@ -39,14 +39,14 @@ void teleop_callback(const geometry_msgs::Twist &tw)
   * changing the message, in the case that another node is also listening to it.
   */
   
-  spot_mini.update_command(tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z);
+  spot_mini.update_command(tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z, tw.angular.x, tw.angular.y);
 }
 
 void estop_callback(const std_msgs::Bool &estop)
 { 
   if (estop.data)
   {
-    spot_mini.update_command(0.0, 0.0, 0.0, 0.0);
+    spot_mini.update_command(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     motion_flag = true;
     if (!ESTOP)
     {
@@ -108,6 +108,8 @@ int main(int argc, char** argv)
     mini_cmd.pitch = 0.0;
     mini_cmd.yaw = 0.0;
     mini_cmd.z = 0.0;
+    mini_cmd.faster = 0.0;
+    mini_cmd.slower = 0.0;
     mini_cmd.motion = "Stop";
     mini_cmd.movement = "Stepping";
 
@@ -132,6 +134,8 @@ int main(int argc, char** argv)
           mini_cmd.pitch = cmd.pitch;
           mini_cmd.yaw = cmd.yaw;
           mini_cmd.z = cmd.z;
+          mini_cmd.faster = cmd.faster;
+          mini_cmd.slower = cmd.slower;
           // Now convert enum to string
           // Motion
           if (cmd.motion == spot::Go)
@@ -159,6 +163,8 @@ int main(int argc, char** argv)
           mini_cmd.pitch = 0.0;
           mini_cmd.yaw = 0.0;
           mini_cmd.z = 0.0;
+          mini_cmd.faster = 0.0;
+          mini_cmd.slower = 0.0;
           mini_cmd.motion = "Stop";
         }
 

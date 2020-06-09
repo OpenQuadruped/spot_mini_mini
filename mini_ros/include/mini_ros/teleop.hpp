@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
+#include "mini_ros/JoyButtons.h"
 
 namespace tele
 {
@@ -21,9 +22,20 @@ namespace tele
         // \param angular: joystick axis assigned to angular velocity
         // \param l_scale: scaling factor for linear velocity
         // \param a_scale: scaling factor for angular velocity
+        // \param LB: left bottom bumper axis
+        // \param RB: right bottom bumper axis
+        // \param B_scale: scaling factor for bottom bumpers
+        // \param LT: left top bumper button
+        // \param RT: right top bumper button
+        // \param UD: up/down key on arrow pad
+        // \param LR: left/right key on arrow pad
         // \param sw: button for switch_trigger
         // \param es: button for ESTOP
-        Teleop(const int & linear_x, const int & linear_y, const int & linear_z, const int & angular, const double & l_scale, const double & a_scale, const int & sw, const int & es);
+        Teleop(const int & linear_x, const int & linear_y, const int & linear_z,
+               const int & angular, const double & l_scale, const double & a_scale,
+               const int & LB, const int & RB, const int & B_scale, const int & LT,
+               const int & RT, const int & UD, const int & LR,
+               const int & sw, const int & es);
 
         // \brief Takes a Joy messages and converts it to linear and angular velocity (Twist)
         // \param joy: sensor_msgs describing Joystick inputs
@@ -41,18 +53,35 @@ namespace tele
         // \returns: ESTOP(bool)
         bool return_estop();
 
-    private:
+        /// \brief returns other joystick buttons triggers, arrow pad etc)
+        mini_ros::JoyButtons return_buttons();
 
+    private:
+        // AXES ON JOYSTICK
         int linear_x_ = 0;
         int linear_y_ = 0;
         int linear_z_ = 0;
-        int angular_= 1;
+        int angular_= 0;
+        int RB_ = 0;
+        int LB_ = 0;
+        // BUTTONS ON JOYSTICK
         int sw_ = 0;
-        int es_ = 1;
-        double l_scale_, a_scale_;
+        int es_ = 0;
+        int RT_ = 0;
+        int LT_ = 0;
+        int UD_ = 0;
+        int LR_ = 0;
+        // AXIS SCALES
+        double l_scale_, a_scale_, B_scale_;
+        // TWIST
         geometry_msgs::Twist twist;
+        // TRIGGERS
         bool switch_trigger = false;
         bool ESTOP = false;
+        int updown = 0;
+        int leftright = 0;
+        bool left_bump = false;
+        bool right_bump = false;
     };
     
 }

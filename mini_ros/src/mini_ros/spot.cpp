@@ -17,7 +17,8 @@ namespace spot
 		cmd.movement = Stepping;
 	}
 
-	void Spot::update_command(const double & vx, const double & vy, const double & z, const double & w)
+	void Spot::update_command(const double & vx, const double & vy, const double & z,
+							  const double & w, const double & wx, const double & wy)
 	{
 		// If Command is nearly zero, just give zero
 		if (almost_equal(vx, 0.0) and almost_equal(vy, 0.0) and almost_equal(z, 0.0) and almost_equal(w, 0.0))
@@ -30,6 +31,8 @@ namespace spot
 	        cmd.pitch = 0.0;
 	        cmd.yaw = 0.0;
 	        cmd.z = 0.0;
+	        cmd.faster = 0.0;
+	        cmd.slower = 0.0;
 		} else
 		{
 			cmd.motion = Go;
@@ -43,6 +46,9 @@ namespace spot
 				cmd.roll = 0.0;
 		        cmd.pitch = 0.0;
 		        cmd.yaw = 0.0;
+		        // change clearance height from +- 0-2 * scaling
+		        cmd.faster = 1.0 - wx;
+		        cmd.slower = -(1.0 - wy);
 			} else
 			{
 				// Viewing Mode, use commands as RPY, Z
@@ -53,6 +59,8 @@ namespace spot
 		        cmd.pitch = vx;
 		        cmd.yaw = w;
 		        cmd.z = z;
+		        cmd.faster = 0.0;
+		        cmd.slower = 0.0;
 			}
 		}
 		
@@ -74,6 +82,8 @@ namespace spot
 	        cmd.pitch = 0.0;
 	        cmd.yaw = 0.0;
 	        cmd.z = 0.0;
+	        cmd.faster = 0.0;
+	        cmd.slower = 0.0;
 		} else
 		{
 			cmd.x_velocity = 0.0;
@@ -83,6 +93,8 @@ namespace spot
 	        cmd.pitch = 0.0;
 	        cmd.yaw = 0.0;
 	        cmd.z = 0.0;
+	        cmd.faster = 0.0;
+	        cmd.slower = 0.0;
 			if (cmd.movement == Viewing)
 			{
 				ROS_INFO("SWITCHING TO STEPPING MOTION, COMMANDS NOW MAPPED TO VX|VY|W|Z.");

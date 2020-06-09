@@ -18,3 +18,7 @@ float32 yaw
 
 # robot height
 float32 z
+
+# Step adjust
+float32 faster
+float32 slower
