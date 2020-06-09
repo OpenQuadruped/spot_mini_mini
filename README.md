@@ -54,7 +54,7 @@ I've found that the Bezier Curve gait lends itself well to optimization via RL. 
 
 ![DRIFT](bullet/media/spot_drift.gif)
 
-With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observation space [`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)], an `Augmented Random Search` agent (linear) was able to correct the trajectory:
+With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observation space [`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)], an `Augmented Random Search` agent (linear) was able to correct the trajectory after 299 epochs:
 
 ![NODRIFT](bullet/media/spot_no_drift.gif)
 
