@@ -670,14 +670,6 @@ class Spot(object):
             0->1: Stance
             1->2 Swing
         """
-        if self.StepVelocity != 0.0:
-            Tswing = 2.0 * abs(self.StepLength) / abs(self.StepVelocity)
-        else:
-            Tswing = 0.0
-        for i in range(4):
-            TrajectoryGenerator.GetPhase(i, TrajectoryGenerator.Tstance,
-                                         Tswing)
-
         self.LegPhases = TrajectoryGenerator.Phases
 
     def GetExternalObservations(self, TrajectoryGenerator, controller):
