@@ -58,5 +58,8 @@ With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observati
 
 ![NODRIFT](bullet/media/spot_no_drift.gif)
 
+Here is the policy output for this demo:
+
+![NODRIFTPOL](bullet/media/spot_no_drift_action.png)
 
 
