@@ -95,6 +95,7 @@ class Spot(object):
                  action_repeat=1,
                  self_collision_enabled=False,
                  motor_velocity_limit=9.7,
+                 max_force=100.0,
                  pd_control_enabled=False,
                  accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
@@ -170,7 +171,7 @@ class Spot(object):
         self._motor_direction = np.ones(self.num_motors)
         self._observed_motor_torques = np.zeros(self.num_motors)
         self._applied_motor_torques = np.zeros(self.num_motors)
-        self._max_force = 3.5
+        self._max_force = max_force
         self._pd_latency = pd_latency
         self._control_latency = control_latency
         self._observation_noise_stdev = observation_noise_stdev
@@ -954,7 +955,7 @@ class Spot(object):
             self._pybullet_client.changeDynamics(
                 self.quadruped, link_id, localInertiaDiagonal=motor_inertia)
 
-    def SetFootFriction(self, link_id, foot_friction=100.0):
+    def SetFootFriction(self, link_id, foot_friction=10.0):
         """Set the lateral friction of the feet.
 
     Args:
