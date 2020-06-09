@@ -89,6 +89,7 @@ class BezierGait():
         if Sw_phase >= 1.0:
             Sw_phase = 1.0
         if index == self.ref_idx:
+            # print("SWING REF: {}".format(Sw_phase))
             self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
             # REF Touchdown at End of Swing
@@ -306,6 +307,7 @@ class BezierGait():
             stored_phase = phase
         # Just for keeping track
         self.Phases[index] = stored_phase
+        # print("LEG: {} \t PHASE: {}".format(index, stored_phase))
         if StanceSwing == STANCE:
             return self.StanceStep(phase, L, LateralFraction, YawRate,
                                    penetration_depth, T_bf, key, index)
