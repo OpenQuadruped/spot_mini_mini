@@ -121,7 +121,7 @@ def ParallelWorker(childPipe, env, nb_states):
             action[:] = 0.0
             old_act = action
             while not done and timesteps < policy.episode_steps:
-                smach.ramp_up()
+                # smach.ramp_up()
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
                 )
 
@@ -168,10 +168,16 @@ def ParallelWorker(childPipe, env, nb_states):
                                            smach.PenetrationDepth_LIMITS[1])
 
                 # Get Desired Foot Poses
-                T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
-                                              YawRate, StepVelocity, T_b0,
-                                              T_bf, ClearanceHeight,
-                                              PenetrationDepth, contacts)
+                if timesteps > 10:
+                    T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
+                                                  YawRate, StepVelocity, T_b0,
+                                                  T_bf, ClearanceHeight,
+                                                  PenetrationDepth, contacts)
+                else:
+                    T_bf = TGP.GenerateTrajectory(0.0, 0.0, 0.0, 0.1, T_b0,
+                                                  T_bf, ClearanceHeight,
+                                                  PenetrationDepth, contacts)
+                    action[:] = 0.0
 
                 # Add DELTA to XYZ Foot Poses
                 T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
@@ -407,7 +413,7 @@ class ARSAgent():
         action[:] = 0.0
         old_act = action
         while not done and timesteps < self.policy.episode_steps:
-            self.smach.ramp_up()
+            # self.smach.ramp_up()
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
 
@@ -460,10 +466,16 @@ class ARSAgent():
             contacts = state[-4:]
 
             # Get Desired Foot Poses
-            T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
-                                               YawRate, StepVelocity, T_b0,
-                                               T_bf, ClearanceHeight,
-                                               PenetrationDepth, contacts)
+            if timesteps > 10:
+                T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
+                                                   YawRate, StepVelocity, T_b0,
+                                                   T_bf, ClearanceHeight,
+                                                   PenetrationDepth, contacts)
+            else:
+                T_bf = self.TGP.GenerateTrajectory(0.0, 0.0, 0.0, 0.1, T_b0,
+                                                   T_bf, ClearanceHeight,
+                                                   PenetrationDepth, contacts)
+                action[:] = 0.0
 
             # Add DELTA to XYZ Foot Poses
             T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
