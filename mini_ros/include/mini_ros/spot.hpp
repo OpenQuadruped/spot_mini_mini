@@ -45,6 +45,8 @@ namespace spot
         double pitch = 0.0;
         double yaw = 0.0;
         double z = 0.0;
+        double faster = 0.0;
+        double slower = 0.0;
     };
 
     // \brief Spot class responsible for high-level motion commands
@@ -60,7 +62,10 @@ namespace spot
         // \param vy: linear velocity (y)
         // \param z: robot height
         // \param w: angular velocity
-        void update_command(const double & vx, const double & vy, const double & z, const double & w);
+        // \param wx: step height increase
+        // \param wy: step height decrease
+        void update_command(const double & vx, const double & vy, const double & z,
+                            const double & w, const double & wx, const double & wy);
 
         // \brief changes the commanded motion from Forward/Backward to Left/Right or vice-versa
         void switch_movement();

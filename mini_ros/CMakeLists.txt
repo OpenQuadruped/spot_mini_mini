@@ -64,6 +64,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   MiniCmd.msg
+  JoyButtons.msg
 )
 
 ## Generate services in the 'srv' folder
