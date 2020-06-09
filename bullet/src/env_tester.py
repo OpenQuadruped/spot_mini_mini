@@ -72,6 +72,11 @@ def main():
 
     action = env.action_space.sample()
 
+    FL_phases = []
+    FR_phases = []
+    BL_phases = []
+    BR_phases = []
+
     print("STARTED SPOT TEST ENV")
     t = 0
     while t < (int(max_timesteps)):
@@ -92,6 +97,11 @@ def main():
 
         contacts = state[-4:]
 
+        FL_phases.append(env.spot.LegPhases[0])
+        FR_phases.append(env.spot.LegPhases[1])
+        BL_phases.append(env.spot.LegPhases[2])
+        BR_phases.append(env.spot.LegPhases[3])
+
         # Get Desired Foot Poses
         T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
                                       StepVelocity, T_bf0, T_bf,
@@ -105,6 +115,16 @@ def main():
         state, reward, done, _ = env.step(action)
         if done:
             print("DONE")
+            plt.plot()
+            plt.plot(FL_phases, label="FL")
+            plt.plot(FR_phases, label="FR")
+            plt.plot(BL_phases, label="BL")
+            plt.plot(BR_phases, label="BR")
+            plt.xlabel("dt")
+            plt.ylabel("value")
+            plt.title("Leg Phases")
+            plt.legend()
+            plt.show()
 
         # time.sleep(1.0)
 
