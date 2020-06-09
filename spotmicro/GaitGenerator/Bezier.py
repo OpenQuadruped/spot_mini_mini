@@ -96,8 +96,8 @@ class BezierGait():
             self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
             # REF Touchdown at End of Swing
-            if self.SwRef >= 0.999:
-                self.TD = True
+            # if self.SwRef >= 0.999:
+            #     self.TD = True
             # else:
             #     self.TD = False
         return Sw_phase, StanceSwing
@@ -354,6 +354,9 @@ class BezierGait():
             self.time = 0.0
             self.time_since_last_TD = 0.0
             YawRate = 0.0
+        # NOTE: MUCH MORE STABLE WITH THIS
+        elif Tstance > 1.3 * self.Tswing:
+            Tstance = 1.3 * self.Tswing
 
         # Check contacts
         if contacts[0] == 1 and Tstance > dt:

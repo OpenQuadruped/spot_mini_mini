@@ -25,6 +25,7 @@ Z_SCALE = 0.08
 RPY_SCALE = 0.5
 SV_SCALE = 1.0
 CHPD_SCALE = 0.0005
+YAW_SCALE = 2.0
 
 
 class SpotCommander():
@@ -48,8 +49,8 @@ class SpotCommander():
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
         # Stock, use bumper btns to change
-        self.BaseStepVelocity = 0.4
-        self.StepVelocity = 0.4
+        self.BaseStepVelocity = 0.8
+        self.StepVelocity = 0.8
         # Stock, use arrow pads to change
         self.BaseClearanceHeight = 0.02
         self.BasePenetrationDepth = 0.005
@@ -133,13 +134,13 @@ class SpotCommander():
                 1.5)
             if self.mini_cmd.movement == "Stepping":
                 StepLength = self.mini_cmd.x_velocity + abs(
-                    self.mini_cmd.y_velocity)
+                    self.mini_cmd.y_velocity * 0.66)
                 StepLength = np.clip(StepLength, -1.0, 1.0)
                 StepLength *= STEPLENGTH_SCALE
                 if StepLength < 0.0:
                     self.mini_cmd.z = 0.5
                 LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
-                YawRate = self.mini_cmd.rate
+                YawRate = self.mini_cmd.rate * YAW_SCALE
                 pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
                 orn = np.array([0.0, 0.0, 0.0])
             else:
@@ -176,6 +177,11 @@ class SpotCommander():
             self.ClearanceHeight = self.BaseClearanceHeight
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
+
+        print("SL: {} \tSV: {} \nLAT: {} \tYAW: {}".format(
+            StepLength, self.StepVelocity, LateralFraction, YawRate))
+        print("BASE VEL: {}".format(self.BaseStepVelocity))
+        print("---------------------------------------")
 
         contacts = self.state[-4:]
 
