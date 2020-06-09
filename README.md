@@ -50,7 +50,7 @@ Changing `Step Velocity` while moving forward:
 ![SVMOD](mini_ros/media/stepvel_mod.gif)
 
 ### Reinforcement Learning
-I've found that the Bezier Curve gait lends itself well to optimization via RL. Notice that the open-loop forward command drifts significantly over time:
+I've found that the Bezier Curve gait lends itself well to optimization via RL. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
 
 ![DRIFT](bullet/media/spot_drift.gif)
 
