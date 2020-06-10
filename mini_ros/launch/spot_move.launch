@@ -25,7 +25,7 @@
 </node>
 
 <!-- Policy Node -->
-<!-- <node name="spot_pybullet" pkg="mini_ros" type="spot_pybullet_interface" output="screen"/> -->
+<node name="spot_pybullet" pkg="mini_ros" type="spot_pybullet_interface" output="screen"/>
 
 
 <!-- NOTE:
