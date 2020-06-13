@@ -21,7 +21,7 @@ Yaw logic based on 4-wheel steering car: http://www.inase.org/library/2014/santo
 
 
 ### Controls
-Assuming you have a Logitech Joystick:
+Assuming you have a Logitech Gamepad F310:
 
 `A`: switch between stepping and RPY
 
@@ -62,4 +62,22 @@ Here is the policy output for this demo. It's clearly biased on one end to accou
 
 ![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
 
+### How To Run
+
+#### Control:
+First, you're going to need a joystick (okay, not really, but it's more fun if you have one).
+
+**Setting Up The Joystick:**
+* Get Number (you will see something like jsX): ls /dev/input/
+* Make available to ROS: sudo chmod a+rw /dev/input/jsX
+* Make sure `<param name="dev" type="string" value="/dev/input/jsX"/>` matches your setup in the launchfile
+
+Then simply: `roslaunch mini_ros spot_move.launch`
+
+You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!` It just means your controller is missing some functionality, but this package doesn't use it.
+
+If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. A Pybullet sim will open up for you with the same controls you would have on the joystick, except each is on its own scrollbar.
+
+#### Reinforcement Learning
+Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `299`. That's the best policy I have. Although, I have since modified the Bezier gait generator, so you might want to do `git checkout spot_forward` first, as this contains the environment where this RL was trained.
 
