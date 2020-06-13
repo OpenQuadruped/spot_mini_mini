@@ -53,6 +53,10 @@ Changing `Step Length` while moving forward:
 
 ![SVMOD](mini_ros/media/steplen_mod.gif)
 
+Yaw In Place: Slightly push the `Right Stick` forward while pushing the `Left Stick` maximally in either direction:
+
+![SVMOD](mini_ros/media/yaw_in_place.gif)
+
 
 
 ### Reinforcement Learning
