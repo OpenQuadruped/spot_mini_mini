@@ -44,6 +44,8 @@ class BezierGait():
         self.Phases = self.dSref
 
     def reset(self):
+        """Resets the parameters of the Bezier Gait Generator
+        """
         self.ModulatedRotation = [0.0, 0.0, 0.0, 0.0]
 
         # Total Elapsed Time
@@ -61,6 +63,15 @@ class BezierGait():
         self.TD = False
 
     def GetPhase(self, index, Tstance, Tswing):
+        """Retrieves the phase of an individual leg
+
+        :param index: the leg's index, used to identify the required
+                      phase lag
+        :param Tstance: the current user-specified stance period
+        :param Tswing: the swing period (constant, class member)
+        :return: Leg Phase, and StanceSwing (bool) to indicate whether
+                 leg is in stance or swing mode
+        """
         StanceSwing = STANCE
         Sw_phase = 0.0
         Tstride = Tstance + Tswing
@@ -103,6 +114,13 @@ class BezierGait():
         return Sw_phase, StanceSwing
 
     def Get_ti(self, index, Tstride):
+        """Retrieves the time index for the individual leg
+
+        :param index: the leg's index, used to identify the required
+                      phase lag
+        :param Tstride: the total leg movement period (Tstance + Tswing)
+        :return: the leg's time index
+        """
         # NOTE: for some reason python's having numerical issues w this
         # setting to 0 for ref leg by force
         if index == self.ref_idx:
@@ -110,8 +128,12 @@ class BezierGait():
         return self.time_since_last_TD - self.dSref[index] * Tstride
 
     def Increment(self, dt, Tstride):
-        """ dt: the time step
-            Tstride: the total stride period (stance + swing)
+        """Increments the Bezier gait generator's internal clock
+
+        :param dt: the time step
+                      phase lag
+        :param Tstride: the total leg movement period (Tstance + Tswing)
+        :return: the leg's time index
         """
         self.CheckTouchDown()
         self.time_since_last_TD = self.time - self.TD_time
@@ -133,31 +155,47 @@ class BezierGait():
             self.SwRef = 0.0
 
     def CheckTouchDown(self):
+        """Checks whether a reference leg touchdown
+           has occured, and whether this warrants
+           resetting the touchdown time
+        """
         if self.SwRef >= 0.9 and self.TD:
             self.TD_time = self.time
             self.TD = False
             self.SwRef = 0.0
 
     def BezierPoint(self, t, k, point):
+        """Calculate the point on the bezier curve
+           based on phase (0->1), point number (0-11),
+           and the value of the point itself
+
+           :param t: phase
+           :param k: point number
+           :param point: point value
+           :return: Value through Bezier Curve
+        """
         return point * self.Binomial(k) * np.power(t, k) * np.power(
             1 - t, self.NumBezierPoints - k)
 
     def Binomial(self, k):
+        """Solves the binomial theorem given a Bezier point number
+           relative to the total number of Bezier points.
+
+           :param k: Bezier point number
+           :returns: Binomial solution
+        """
         return np.math.factorial(self.NumBezierPoints) / (
             np.math.factorial(k) * np.math.factorial(self.NumBezierPoints - k))
 
     def BezierSwing(self, phase, L, LateralFraction, clearance_height=0.04):
-        """ Calculate forward step coordinates.
+        """Calculates the step coordinates for the Bezier (swing) period
 
-            Inputs:
-                phase: current trajectory phase
-                L: step length
-                LateralFraction: determines how 'lateral' the movement is
-                clearance_height: maximum foot clearance_height during swing phase
+           :param phase: current trajectory phase
+           :param L: step length
+           :param LateralFraction: determines how lateral the movement is
+           :param clearance_height: foot clearance height during swing phase
 
-            Outputs:
-                X,Y,Z Foot coordinates
-                Swing or Stance phase indicator
+           :returns: X,Y,Z Foot Coordinates relative to unmodified body
         """
 
         # Polar Leg Coords
@@ -218,6 +256,15 @@ class BezierGait():
         return stepX, stepY, stepZ
 
     def SineStance(self, phase, L, LateralFraction, penetration_depth=0.00):
+        """Calculates the step coordinates for the Bezier (swing) period
+
+           :param phase: current trajectory phase
+           :param L: step length
+           :param LateralFraction: determines how lateral the movement is
+           :param penetration_depth: foot penetration depth during stance phase
+
+           :returns: X,Y,Z Foot Coordinates relative to unmodified body
+        """
         X_POLAR = np.cos(LateralFraction)
         Y_POLAR = np.sin(LateralFraction)
         # moves from +L to -L
@@ -233,6 +280,22 @@ class BezierGait():
 
     def SwingStep(self, phase, L, LateralFraction, YawRate, clearance_height,
                   T_bf, key, index):
+        """Calculates the step coordinates for the Bezier (swing) period
+           using a combination of forward and rotational step coordinates
+           initially decomposed from user input of
+           L, LateralFraction and YawRate
+
+           :param phase: current trajectory phase
+           :param L: step length
+           :param LateralFraction: determines how lateral the movement is
+           :param YawRate: the desired body yaw rate
+           :param clearance_height: foot clearance height during swing phase
+           :param T_bf: default body-to-foot Vector
+           :param key: indicates which foot is being processed
+           :param index: the foot index in the container
+
+           :returns: Foot Coordinates relative to unmodified body
+        """
 
         DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
 
@@ -268,6 +331,22 @@ class BezierGait():
 
     def StanceStep(self, phase, L, LateralFraction, YawRate, penetration_depth,
                    T_bf, key, index):
+        """Calculates the step coordinates for the Sine (stance) period
+           using a combination of forward and rotational step coordinates
+           initially decomposed from user input of
+           L, LateralFraction and YawRate
+
+           :param phase: current trajectory phase
+           :param L: step length
+           :param LateralFraction: determines how lateral the movement is
+           :param YawRate: the desired body yaw rate
+           :param penetration_depth: foot penetration depth during stance phase
+           :param T_bf: default body-to-foot Vector
+           :param key: indicates which foot is being processed
+           :param index: the foot index in the container
+
+           :returns: Foot Coordinates relative to unmodified body
+        """
 
         DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
 
@@ -303,6 +382,22 @@ class BezierGait():
 
     def GetFootStep(self, L, LateralFraction, YawRate, clearance_height,
                     penetration_depth, Tstance, T_bf, index, key):
+        """Calculates the step coordinates in either the Bezier or
+           Sine portion of the trajectory depending on the retrieved phase
+
+           :param phase: current trajectory phase
+           :param L: step length
+           :param LateralFraction: determines how lateral the movement is
+           :param YawRate: the desired body yaw rate
+           :param clearance_height: foot clearance height during swing phase
+           :param penetration_depth: foot penetration depth during stance phase
+           :param Tstance: the current user-specified stance period
+           :param T_bf: default body-to-foot Vector
+           :param index: the foot index in the container
+           :param key: indicates which foot is being processed
+
+           :returns: Foot Coordinates relative to unmodified body
+        """
         phase, StanceSwing = self.GetPhase(index, Tstance, self.Tswing)
         if StanceSwing == SWING:
             stored_phase = phase + 1.0
@@ -329,6 +424,19 @@ class BezierGait():
                            penetration_depth=0.01,
                            contacts=[0, 0, 0, 0],
                            dt=None):
+        """Calculates the step coordinates for each foot
+
+           :param L: step length
+           :param LateralFraction: determines how lateral the movement is
+           :param YawRate: the desired body yaw rate
+           :param vel: the desired step velocity
+           :param clearance_height: foot clearance height during swing phase
+           :param penetration_depth: foot penetration depth during stance phase
+           :param contacts: array containing 1 for contact and 0 otherwise
+           :param dt: the time step
+
+           :returns: Foot Coordinates relative to unmodified body
+        """
         # First, get Tstance from desired speed and stride length
         # NOTE: L is HALF of stride length
         if vel != 0.0:
