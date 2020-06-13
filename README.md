@@ -78,8 +78,8 @@ Here is the policy output for this demo. It's clearly biased on one end to accou
 First, you're going to need a joystick (okay, not really, but it's more fun if you have one).
 
 **Setting Up The Joystick:**
-* Get Number (you will see something like jsX): ls /dev/input/
-* Make available to ROS: sudo chmod a+rw /dev/input/jsX
+* Get Number (you will see something like jsX): `ls /dev/input/`
+* Make available to ROS: `sudo chmod a+rw /dev/input/jsX`
 * Make sure `<param name="dev" type="string" value="/dev/input/jsX"/>` matches your setup in the launchfile
 
 Then simply: `roslaunch mini_ros spot_move.launch`
