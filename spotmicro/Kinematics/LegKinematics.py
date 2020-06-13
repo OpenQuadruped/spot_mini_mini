@@ -21,22 +21,29 @@ class LegIK():
         self.leg_lim = leg_lim
 
     def get_domain(self, x, y, z):
+        """Calculates the leg's Domain
+           and caps it in case of a breach
+
+        :param x,y,z: hip-to-foot distances in each dimension
+        :return: Leg Domain D
+        """
         D = (y**2 + (-z)**2 - self.hip_length**2 +
              (-x)**2 - self.shoulder_length**2 -
              self.leg_length**2) / (2 * self.leg_length * self.shoulder_length)
         if D > 1 or D < -1:
             # DOMAIN BREACHED
             print("---------DOMAIN BREACH---------")
-            if D > 1:
-                D = 0.99
-                return D
-            elif D < -1:
-                D = -0.99
-                return D
+            D = np.clip(D, -0.99, 0.99)
+            return D
         else:
             return D
 
     def solve(self, xyz_coord):
+        """ Generic Leg Inverse Kinematics Solver
+
+        :param xyz_coord: hip-to-foot distances in each dimension
+        :return: Joint Angles required for desired position
+        """
         x = xyz_coord[0]
         y = xyz_coord[1]
         z = xyz_coord[2]
@@ -47,6 +54,12 @@ class LegIK():
             return self.LeftIK(x, y, z, D)
 
     def RightIK(self, x, y, z, D):
+        """ Right Leg Inverse Kinematics Solver
+
+        :param x,y,z: hip-to-foot distances in each dimension
+        :param D: leg domain
+        :return: Joint Angles required for desired position
+        """
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
         sqrt_component = y**2 + (-z)**2 - self.hip_length**2
         if sqrt_component < 0.0:
@@ -61,6 +74,12 @@ class LegIK():
         return joint_angles
 
     def LeftIK(self, x, y, z, D):
+        """ Left Leg Inverse Kinematics Solver
+
+        :param x,y,z: hip-to-foot distances in each dimension
+        :param D: leg domain
+        :return: Joint Angles required for desired position
+        """
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
         sqrt_component = y**2 + (-z)**2 - self.hip_length**2
         if sqrt_component < 0.0:

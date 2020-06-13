@@ -116,6 +116,23 @@ def VecToso3(omg):
 
 
 def RPY(roll, pitch, yaw):
+    """Creates a Roll, Pitch, Yaw Transformation Matrix
+
+    :param roll: roll component of matrix
+    :param pitch: pitch component of matrix
+    :param yaw: yaw component of matrix
+    :return: The transformation matrix
+
+    Example Input:
+        roll = 0.0
+        pitch = 0.0
+        yaw = 0.0
+    Output:
+        np.array([[1, 0, 0, 0],
+                  [0, 1, 0, 0],
+                  [0, 0, 1, 0],
+                  [0, 0, 0, 1]])
+    """
     Roll = np.array([[1, 0, 0, 0], [0, np.cos(roll), -np.sin(roll), 0],
                      [0, np.sin(roll), np.cos(roll), 0], [0, 0, 0, 1]])
     Pitch = np.array([[np.cos(pitch), 0, np.sin(pitch), 0], [0, 1, 0, 0],
@@ -127,6 +144,13 @@ def RPY(roll, pitch, yaw):
 
 
 def RotateTranslate(rotation, position):
+    """Creates a Transformation Matrix
+       from a Rotation, THEN, a Translation
+
+    :param rotation: pure rotation matrix
+    :param translation: pure translation matrix
+    :return: The transformation matrix
+    """
     trans = np.eye(4)
     trans[0, 3] = position[0]
     trans[1, 3] = position[1]
@@ -136,6 +160,14 @@ def RotateTranslate(rotation, position):
 
 
 def TransformVector(xyz_coord, rotation, translation):
+    """Transforms a vector by a specified
+       Rotation THEN Translation Matrix
+
+    :param xyz_coord: the vector to transform
+    :param rotation: pure rotation matrix
+    :param translation: pure translation matrix
+    :return: The transformed vector
+    """
     xyz_vec = np.append(xyz_coord, 1.0)
 
     Transformed = np.dot(RotateTranslate(rotation, translation), xyz_vec)
