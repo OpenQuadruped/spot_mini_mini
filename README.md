@@ -49,6 +49,12 @@ Changing `Step Velocity` while moving forward:
 
 ![SVMOD](mini_ros/media/stepvel_mod.gif)
 
+Changing `Step Length` while moving forward:
+
+![SVMOD](mini_ros/media/steplen_mod.gif)
+
+
+
 ### Reinforcement Learning
 I've found that the Bezier Curve gait lends itself well to optimization via RL. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
 
@@ -79,5 +85,7 @@ You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick
 If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. A Pybullet sim will open up for you with the same controls you would have on the joystick, except each is on its own scrollbar.
 
 #### Reinforcement Learning
-Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `299`. That's the best policy I have. Although, I have since modified the Bezier gait generator, so you might want to do `git checkout spot_forward` first, as this contains the environment where this RL was trained.
+Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `299`. That's the best policy I have. Although, I have since modified the Bezier gait generator, so you might want to `git revert` to this commit: `96e2fb948947bcac2720e3ac01c65c19edbf308e`.
+
+
 
