@@ -70,7 +70,7 @@ class HeightField():
         if heightfieldSource == useTerrainFromPNG:
             terrainShape = env.pybullet_client.createCollisionShape(
                 shapeType=env.pybullet_client.GEOM_HEIGHTFIELD,
-                meshScale=[.05, .05, 2.5],
+                meshScale=[.05, .05, 2.0],
                 fileName="heightmaps/wm_height_out.png")
             textureId = env.pybullet_client.loadTexture(
                 "heightmaps/gimp_overlay_out.png")
