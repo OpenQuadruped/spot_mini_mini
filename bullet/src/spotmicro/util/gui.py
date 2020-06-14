@@ -32,9 +32,9 @@ class GUI:
                                                        3., 0.1)
 
         self.ClearanceHeightId = pb.addUserDebugParameter(
-            "Clearance Height", 0.0, 0.1, 0.02)
+            "Clearance Height", 0.0, 0.1, 0.03)
         self.PenetrationDepthId = pb.addUserDebugParameter(
-            "Penetration Depth", 0.0, 0.05, 0.01)
+            "Penetration Depth", 0.0, 0.05, 0.005)
 
         self.quadruped = quadruped
 
