@@ -91,7 +91,12 @@ If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. 
 **Using Different Terrain**
 Navigate to `spotmicro/heightfield.py` and take a look at `useProgrammatic` and `useTerrainFromPNG` (you can play around with the mesh scales for each) to experiment with different terrains. Make sure that the `spotBezierEnv` instance has `height_field=True` in `env_tester.py` and `spot_pybullet_interface` depending on whether you're using the joystick/ROS version. The same goes for the RL environments.
 
+`useTerrainFromPNG`
+
 ![PNGT](spot_bullet/media/spot_png_terrain.png)
+
+`useProgrammatic`
+
 ![PROGT](spot_bullet/media/spot_prog_terrain.png)
 
 #### Reinforcement Learning
