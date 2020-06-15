@@ -88,6 +88,12 @@ You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick
 
 If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. A Pybullet sim will open up for you with the same controls you would have on the joystick, except each is on its own scrollbar.
 
+**Using Different Terrain**
+Navigate to `spotmicro/heightfield.py` and take a look at `useProgrammatic` and `useTerrainFromPNG` (you can play around with the mesh scales for each) to experiment with different terrains. Make sure that the `spotBezierEnv` instance has `height_field=True` in `env_tester.py` and `spot_pybullet_interface` depending on whether you're using the joystick/ROS version. The same goes for the RL environments.
+
+![PNGT](spot_bullet/media/spot_png_terrain.png)
+![PROGT](spot_bullet/media/spot_prog_terrain.png)
+
 #### Reinforcement Learning
 Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `299`. That's the best policy I have. Although, I have since modified the Bezier gait generator, so you might want to `git revert` to this commit: `96e2fb948947bcac2720e3ac01c65c19edbf308e`.
 
