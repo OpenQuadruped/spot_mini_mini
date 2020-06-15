@@ -1,5 +1,7 @@
 ## Spot Mini Mini
 
+![SIK](spot_bullet/media/spot-mini-mini.gif)
+
 ### Kinematics and Gait:
 
 Pybullet Environment and body manipulation with leg IK from: https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot
@@ -11,13 +13,13 @@ Open-Loop Gait using 12-Point Bezier Curves based on: https://dspace.mit.edu/han
 Forward and Lateral Motion:
 
 ![SLAT0](spot_bullet/media/spot_lat_logic.gif)
-![SLAT1](spot_bullet/media/spot_lat_demo.gif)
+<!-- ![SLAT1](spot_bullet/media/spot_lat_demo.gif) -->
 
 
 Yaw logic based on 4-wheel steering car: http://www.inase.org/library/2014/santorini/bypaper/ROBCIRC/ROBCIRC-54.pdf
 
 ![SYAW0](spot_bullet/media/spot_yaw_logic.gif)
-![SYAW1](spot_bullet/media/spot_yaw_demo.gif)
+<!-- ![SYAW1](spot_bullet/media/spot_yaw_demo.gif) -->
 
 
 ### Controls
