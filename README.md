@@ -86,6 +86,8 @@ Then simply: `roslaunch mini_ros spot_move.launch`
 
 You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!` It just means your controller is missing some functionality, but this package doesn't use it.
 
+**Non-Joystick Use**
+
 If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. A Pybullet sim will open up for you with the same controls you would have on the joystick, except each is on its own scrollbar.
 
 **Using Different Terrain**
