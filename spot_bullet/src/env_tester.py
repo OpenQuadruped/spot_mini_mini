@@ -16,6 +16,7 @@ from spotmicro.GaitGenerator.Bezier import BezierGait
 
 # TESTING
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
+import torch
 
 import time
 import os
@@ -113,6 +114,7 @@ def main():
         state, reward, done, _ = env.step(action)
         if done:
             print("DONE")
+            env.reset()
             # plt.plot()
             # plt.plot(FL_phases, label="FL")
             # plt.plot(FR_phases, label="FR")

@@ -74,9 +74,17 @@ Here is the policy output for this demo. It's clearly biased on one end to accou
 
 ![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
 
-### How To Run
+## How To Run
 
-#### Control:
+### Dependencies
+* ROS Melodic
+* Gazebo
+* Pytorch
+* Pybullet
+* Gym
+* OpenCV
+
+### Control:
 First, you're going to need a joystick (okay, not really, but it's more fun if you have one).
 
 **Setting Up The Joystick:**
