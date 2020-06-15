@@ -10,7 +10,7 @@ useTerrainFromPNG = 1
 useDeepLocoCSV = 2
 updateHeightfield = False
 
-heightfieldSource = useTerrainFromPNG
+heightfieldSource = useProgrammatic
 import random
 random.seed(10)
 
@@ -44,7 +44,7 @@ class HeightField():
 
             terrainShape = env.pybullet_client.createCollisionShape(
                 shapeType=env.pybullet_client.GEOM_HEIGHTFIELD,
-                meshScale=[.07, .07, 1.2],
+                meshScale=[.05, .05, 1.0],
                 heightfieldTextureScaling=(numHeightfieldRows - 1) / 2,
                 heightfieldData=heightfieldData,
                 numHeightfieldRows=numHeightfieldRows,
