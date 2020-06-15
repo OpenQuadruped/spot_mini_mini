@@ -18,8 +18,6 @@ from spotmicro.GaitGenerator.Bezier import BezierGait
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 
 import time
-
-import torch
 import os
 
 
