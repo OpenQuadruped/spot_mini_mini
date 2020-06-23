@@ -30,10 +30,10 @@ Y_SCALE = 0.1
 CH_SCALE = 0.007
 PD_SCALE = 0.0025
 
-CD_SCALE = 0.01
-SLV_SCALE = 0.01
+CD_SCALE = 0.05
+SLV_SCALE = 0.05
 
-RESIDUALS_SCALE = 0.01
+RESIDUALS_SCALE = 0.05
 
 # Filter actions
 alpha = 0.7
@@ -147,7 +147,7 @@ def ParallelWorker(childPipe, env, nb_states):
                 # LateralFraction += action[2] * CD_SCALE
                 YawRate = action[0]
                 ClearanceHeight += action[1] * CD_SCALE
-                PenetrationDepth += action[2] * CD_SCALE
+                # PenetrationDepth += action[2] * CD_SCALE
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -168,7 +168,7 @@ def ParallelWorker(childPipe, env, nb_states):
                                            smach.PenetrationDepth_LIMITS[1])
 
                 # Get Desired Foot Poses
-                if timesteps > 10:
+                if timesteps > 20:
                     T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
                                                   YawRate, StepVelocity, T_b0,
                                                   T_bf, ClearanceHeight,
@@ -180,10 +180,10 @@ def ParallelWorker(childPipe, env, nb_states):
                     action[:] = 0.0
 
                 # Add DELTA to XYZ Foot Poses
-                T_bf["FL"][3, :3] += action[3:6] * RESIDUALS_SCALE
-                T_bf["FR"][3, :3] += action[6:9] * RESIDUALS_SCALE
-                T_bf["BL"][3, :3] += action[9:12] * RESIDUALS_SCALE
-                T_bf["BR"][3, :3] += action[12:15] * RESIDUALS_SCALE
+                T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
+                T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
+                T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
+                T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
                 # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
                 # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
                 # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
@@ -442,7 +442,7 @@ class ARSAgent():
             yr.append(YawRate)
             ClearanceHeight += action[1] * CD_SCALE
             ch.append(action[1] * CD_SCALE)
-            PenetrationDepth += action[2] * CD_SCALE
+            # PenetrationDepth += action[2] * CD_SCALE
             # pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
@@ -466,7 +466,7 @@ class ARSAgent():
             contacts = state[-4:]
 
             # Get Desired Foot Poses
-            if timesteps > 10:
+            if timesteps > 20:
                 T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
                                                    YawRate, StepVelocity, T_b0,
                                                    T_bf, ClearanceHeight,
@@ -478,10 +478,10 @@ class ARSAgent():
                 action[:] = 0.0
 
             # Add DELTA to XYZ Foot Poses
-            T_bf["FL"][3, :3] += action[3:6] * RESIDUALS_SCALE
-            T_bf["FR"][3, :3] += action[6:9] * RESIDUALS_SCALE
-            T_bf["BL"][3, :3] += action[9:12] * RESIDUALS_SCALE
-            T_bf["BR"][3, :3] += action[12:15] * RESIDUALS_SCALE
+            T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
+            T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
+            T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
+            T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
             # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
             # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
             # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
