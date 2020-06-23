@@ -112,8 +112,14 @@ Navigate to `spotmicro/heightfield.py` and take a look at `useProgrammatic` and 
 
 ![PROGT](spot_bullet/media/spot_prog_terrain.png)
 
+With this terrain type, I programmed in a randomizer that triggers upon reset. This, along with the body randomizer from `Pybullet's Minitaur` increases your RL Policy's robustness.
+
+![RANDENV](spot_bullet/media/spot_random_terrain.gif)
+
 #### Reinforcement Learning
 Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `299`. That's the best policy I have. Although, I have since modified the Bezier gait generator, so you might want to `git revert` to this commit: `96e2fb948947bcac2720e3ac01c65c19edbf308e`.
+
+Make sure you switch to `spot_forward` for the most up-to-date RL environment which includes the body and terrain randomizer.
 
 
 
