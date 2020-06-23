@@ -187,6 +187,7 @@ class spotBezierEnv(spotGymEnv):
         # DRAW FOOT PATH
         if self.draw_foot_path:
             self.DrawFootPath()
+
         return np.array(self._get_observation()), reward, done, {}
 
     def return_state(self):

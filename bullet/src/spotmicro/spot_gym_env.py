@@ -256,6 +256,8 @@ class spotGymEnv(gym.Env):
             self._urdf_version = DEFAULT_URDF_VERSION
         self._pybullet_client.setPhysicsEngineParameter(enableConeFriction=0)
         self.seed()
+        # Only update after HF has been generated
+        self.height_field = False
         self.reset()
         observation_high = (self.spot.GetObservationUpperBound() +
                             OBSERVATION_EPS)
@@ -269,11 +271,12 @@ class spotGymEnv(gym.Env):
         self._hard_reset = hard_reset  # This assignment need to be after reset()
         self.goal_reached = False
         # Generate HeightField or not
+        self.height_field = height_field
+        self.hf = HeightField()
         if self.height_field:
-            hf = HeightField()
             # Do 3x for extra roughness
-            hf._generate_field(self)
-            hf._generate_field(self)
+            self.hf._generate_field(self)
+            self.hf._generate_field(self)
 
     def set_env_randomizer(self, env_randomizer):
         self._env_randomizer = env_randomizer
@@ -345,6 +348,9 @@ class spotGymEnv(gym.Env):
             self.desired_velocity = desired_velocity
         if desired_rate is not None:
             self.desired_rate = desired_rate
+
+        if self.height_field:
+            self.hf.UpdateHeightField()
 
         self._pybullet_client.setPhysicsEngineParameter(enableConeFriction=0)
         self._env_step_counter = 0
