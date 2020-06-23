@@ -229,6 +229,12 @@ class Spot(object):
         """Get the mass of the base from the URDF file."""
         return self._base_mass_urdf
 
+    def SetBaseMass(self, base_mass):
+        for i in range(len(self._chassis_link_ids)):
+            self._pybullet_client.changeDynamics(self.quadruped,
+                                                 self._chassis_link_ids[i],
+                                                 mass=base_mass[i])
+
     def _RecordInertiaInfoFromURDF(self):
         """Record the inertia of each body from URDF file."""
         self._link_urdf = []
