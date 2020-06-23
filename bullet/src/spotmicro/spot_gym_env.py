@@ -15,6 +15,7 @@ from gym.envs.registration import register
 from spotmicro.heightfield import HeightField
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 import spotmicro.Kinematics.LieAlgebra as LA
+from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
 NUM_SUBSTEPS = 5
 NUM_MOTORS = 12
@@ -93,7 +94,7 @@ class spotGymEnv(gym.Env):
                  num_steps_to_log=1000,
                  action_repeat=1,
                  control_time_step=None,
-                 env_randomizer=None,
+                 env_randomizer=SpotEnvRandomizer(),
                  forward_reward_cap=float("inf"),
                  reflection=True,
                  log_path=None,

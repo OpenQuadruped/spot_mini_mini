@@ -15,6 +15,7 @@ from gym.envs.registration import register
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.spot_gym_env import spotGymEnv
 import spotmicro.Kinematics.LieAlgebra as LA
+from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
 SENSOR_NOISE_STDDEV = spot.SENSOR_NOISE_STDDEV
 
@@ -71,7 +72,7 @@ class spotBezierEnv(spotGymEnv):
                  num_steps_to_log=1000,
                  action_repeat=1,
                  control_time_step=None,
-                 env_randomizer=None,
+                 env_randomizer=SpotEnvRandomizer(),
                  forward_reward_cap=float("inf"),
                  reflection=True,
                  log_path=None,
@@ -81,7 +82,7 @@ class spotBezierEnv(spotGymEnv):
                  draw_foot_path=False,
                  height_field=False,
                  AutoStepper=True,
-                 action_dim=16):
+                 action_dim=15):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,
@@ -225,7 +226,8 @@ class spotBezierEnv(spotGymEnv):
             yaw -= np.pi
 
         # penalty for nonzero PITCH and YAW(hidden) ONLY
-        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw))
+        # NOTE: Added Yaw mult
+        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw) * 5.0)
 
         # print("YAW: {}".format(yaw))
         # print("RP RWD: {:.2f}".format(rp_reward))
