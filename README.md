@@ -119,7 +119,7 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 #### Reinforcement Learning
 Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `299`. That's the best policy I have. Although, I have since modified the Bezier gait generator, so you might want to `git revert` to this commit: `96e2fb948947bcac2720e3ac01c65c19edbf308e`.
 
-Make sure you switch to `spot_forward` for the most up-to-date RL environment which includes the body and terrain randomizer.
+Make sure you switch to `spot_forward` for the most up-to-date RL environment which includes the body and terrain randomizer. Once this project is complete, I will merge this branch into `spot`, which is the main branch.
 
 
 
