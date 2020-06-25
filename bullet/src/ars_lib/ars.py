@@ -33,10 +33,12 @@ PD_SCALE = 0.0025
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
 
-RESIDUALS_SCALE = 0.05
+RESIDUALS_SCALE = 0.015
 
 # Filter actions
 alpha = 0.7
+# -1 for all
+actions_to_filter = 2
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -119,7 +121,7 @@ def ParallelWorker(childPipe, env, nb_states):
             T_b0 = copy.deepcopy(spot.WorldToFoot)
             action = env.action_space.sample()
             action[:] = 0.0
-            old_act = action
+            old_act = action[:actions_to_filter]
             while not done and timesteps < policy.episode_steps:
                 # smach.ramp_up()
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
@@ -138,8 +140,9 @@ def ParallelWorker(childPipe, env, nb_states):
                 action = np.tanh(action)
 
                 # EXP FILTER
-                action = alpha * old_act + (1.0 - alpha) * action
-                old_act = action
+                action[:actions_to_filter] = alpha * old_act + (
+                    1.0 - alpha) * action[:actions_to_filter]
+                old_act = action[:actions_to_filter]
 
                 # Bezier params specced by action
                 # StepLength += action[0] * CD_SCALE
@@ -411,7 +414,7 @@ class ARSAgent():
         pd = []
         action = self.env.action_space.sample()
         action[:] = 0.0
-        old_act = action
+        old_act = action[:actions_to_filter]
         while not done and timesteps < self.policy.episode_steps:
             # self.smach.ramp_up()
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
@@ -426,8 +429,8 @@ class ARSAgent():
             action = self.policy.evaluate(state, delta, direction)
             action = np.tanh(action)
             # EXP FILTER
-            action = alpha * old_act + (1.0 - alpha) * action
-            old_act = action
+            action[:actions_to_filter] = alpha * old_act + (1.0 - alpha) * action[:actions_to_filter]
+            old_act = action[:actions_to_filter]
 
             # print("ACT: {}".format(action))
 
