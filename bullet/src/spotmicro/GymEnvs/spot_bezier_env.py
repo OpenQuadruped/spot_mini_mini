@@ -47,9 +47,9 @@ class spotBezierEnv(spotGymEnv):
                  rotation_weight=0.0,
                  energy_weight=0.000,
                  shake_weight=0.00,
-                 drift_weight=5.0,
-                 rp_weight=2.0,
-                 rate_weight=1.0,
+                 drift_weight=2.0,
+                 rp_weight=5.0,
+                 rate_weight=.05,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
                  distance_limit=float("inf"),
@@ -228,7 +228,7 @@ class spotBezierEnv(spotGymEnv):
 
         # penalty for nonzero PITCH and YAW(hidden) ONLY
         # NOTE: Added Yaw mult
-        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw) * 5.0)
+        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw))
 
         # print("YAW: {}".format(yaw))
         # print("RP RWD: {:.2f}".format(rp_reward))
