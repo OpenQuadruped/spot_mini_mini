@@ -132,6 +132,8 @@ class spotBezierEnv(spotGymEnv):
 
         self.prev_pos = np.array([0.0, 0.0, 0.0])
 
+        self.yaw = 0.0
+
     def pass_joint_angles(self, ja):
         """ For executing joint angles
         """
@@ -193,6 +195,9 @@ class spotBezierEnv(spotGymEnv):
     def return_state(self):
         return np.array(self._get_observation())
 
+    def return_yaw(self):
+        return self.yaw
+
     def _reward(self):
         # get observation
         obs = self._get_observation()
@@ -228,7 +233,10 @@ class spotBezierEnv(spotGymEnv):
 
         # penalty for nonzero PITCH and YAW(hidden) ONLY
         # NOTE: Added Yaw mult
-        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw))
+        rp_reward = -(abs(obs[0]) + abs(obs[1]))
+
+        # For auto correct
+        self.yaw = yaw
 
         # print("YAW: {}".format(yaw))
         # print("RP RWD: {:.2f}".format(rp_reward))
@@ -256,4 +264,5 @@ class spotBezierEnv(spotGymEnv):
         self._objectives.append(
             [forward_reward, energy_reward, drift_reward, shake_reward])
         # print("REWARD: ", reward)
+        # NOTE: return yaw for automatic correction (not part of RL)
         return reward

@@ -40,6 +40,9 @@ alpha = 0.7
 # -1 for all
 actions_to_filter = 2
 
+# For auto yaw control
+P_yaw = 5.0
+
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
     """ Pass two subsequent datapoints in here to be filtered
@@ -122,6 +125,9 @@ def ParallelWorker(childPipe, env, nb_states):
             action = env.action_space.sample()
             action[:] = 0.0
             old_act = action[:actions_to_filter]
+
+            # For auto yaw control
+            yaw = 0.0
             while not done and timesteps < policy.episode_steps:
                 # smach.ramp_up()
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
@@ -169,6 +175,10 @@ def ParallelWorker(childPipe, env, nb_states):
                 PenetrationDepth = np.clip(PenetrationDepth,
                                            smach.PenetrationDepth_LIMITS[0],
                                            smach.PenetrationDepth_LIMITS[1])
+
+                # For auto yaw control
+                yaw = env.return_yaw()
+                YawRate += - yaw * P_yaw
 
                 # Get Desired Foot Poses
                 if timesteps > 20:
@@ -415,6 +425,8 @@ class ARSAgent():
         action = self.env.action_space.sample()
         action[:] = 0.0
         old_act = action[:actions_to_filter]
+        # For auto yaw correction
+        yaw = 0.0
         while not done and timesteps < self.policy.episode_steps:
             # self.smach.ramp_up()
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
@@ -467,6 +479,9 @@ class ARSAgent():
                                        self.smach.PenetrationDepth_LIMITS[1])
 
             contacts = state[-4:]
+
+            yaw = self.env.return_yaw()
+            YawRate += - yaw * P_yaw
 
             # Get Desired Foot Poses
             if timesteps > 20:
