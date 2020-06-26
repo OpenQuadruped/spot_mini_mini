@@ -34,6 +34,7 @@ CD_SCALE = 0.05
 SLV_SCALE = 0.05
 
 RESIDUALS_SCALE = 0.03
+Z_SCALE = 0.05
 
 # Filter actions
 alpha = 0.7
@@ -133,12 +134,15 @@ def ParallelWorker(childPipe, env, nb_states):
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
                 )
 
+                copied_pos = copy.deepcopy(pos)
+
                 env.spot.GetExternalObservations(TGP, smach)
 
                 # Read UPDATED state based on controls and phase
                 state = env.return_state()
                 normalizer.observe(state)
-                state = normalizer.normalize(state)
+                # Don't normalize contacts
+                state[:-4] = normalizer.normalize(state)[:-4]
                 action = policy.evaluate(state, delta, direction)
 
                 contacts = state[-4:]
@@ -156,7 +160,7 @@ def ParallelWorker(childPipe, env, nb_states):
                 # LateralFraction += action[2] * CD_SCALE
                 # YawRate = action[0]
                 ClearanceHeight += action[0] * CD_SCALE
-                PenetrationDepth += action[1] * CD_SCALE
+                # PenetrationDepth += action[1] * CD_SCALE
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -201,6 +205,9 @@ def ParallelWorker(childPipe, env, nb_states):
                 # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
                 # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
                 # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
+
+                # Adjust Height!
+                copied_pos[2] += action[1] * Z_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
                 # Pass Joint Angles
@@ -432,12 +439,15 @@ class ARSAgent():
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
 
+            copied_pos = copy.deepcopy(pos)
+
             self.env.spot.GetExternalObservations(self.TGP, self.smach)
 
             # Read UPDATED state based on controls and phase
             state = self.env.return_state()
             self.normalizer.observe(state)
-            state = self.normalizer.normalize(state)
+            # Don't normalize contacts
+            state[:-4] = self.normalizer.normalize(state)[:-4]
             action = self.policy.evaluate(state, delta, direction)
             action = np.tanh(action)
             # EXP FILTER
@@ -456,8 +466,8 @@ class ARSAgent():
             # YawRate = action[0]
             # yr.append(YawRate)
             ClearanceHeight += action[0] * CD_SCALE
-            # ch.append(action[1] * CD_SCALE)
-            PenetrationDepth += action[1] * CD_SCALE
+            ch.append(action[1] * CD_SCALE)
+            # PenetrationDepth += action[1] * CD_SCALE
             # pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
@@ -478,7 +488,9 @@ class ARSAgent():
                                        self.smach.PenetrationDepth_LIMITS[0],
                                        self.smach.PenetrationDepth_LIMITS[1])
 
-            contacts = state[-4:]
+            contacts = copy.deepcopy(state[-4:])
+
+            # print("CONTACTS: {}".format(contacts))
 
             yaw = self.env.return_yaw()
             YawRate += - yaw * P_yaw
@@ -507,7 +519,13 @@ class ARSAgent():
 
             # print("ACTIONS: {}".format(action))
 
-            joint_angles = self.spot.IK(orn, pos, T_bf)
+            # Adjust Height!
+            copied_pos[2] += action[1] * Z_SCALE
+
+            # print("ACT1: {}".format(action[1] * RESIDUALS_SCALE))
+            # print("Z: {}".format(copied_pos[2]))
+
+            joint_angles = self.spot.IK(orn, copied_pos, T_bf)
             # Pass Joint Angles
             self.env.pass_joint_angles(joint_angles.reshape(-1))
 

@@ -661,6 +661,7 @@ class Spot(object):
         observation.append(FRC)
         observation.append(BLC)
         observation.append(BRC)
+        # print("CONTACTS: {}  {}  {}  {}".format(FLC, FRC, BLC, BRC))
         return observation
 
     def GetControlInput(self, controller):
