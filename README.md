@@ -62,6 +62,8 @@ Yaw In Place: Slightly push the `Right Stick` forward while pushing the `Left St
 
 
 ### Reinforcement Learning
+
+#### Drift Correction
 I've found that the Bezier Curve gait lends itself well to optimization via RL. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
 
 ![DRIFT](spot_bullet/media/spot_drift.gif)
@@ -73,6 +75,21 @@ With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observati
 Here is the policy output for this demo. It's clearly biased on one end to account for Spot's drift:
 
 ![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
+
+
+#### Stability on Difficult Terrain
+Another, more interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself.For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
+
+Here, the action space is 14-dimensional, consisting of `Clearance Height` (1), `Body Height` (1), and `Foot XYZ Residual` modulations (12). `Clearance Height` is treated through an exponential filter (`alpha = 0.7`), but all other actions are processed directly. These results were trained with only 149 epochs.
+
+Before training, the robot falls almost immediately:
+
+![FALL](spot_bullet/media/spot_rough_falls.gif)
+
+After training, the robot successfully navigates the terrain:
+
+![FALL](spot_bullet/media/spot_rough_ARS.gif)
+
 
 ## How To Run
 
@@ -117,9 +134,9 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 ![RANDENV](spot_bullet/media/spot_random_terrain.gif)
 
 #### Reinforcement Learning
-Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `299`. That's the best policy I have. Although, I have since modified the Bezier gait generator, so you might want to `git revert` to this commit: `96e2fb948947bcac2720e3ac01c65c19edbf308e`.
+Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `#POLICY_NUMBER` (for example, 149 for the rough terrain example).
 
-Make sure you switch to `spot_forward` for the most up-to-date RL environment which includes the body and terrain randomizer. Once this project is complete, I will merge this branch into `spot`, which is the main branch.
+Make sure you `git checkout spot_forward` for the most up-to-date RL environment which includes the body and terrain randomizer. Once this project is complete, I will merge this branch into `spot`, which is the main branch.
 
 
 
