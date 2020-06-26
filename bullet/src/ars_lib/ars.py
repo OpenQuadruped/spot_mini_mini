@@ -134,8 +134,6 @@ def ParallelWorker(childPipe, env, nb_states):
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
                 )
 
-                copied_pos = copy.deepcopy(pos)
-
                 env.spot.GetExternalObservations(TGP, smach)
 
                 # Read UPDATED state based on controls and phase
@@ -207,7 +205,7 @@ def ParallelWorker(childPipe, env, nb_states):
                 # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
                 # Adjust Height!
-                copied_pos[2] += action[1] * Z_SCALE
+                pos[2] += action[1] * Z_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
                 # Pass Joint Angles
@@ -429,6 +427,7 @@ class ARSAgent():
         yr = []
         ch = []
         pd = []
+        heightmod = []
         action = self.env.action_space.sample()
         action[:] = 0.0
         old_act = action[:actions_to_filter]
@@ -438,8 +437,6 @@ class ARSAgent():
             # self.smach.ramp_up()
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
-
-            copied_pos = copy.deepcopy(pos)
 
             self.env.spot.GetExternalObservations(self.TGP, self.smach)
 
@@ -466,7 +463,7 @@ class ARSAgent():
             # YawRate = action[0]
             # yr.append(YawRate)
             ClearanceHeight += action[0] * CD_SCALE
-            ch.append(action[1] * CD_SCALE)
+            ch.append(action[0] * CD_SCALE)
             # PenetrationDepth += action[1] * CD_SCALE
             # pd.append(action[5] * CD_SCALE)
 
@@ -520,12 +517,13 @@ class ARSAgent():
             # print("ACTIONS: {}".format(action))
 
             # Adjust Height!
-            copied_pos[2] += action[1] * Z_SCALE
+            pos[2] += action[1] * Z_SCALE
+            heightmod.append(action[1] * Z_SCALE)
 
             # print("ACT1: {}".format(action[1] * RESIDUALS_SCALE))
-            # print("Z: {}".format(copied_pos[2]))
+            # print("Z: {}".format(pos[2]))
 
-            joint_angles = self.spot.IK(orn, copied_pos, T_bf)
+            joint_angles = self.spot.IK(orn, pos, T_bf)
             # Pass Joint Angles
             self.env.pass_joint_angles(joint_angles.reshape(-1))
 
@@ -533,18 +531,19 @@ class ARSAgent():
             next_state, reward, done, _ = self.env.step(action)
             sum_rewards += reward
             timesteps += 1
-        # plt.plot()
-        # # plt.plot(sl, label="Step Len")
-        # # plt.plot(sv, label="Step Vel")
-        # # plt.plot(lf, label="Lat Frac")
+        plt.plot()
+        # plt.plot(sl, label="Step Len")
+        # plt.plot(sv, label="Step Vel")
+        # plt.plot(lf, label="Lat Frac")
         # plt.plot(yr, label="Yaw Rate")
-        # plt.plot(ch, label="Clear Height")
+        plt.plot(ch, label="Clear Height")
+        plt.plot(heightmod, label="Z MOD")
         # plt.plot(pd, label="Pen Depth")
-        # plt.xlabel("dt")
-        # plt.ylabel("value")
-        # plt.title("TG Parameters by Policy")
-        # plt.legend()
-        # plt.show()
+        plt.xlabel("dt")
+        plt.ylabel("value")
+        plt.title("TG Parameters by Policy")
+        plt.legend()
+        plt.show()
         self.TGP.reset()
         self.smach.reshuffle()
         self.smach.PenetrationDepth = self.BasePenetrationDepth

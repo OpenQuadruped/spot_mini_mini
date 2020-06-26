@@ -2,6 +2,7 @@
 """
 import numpy as np
 from random import shuffle
+import copy
 # Ensuring totally random seed every step!
 np.random.seed()
 
@@ -161,9 +162,19 @@ class BezierStepper():
                                         self.PenetrationDepth_LIMITS[0],
                                         self.PenetrationDepth_LIMITS[1])
         # Then, return
-        return self.pos, self.orn, self.StepLength, self.LateralFraction,\
-            self.YawRate, self.StepVelocity,\
-            self.ClearanceHeight, self.PenetrationDepth
+        # FIRST COPY TO AVOID OVERWRITING
+        pos = copy.deepcopy(self.pos)
+        orn = copy.deepcopy(self.orn)
+        StepLength = copy.deepcopy(self.StepLength)
+        LateralFraction = copy.deepcopy(self.LateralFraction)
+        YawRate = copy.deepcopy(self.YawRate)
+        StepVelocity = copy.deepcopy(self.StepVelocity)
+        ClearanceHeight = copy.deepcopy(self.ClearanceHeight)
+        PenetrationDepth = copy.deepcopy(self.PenetrationDepth)
+
+        return pos, orn, StepLength, LateralFraction,\
+            YawRate, StepVelocity,\
+            ClearanceHeight, PenetrationDepth
 
     def FB(self):
         """ Here, we can modulate StepLength and StepVelocity
