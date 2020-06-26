@@ -33,7 +33,7 @@ PD_SCALE = 0.0025
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
 
-RESIDUALS_SCALE = 0.015
+RESIDUALS_SCALE = 0.03
 
 # Filter actions
 alpha = 0.7
@@ -154,9 +154,9 @@ def ParallelWorker(childPipe, env, nb_states):
                 # StepLength += action[0] * CD_SCALE
                 # StepVelocity += action[1] * SLV_SCALE
                 # LateralFraction += action[2] * CD_SCALE
-                YawRate = action[0]
-                ClearanceHeight += action[1] * CD_SCALE
-                # PenetrationDepth += action[2] * CD_SCALE
+                # YawRate = action[0]
+                ClearanceHeight += action[0] * CD_SCALE
+                PenetrationDepth += action[1] * CD_SCALE
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -453,11 +453,11 @@ class ARSAgent():
             # sv.append(action[1] * SLV_SCALE)
             # LateralFraction += action[2] * CD_SCALE
             # lf.append(action[2] * CD_SCALE)
-            YawRate = action[0]
-            yr.append(YawRate)
-            ClearanceHeight += action[1] * CD_SCALE
-            ch.append(action[1] * CD_SCALE)
-            # PenetrationDepth += action[2] * CD_SCALE
+            # YawRate = action[0]
+            # yr.append(YawRate)
+            ClearanceHeight += action[0] * CD_SCALE
+            # ch.append(action[1] * CD_SCALE)
+            PenetrationDepth += action[1] * CD_SCALE
             # pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
