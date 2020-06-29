@@ -1,0 +1,280 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>spotmicro.GymEnvs package &mdash; spot_mini_mini 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> spot_mini_mini
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spot_mini_mini</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>spotmicro.GymEnvs package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/spotmicro.GymEnvs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="spotmicro-gymenvs-package">
+<h1>spotmicro.GymEnvs package<a class="headerlink" href="#spotmicro-gymenvs-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-spotmicro.GymEnvs.spot_bezier_env">
+<span id="spotmicro-gymenvs-spot-bezier-env-module"></span><h2>spotmicro.GymEnvs.spot_bezier_env module<a class="headerlink" href="#module-spotmicro.GymEnvs.spot_bezier_env" title="Permalink to this headline">¶</a></h2>
+<p>This file implements the gym environment of SpotMicro with Bezier Curve.</p>
+<dl class="class">
+<dt id="spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv">
+<em class="property">class </em><code class="descclassname">spotmicro.GymEnvs.spot_bezier_env.</code><code class="descname">spotBezierEnv</code><span class="sig-paren">(</span><em>distance_weight=1.0</em>, <em>rotation_weight=0.0</em>, <em>energy_weight=0.0</em>, <em>shake_weight=0.0</em>, <em>drift_weight=2.0</em>, <em>rp_weight=5.0</em>, <em>rate_weight=0.05</em>, <em>urdf_root='/usr/local/lib/python2.7/dist-packages/pybullet_data'</em>, <em>urdf_version=None</em>, <em>distance_limit=inf</em>, <em>observation_noise_stdev=(0.0</em>, <em>0.0</em>, <em>0.0</em>, <em>0.0</em>, <em>0.0)</em>, <em>self_collision_enabled=True</em>, <em>motor_velocity_limit=inf</em>, <em>pd_control_enabled=False</em>, <em>leg_model_enabled=False</em>, <em>accurate_motor_model_enabled=False</em>, <em>remove_default_joint_damping=False</em>, <em>motor_kp=2.0</em>, <em>motor_kd=0.03</em>, <em>control_latency=0.0</em>, <em>pd_latency=0.0</em>, <em>torque_control_enabled=False</em>, <em>motor_overheat_protection=False</em>, <em>hard_reset=False</em>, <em>on_rack=False</em>, <em>render=True</em>, <em>num_steps_to_log=1000</em>, <em>action_repeat=1</em>, <em>control_time_step=None</em>, <em>env_randomizer=&lt;spotmicro.spot_env_randomizer.SpotEnvRandomizer object&gt;</em>, <em>forward_reward_cap=inf</em>, <em>reflection=True</em>, <em>log_path=None</em>, <em>desired_velocity=0.5</em>, <em>desired_rate=0.0</em>, <em>lateral=False</em>, <em>draw_foot_path=False</em>, <em>height_field=False</em>, <em>AutoStepper=True</em>, <em>action_dim=15</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="spotmicro.html#spotmicro.spot_gym_env.spotGymEnv" title="spotmicro.spot_gym_env.spotGymEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">spotmicro.spot_gym_env.spotGymEnv</span></code></a></p>
+<p>The gym environment for spot.</p>
+<p>It simulates the locomotion of spot, a quadruped robot. The state space
+include the angles, velocities and torques for all the motors and the action
+space is the desired motor angle for each motor. The reward function is based
+on how far spot walks in 1000 steps and penalizes the energy
+expenditure.</p>
+<dl class="attribute">
+<dt id="spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.metadata">
+<code class="descname">metadata</code><em class="property"> = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}</em><a class="headerlink" href="#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.metadata" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.pass_joint_angles">
+<code class="descname">pass_joint_angles</code><span class="sig-paren">(</span><em>ja</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.pass_joint_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>For executing joint angles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.return_state">
+<code class="descname">return_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.return_state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.return_yaw">
+<code class="descname">return_yaw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.return_yaw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.step">
+<code class="descname">step</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step forward the simulation, given the action.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>action</strong> – A list of desired motor angles for eight motors.</li>
+<li><strong>smach</strong> – the bezier state machine containing simulated
+random controll inputs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The angles, velocities and torques of all motors.
+reward: The reward for the current state-action pair.
+done: Whether the episode has ended.
+info: A dictionary that stores diagnostic information.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">observations</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – The action dimension is not the same as the number of motors.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – The magnitude of actions is out of bounds.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.GymEnvs">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spotmicro.GymEnvs" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Maurice Rahme
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

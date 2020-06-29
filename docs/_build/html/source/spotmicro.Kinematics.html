@@ -1,0 +1,599 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>spotmicro.Kinematics package &mdash; spot_mini_mini 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> spot_mini_mini
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spot_mini_mini</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>spotmicro.Kinematics package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/spotmicro.Kinematics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="spotmicro-kinematics-package">
+<h1>spotmicro.Kinematics package<a class="headerlink" href="#spotmicro-kinematics-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-spotmicro.Kinematics.LegKinematics">
+<span id="spotmicro-kinematics-legkinematics-module"></span><h2>spotmicro.Kinematics.LegKinematics module<a class="headerlink" href="#module-spotmicro.Kinematics.LegKinematics" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spotmicro.Kinematics.LegKinematics.LegIK">
+<em class="property">class </em><code class="descclassname">spotmicro.Kinematics.LegKinematics.</code><code class="descname">LegIK</code><span class="sig-paren">(</span><em>legtype='RIGHT', hip_length=0.04, shoulder_length=0.1, leg_length=0.1, hip_lim=[-0.548, 0.548], shoulder_lim=[-2.17, 0.97], leg_lim=[-0.1, 2.59]</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LegKinematics.LegIK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="spotmicro.Kinematics.LegKinematics.LegIK.LeftIK">
+<code class="descname">LeftIK</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>D</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LegKinematics.LegIK.LeftIK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Left Leg Inverse Kinematics Solver</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – hip-to-foot distances in each dimension</li>
+<li><strong>D</strong> – leg domain</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Joint Angles required for desired position</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.Kinematics.LegKinematics.LegIK.RightIK">
+<code class="descname">RightIK</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em>, <em>D</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LegKinematics.LegIK.RightIK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Right Leg Inverse Kinematics Solver</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – hip-to-foot distances in each dimension</li>
+<li><strong>D</strong> – leg domain</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Joint Angles required for desired position</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.Kinematics.LegKinematics.LegIK.get_domain">
+<code class="descname">get_domain</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LegKinematics.LegIK.get_domain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Calculates the leg’s Domain</dt>
+<dd>and caps it in case of a breach</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – hip-to-foot distances in each dimension</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Leg Domain D</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.Kinematics.LegKinematics.LegIK.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>xyz_coord</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LegKinematics.LegIK.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic Leg Inverse Kinematics Solver</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xyz_coord</strong> – hip-to-foot distances in each dimension</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Joint Angles required for desired position</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.Kinematics.LieAlgebra">
+<span id="spotmicro-kinematics-liealgebra-module"></span><h2>spotmicro.Kinematics.LieAlgebra module<a class="headerlink" href="#module-spotmicro.Kinematics.LieAlgebra" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.Adjoint">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">Adjoint</code><span class="sig-paren">(</span><em>T</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.Adjoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the adjoint representation of a homogeneous transformation
+matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>T</strong> – A homogeneous transformation matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The 6x6 adjoint representation [AdT] of T</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Example Input:</dt>
+<dd><dl class="first last docutils">
+<dt>T = np.array([[1, 0,  0, 0],</dt>
+<dd>[0, 0, -1, 0],
+[0, 1,  0, 3],
+[0, 0,  0, 1]])</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd><dl class="first last docutils">
+<dt>np.array([[1, 0,  0, 0, 0,  0],</dt>
+<dd>[0, 0, -1, 0, 0,  0],
+[0, 1,  0, 0, 0,  0],
+[0, 0,  3, 1, 0,  0],
+[3, 0,  0, 0, 0, -1],
+[0, 0,  0, 0, 1,  0]])</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.RPY">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">RPY</code><span class="sig-paren">(</span><em>roll</em>, <em>pitch</em>, <em>yaw</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.RPY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Roll, Pitch, Yaw Transformation Matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>roll</strong> – roll component of matrix</li>
+<li><strong>pitch</strong> – pitch component of matrix</li>
+<li><strong>yaw</strong> – yaw component of matrix</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The transformation matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Example Input:</dt>
+<dd>roll = 0.0
+pitch = 0.0
+yaw = 0.0</dd>
+<dt>Output:</dt>
+<dd><dl class="first last docutils">
+<dt>np.array([[1, 0, 0, 0],</dt>
+<dd>[0, 1, 0, 0],
+[0, 0, 1, 0],
+[0, 0, 0, 1]])</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.RotateTranslate">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">RotateTranslate</code><span class="sig-paren">(</span><em>rotation</em>, <em>position</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.RotateTranslate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Creates a Transformation Matrix</dt>
+<dd>from a Rotation, THEN, a Translation</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rotation</strong> – pure rotation matrix</li>
+<li><strong>translation</strong> – pure translation matrix</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The transformation matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.RpToTrans">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">RpToTrans</code><span class="sig-paren">(</span><em>R</em>, <em>p</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.RpToTrans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a rotation matrix and a position vector into homogeneous
+transformation matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>R</strong> – A 3x3 rotation matrix</li>
+<li><strong>p</strong> – A 3-vector</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A homogeneous transformation matrix corresponding to the inputs</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Example Input:</dt>
+<dd><dl class="first docutils">
+<dt>R = np.array([[1, 0,  0],</dt>
+<dd>[0, 0, -1],
+[0, 1,  0]])</dd>
+</dl>
+<p class="last">p = np.array([1, 2, 5])</p>
+</dd>
+<dt>Output:</dt>
+<dd><dl class="first last docutils">
+<dt>np.array([[1, 0,  0, 1],</dt>
+<dd>[0, 0, -1, 2],
+[0, 1,  0, 5],
+[0, 0,  0, 1]])</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.TransInv">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">TransInv</code><span class="sig-paren">(</span><em>T</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.TransInv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverts a homogeneous transformation matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>T</strong> – A homogeneous transformation matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The inverse of T</td>
+</tr>
+</tbody>
+</table>
+<p>Uses the structure of transformation matrices to avoid taking a matrix
+inverse, for efficiency.</p>
+<dl class="docutils">
+<dt>Example input:</dt>
+<dd><dl class="first last docutils">
+<dt>T = np.array([[1, 0,  0, 0],</dt>
+<dd>[0, 0, -1, 0],
+[0, 1,  0, 3],
+[0, 0,  0, 1]])</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd><dl class="first last docutils">
+<dt>np.array([[1,  0, 0,  0],</dt>
+<dd>[0,  0, 1, -3],
+[0, -1, 0,  0],
+[0,  0, 0,  1]])</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.TransToRp">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">TransToRp</code><span class="sig-paren">(</span><em>T</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.TransToRp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a homogeneous transformation matrix into a rotation matrix
+and position vector</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>T</strong> – A homogeneous transformation matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return R:</th><td class="field-body">The corresponding rotation matrix,</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return p:</th><td class="field-body">The corresponding position vector.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Example Input:</dt>
+<dd><dl class="first last docutils">
+<dt>T = np.array([[1, 0,  0, 0],</dt>
+<dd>[0, 0, -1, 0],
+[0, 1,  0, 3],
+[0, 0,  0, 1]])</dd>
+</dl>
+</dd>
+<dt>Output:</dt>
+<dd><dl class="first last docutils">
+<dt>(np.array([[1, 0,  0],</dt>
+<dd><blockquote class="first">
+<div>[0, 0, -1],
+[0, 1,  0]]),</div></blockquote>
+<p class="last">np.array([0, 0, 3]))</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.TransformVector">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">TransformVector</code><span class="sig-paren">(</span><em>xyz_coord</em>, <em>rotation</em>, <em>translation</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.TransformVector" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Transforms a vector by a specified</dt>
+<dd>Rotation THEN Translation Matrix</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xyz_coord</strong> – the vector to transform</li>
+<li><strong>rotation</strong> – pure rotation matrix</li>
+<li><strong>translation</strong> – pure translation matrix</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The transformed vector</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spotmicro.Kinematics.LieAlgebra.VecToso3">
+<code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">VecToso3</code><span class="sig-paren">(</span><em>omg</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.VecToso3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a 3-vector to an so(3) representation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>omg</strong> – A 3-vector</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The skew symmetric representation of omg</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Example Input:</dt>
+<dd>omg = np.array([1, 2, 3])</dd>
+<dt>Output:</dt>
+<dd><dl class="first last docutils">
+<dt>np.array([[ 0, -3,  2],</dt>
+<dd>[ 3,  0, -1],
+[-2,  1,  0]])</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.Kinematics.SpotKinematics">
+<span id="spotmicro-kinematics-spotkinematics-module"></span><h2>spotmicro.Kinematics.SpotKinematics module<a class="headerlink" href="#module-spotmicro.Kinematics.SpotKinematics" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spotmicro.Kinematics.SpotKinematics.SpotModel">
+<em class="property">class </em><code class="descclassname">spotmicro.Kinematics.SpotKinematics.</code><code class="descname">SpotModel</code><span class="sig-paren">(</span><em>hip_length=0.04, shoulder_length=0.1, leg_length=0.1, hip_lim=[-0.548, 0.548], shoulder_lim=[-2.17, 0.97], leg_lim=[-0.1, 2.59]</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.SpotKinematics.SpotModel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="spotmicro.Kinematics.SpotKinematics.SpotModel.IK">
+<code class="descname">IK</code><span class="sig-paren">(</span><em>orn</em>, <em>pos</em>, <em>T_bf</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.SpotKinematics.SpotModel.IK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Converts a desired position and orientation wrt Spot’s</dt>
+<dd><p class="first">home position, with a desired body-to-foot Transform
+into a body-to-hip Transform, of which the translational
+component can be fed into the LegIK solver.</p>
+<p class="last">Finally, the resultant joint angles are returned
+from the LegIK solver for each leg.</p>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>orn</strong> – A 3x1 np.array([]) with Spot’s Roll, Pitch, Yaw angles</li>
+<li><strong>pos</strong> – A 3x1 np.array([]) with Spot’s X, Y, Z coordinates</li>
+<li><strong>T_bf</strong> – Dictionary of desired body-to-foot Transforms.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Joint angles for each of Spot’s joints.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.Kinematics">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spotmicro.Kinematics" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Maurice Rahme
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
