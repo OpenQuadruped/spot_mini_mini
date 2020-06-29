@@ -16,6 +16,28 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 import torch
 import os
 
+import argparse
+
+# ARGUMENTS
+descr = "Spot Mini Mini ARS Agent Evaluator."
+parser = argparse.ArgumentParser(description=descr)
+parser.add_argument("-hf",
+                    "--HeightField",
+                    help="Use HeightField",
+                    action='store_true')
+parser.add_argument("-r",
+                    "--DebugRack",
+                    help="Put Spot on an Elevated Rack",
+                    action='store_true')
+parser.add_argument("-p",
+                    "--DebugPath",
+                    help="Draw Spot's Foot Path",
+                    action='store_true')
+parser.add_argument("-a",
+                    "--AgentNum",
+                    help="Agent Number To Load")
+ARGS = parser.parse_args()
+
 
 def main():
     """ The main() function. """
@@ -39,10 +61,25 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
+    if ARGS.DebugRack:
+        on_rack = True
+    else:
+        on_rack = False
+
+    if ARGS.DebugPath:
+        draw_foot_path = True
+    else:
+        draw_foot_path = False
+
+    if ARGS.HeightField:
+        height_field = True
+    else:
+        height_field = False
+
     env = spotBezierEnv(render=True,
-                        on_rack=False,
-                        height_field=True,
-                        draw_foot_path=False)
+                        on_rack=on_rack,
+                        height_field=height_field,
+                        draw_foot_path=draw_foot_path)
 
     # Set seeds
     env.seed(seed)
@@ -70,12 +107,14 @@ def main():
 
     # Initialize Agent with normalizer, policy and gym env
     agent = ARSAgent(normalizer, policy, env, bz_step, bzg, spot)
-    agent_num = raw_input("Policy Number: ")
+    agent_num = 0
+    if ARGS.AgentNum:
+        agent_num = ARGS.AgentNum
     if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                       "_policy"):
         print("Loading Existing agent")
         agent.load(models_path + "/" + file_name + str(agent_num))
-        agent.policy.episode_steps = 2000
+        agent.policy.episode_steps = np.inf
         policy = agent.policy
 
     # Evaluate untrained agent and init list for storage
