@@ -104,26 +104,27 @@ class BezierStepper():
             self.current_state = self.order[index]
 
     def StateMachine(self):
-        """ State Machined used for training robust RL on top of OL gait.
+        """
+        State Machined used for training robust RL on top of OL gait.
 
-            STATES:
-                Forward/Backward: All Default Values.
-                                  Can have slow changes to
-                                  StepLength(+-) and Velocity
+        STATES:
+            Forward/Backward: All Default Values.
+                              Can have slow changes to
+                              StepLength(+-) and Velocity
 
-                Lateral: As above (fwd or bwd random) with added random
-                         slow changing LateralFraction param
+            Lateral: As above (fwd or bwd random) with added random
+                     slow changing LateralFraction param
 
-                Rotating: As above except with YawRate
+            Rotating: As above except with YawRate
 
-                Combined: ALL changeable values may change!
-                                StepLength
-                                StepVelocity
-                                LateralFraction
-                                YawRate
+            Combined: ALL changeable values may change!
+                            StepLength
+                            StepVelocity
+                            LateralFraction
+                            YawRate
 
-            NOTE: the RL is solely responsible for modulating Clearance Height
-                  and Penetration Depth
+        NOTE: the RL is solely responsible for modulating Clearance Height
+              and Penetration Depth
         """
         if self.mode is ALL:
             self.which_state()
@@ -177,7 +178,8 @@ class BezierStepper():
             ClearanceHeight, PenetrationDepth
 
     def FB(self):
-        """ Here, we can modulate StepLength and StepVelocity
+        """
+        Here, we can modulate StepLength and StepVelocity
         """
         # The maximum update amount for these element
         StepLength_DELTA = self.dt * (self.StepLength_LIMITS[1] -
@@ -205,7 +207,8 @@ class BezierStepper():
                                     self.StepVelocity_LIMITS[1])
 
     def LAT(self):
-        """ Here, we can modulate StepLength and LateralFraction
+        """
+        Here, we can modulate StepLength and LateralFraction
         """
         # The maximum update amount for these element
         LateralFraction_DELTA = self.dt * (self.LateralFraction_LIMITS[1] -
@@ -223,7 +226,8 @@ class BezierStepper():
                                        self.LateralFraction_LIMITS[1])
 
     def ROT(self):
-        """ Here, we can modulate StepLength and YawRate
+        """
+        Here, we can modulate StepLength and YawRate
         """
         # The maximum update amount for these element
         # no dt since YawRate is already mult by dt
@@ -240,7 +244,8 @@ class BezierStepper():
                                self.YawRate_LIMITS[1])
 
     def COMBI(self):
-        """ Here, we can modify all the parameters
+        """
+        Here, we can modify all the parameters
         """
 
         self.FB()

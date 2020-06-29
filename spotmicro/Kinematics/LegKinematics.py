@@ -21,8 +21,8 @@ class LegIK():
         self.leg_lim = leg_lim
 
     def get_domain(self, x, y, z):
-        """Calculates the leg's Domain
-           and caps it in case of a breach
+        """
+        Calculates the leg's Domain and caps it in case of a breach
 
         :param x,y,z: hip-to-foot distances in each dimension
         :return: Leg Domain D
@@ -39,7 +39,8 @@ class LegIK():
             return D
 
     def solve(self, xyz_coord):
-        """ Generic Leg Inverse Kinematics Solver
+        """
+        Generic Leg Inverse Kinematics Solver
 
         :param xyz_coord: hip-to-foot distances in each dimension
         :return: Joint Angles required for desired position
@@ -54,7 +55,8 @@ class LegIK():
             return self.LeftIK(x, y, z, D)
 
     def RightIK(self, x, y, z, D):
-        """ Right Leg Inverse Kinematics Solver
+        """
+        Right Leg Inverse Kinematics Solver
 
         :param x,y,z: hip-to-foot distances in each dimension
         :param D: leg domain
@@ -74,7 +76,8 @@ class LegIK():
         return joint_angles
 
     def LeftIK(self, x, y, z, D):
-        """ Left Leg Inverse Kinematics Solver
+        """
+        Left Leg Inverse Kinematics Solver
 
         :param x,y,z: hip-to-foot distances in each dimension
         :param D: leg domain

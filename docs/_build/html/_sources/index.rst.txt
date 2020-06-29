@@ -5,7 +5,7 @@ Welcome to Spot Mini Mini's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+   source/modules
    simulation
    rl
 
