@@ -487,9 +487,9 @@ class Spot(object):
     def GetBasePosition(self):
         """Get the position of spot's base.
 
-    Returns:
-      The position of spot's base.
-    """
+        Returns:
+          The position of spot's base.
+        """
         position, _ = (self._pybullet_client.getBasePositionAndOrientation(
             self.quadruped))
         return position
@@ -497,9 +497,9 @@ class Spot(object):
     def GetBaseOrientation(self):
         """Get the orientation of spot's base, represented as quaternion.
 
-    Returns:
-      The orientation of spot's base.
-    """
+        Returns:
+          The orientation of spot's base.
+        """
         _, orientation = (self._pybullet_client.getBasePositionAndOrientation(
             self.quadruped))
         return orientation
@@ -507,20 +507,20 @@ class Spot(object):
     def GetBaseRollPitchYaw(self):
         """Get the rate of orientation change of the spot's base in euler angle.
 
-    Returns:
-      rate of (roll, pitch, yaw) change of the spot's base.
-    """
+        Returns:
+          rate of (roll, pitch, yaw) change of the spot's base.
+        """
         vel = self._pybullet_client.getBaseVelocity(self.quadruped)
         return np.asarray([vel[1][0], vel[1][1], vel[1][2]])
 
     def GetBaseRollPitchYawRate(self):
         """Get the rate of orientation change of the spot's base in euler angle.
 
-    This function mimicks the noisy sensor reading and adds latency.
-    Returns:
-      rate of (roll, pitch, yaw) change of the spot's base polluted by noise
-      and latency.
-    """
+        This function mimicks the noisy sensor reading and adds latency.
+        Returns:
+          rate of (roll, pitch, yaw) change of the spot's base polluted by noise
+          and latency.
+        """
         return self._AddSensorNoise(
             np.array(self._control_observation[3 * self.num_motors +
                                                4:3 * self.num_motors + 7]),
@@ -528,26 +528,26 @@ class Spot(object):
 
     def GetBaseTwist(self):
         """Get the Twist of minitaur's base.
-    Returns:
-      The Twist of the minitaur's base.
-    """
+        Returns:
+          The Twist of the minitaur's base.
+        """
         return self._pybullet_client.getBaseVelocity(self.quadruped)
 
     def GetActionDimension(self):
         """Get the length of the action list.
 
-    Returns:
-      The length of the action list.
-    """
+        Returns:
+          The length of the action list.
+        """
         return self.num_motors
 
     def GetObservationUpperBound(self):
         """Get the upper bound of the observation.
-    Returns:
-      The upper bound of an observation. See GetObservation() for the details
-        of each element of an observation.
-      NOTE: Changed just like GetObservation()
-    """
+        Returns:
+          The upper bound of an observation. See GetObservation() for the details
+            of each element of an observation.
+          NOTE: Changed just like GetObservation()
+        """
         upper_bound = np.array([0.0] * self.GetObservationDimension())
         # roll, pitch
         upper_bound[0:2] = 2.0 * np.pi
@@ -572,24 +572,23 @@ class Spot(object):
 
     def GetObservation(self):
         """Get the observations of minitaur.
-    It includes the angles, velocities, torques and the orientation of the base.
-    Returns:
-      The observation list. observation[0:8] are motor angles. observation[8:16]
-      are motor velocities, observation[16:24] are motor torques.
-      observation[24:28] is the orientation of the base, in quaternion form.
-      NOTE: DIVERGES FROM STOCK MINITAUR ENV. WILL LEAVE ORIGINAL COMMENTED
-      For my purpose, the observation space includes Roll and Pitch, as well as
-      acceleration and gyroscopic rate along the x,y,z axes. All of this
-      information can be collected from an onboard IMU. The reward function
-      will contain a hidden velocity reward (fwd, bwd) which cannot be measured
-      and so is not included. For spinning, the gyroscopic z rate will be used
-      as the (explicit) velocity reward.
-      This version operates without motor torques, angles and velocities. Erwin
-      Coumans' paper suggests a sparse observation space leads to higher reward
+        It includes the angles, velocities, torques and the orientation of the base.
+        Returns:
+          The observation list. observation[0:8] are motor angles. observation[8:16]
+          are motor velocities, observation[16:24] are motor torques.
+          observation[24:28] is the orientation of the base, in quaternion form.
+          NOTE: DIVERGES FROM STOCK MINITAUR ENV. WILL LEAVE ORIGINAL COMMENTED
+          For my purpose, the observation space includes Roll and Pitch, as well as
+          acceleration and gyroscopic rate along the x,y,z axes. All of this
+          information can be collected from an onboard IMU. The reward function
+          will contain a hidden velocity reward (fwd, bwd) which cannot be measured
+          and so is not included. For spinning, the gyroscopic z rate will be used
+          as the (explicit) velocity reward.
+          This version operates without motor torques, angles and velocities. Erwin
+          Coumans' paper suggests a sparse observation space leads to higher reward
 
-
-      # NOTE: use True version for perfect data, or other for realistic data
-    """
+          # NOTE: use True version for perfect data, or other for realistic data
+        """
         observation = []
         # GETTING TWIST IN BODY FRAME
         pos = self.GetBasePosition()
@@ -624,8 +623,7 @@ class Spot(object):
         ang_twist = self.prev_ang_twist
 
         # Get Contacts
-        CONTACT = list(
-            self._pybullet_client.getContactPoints(self.quadruped))
+        CONTACT = list(self._pybullet_client.getContactPoints(self.quadruped))
 
         FLC = 0
         FRC = 0
@@ -705,14 +703,14 @@ class Spot(object):
 
     def ApplyAction(self, motor_commands):
         """Set the desired motor angles to the motors of the minitaur.
-    The desired motor angles are clipped based on the maximum allowed velocity.
-    If the pd_control_enabled is True, a torque is calculated according to
-    the difference between current and desired joint angle, as well as the joint
-    velocity. This torque is exerted to the motor. For more information about
-    PD control, please refer to: https://en.wikipedia.org/wiki/PID_controller.
-    Args:
-      motor_commands: The eight desired motor angles.
-    """
+        The desired motor angles are clipped based on the maximum allowed velocity.
+        If the pd_control_enabled is True, a torque is calculated according to
+        the difference between current and desired joint angle, as well as the joint
+        velocity. This torque is exerted to the motor. For more information about
+        PD control, please refer to: https://en.wikipedia.org/wiki/PID_controller.
+        Args:
+          motor_commands: The eight desired motor angles.
+        """
         # FIRST, APPLY MOTOR LIMITS:
         motor_commands = self.ApplyMotorLimits(motor_commands)
 
@@ -792,9 +790,9 @@ class Spot(object):
     def GetMotorAngles(self):
         """Gets the eight motor angles at the current moment, mapped to [-pi, pi].
 
-    Returns:
-      Motor angles, mapped to [-pi, pi].
-    """
+        Returns:
+          Motor angles, mapped to [-pi, pi].
+        """
         motor_angles = [
             self._pybullet_client.getJointState(self.quadruped, motor_id)[0]
             for motor_id in self._motor_id_list
@@ -805,9 +803,9 @@ class Spot(object):
     def GetMotorVelocities(self):
         """Get the velocity of all eight motors.
 
-    Returns:
-      Velocities of all eight motors.
-    """
+        Returns:
+          Velocities of all eight motors.
+        """
         motor_velocities = [
             self._pybullet_client.getJointState(self.quadruped, motor_id)[1]
             for motor_id in self._motor_id_list
@@ -851,13 +849,13 @@ class Spot(object):
     def SetBaseMasses(self, base_mass):
         """Set the mass of spot's base.
 
-    Args:
-      base_mass: A list of masses of each body link in CHASIS_LINK_IDS. The
-        length of this list should be the same as the length of CHASIS_LINK_IDS.
-    Raises:
-      ValueError: It is raised when the length of base_mass is not the same as
-        the length of self._chassis_link_ids.
-    """
+        Args:
+          base_mass: A list of masses of each body link in CHASIS_LINK_IDS. The
+            length of this list should be the same as the length of CHASIS_LINK_IDS.
+        Raises:
+          ValueError: It is raised when the length of base_mass is not the same as
+            the length of self._chassis_link_ids.
+        """
         if len(base_mass) != len(self._chassis_link_ids):
             raise ValueError(
                 "The length of base_mass {} and self._chassis_link_ids {} are not "
@@ -870,16 +868,13 @@ class Spot(object):
 
     def SetLegMasses(self, leg_masses):
         """Set the mass of the legs.
+        Args:
+          leg_masses: The leg and motor masses for all the leg links and motors.
 
-
-
-    Args:
-      leg_masses: The leg and motor masses for all the leg links and motors.
-
-    Raises:
-      ValueError: It is raised when the length of masses is not equal to number
-        of links + motors.
-    """
+        Raises:
+          ValueError: It is raised when the length of masses is not equal to number
+            of links + motors.
+        """
         if len(leg_masses) != len(self._leg_link_ids) + len(
                 self._motor_link_ids):
             raise ValueError("The number of values passed to SetLegMasses are "
@@ -896,16 +891,15 @@ class Spot(object):
 
     def SetBaseInertias(self, base_inertias):
         """Set the inertias of spot's base.
-
-    Args:
-      base_inertias: A list of inertias of each body link in CHASIS_LINK_IDS.
-        The length of this list should be the same as the length of
-        CHASIS_LINK_IDS.
-    Raises:
-      ValueError: It is raised when the length of base_inertias is not the same
-        as the length of self._chassis_link_ids and base_inertias contains
-        negative values.
-    """
+        Args:
+          base_inertias: A list of inertias of each body link in CHASIS_LINK_IDS.
+            The length of this list should be the same as the length of
+            CHASIS_LINK_IDS.
+        Raises:
+          ValueError: It is raised when the length of base_inertias is not the same
+            as the length of self._chassis_link_ids and base_inertias contains
+            negative values.
+        """
         if len(base_inertias) != len(self._chassis_link_ids):
             raise ValueError(
                 "The length of base_inertias {} and self._chassis_link_ids {} are "
@@ -925,13 +919,13 @@ class Spot(object):
     def SetLegInertias(self, leg_inertias):
         """Set the inertias of the legs.
 
-    Args:
-      leg_inertias: The leg and motor inertias for all the leg links and motors.
+        Args:
+          leg_inertias: The leg and motor inertias for all the leg links and motors.
 
-    Raises:
-      ValueError: It is raised when the length of inertias is not equal to
-      the number of links + motors or leg_inertias contains negative values.
-    """
+        Raises:
+          ValueError: It is raised when the length of inertias is not equal to
+          the number of links + motors or leg_inertias contains negative values.
+        """
 
         if len(leg_inertias) != len(self._leg_link_ids) + len(
                 self._motor_link_ids):
@@ -958,10 +952,10 @@ class Spot(object):
     def SetFootFriction(self, foot_friction=100.0):
         """Set the lateral friction of the feet.
 
-    Args:
-      foot_friction: The lateral friction coefficient of the foot. This value is
-        shared by all four feet.
-    """
+        Args:
+          foot_friction: The lateral friction coefficient of the foot. This value is
+            shared by all four feet.
+        """
         for link_id in self._foot_link_ids:
             self._pybullet_client.changeDynamics(self.quadruped,
                                                  link_id,
@@ -971,10 +965,10 @@ class Spot(object):
     def SetFootRestitution(self, link_id, foot_restitution=1.0):
         """Set the coefficient of restitution at the feet.
 
-    Args:
-      foot_restitution: The coefficient of restitution (bounciness) of the feet.
-        This value is shared by all four feet.
-    """
+        Args:
+          foot_restitution: The coefficient of restitution (bounciness) of the feet.
+            This value is shared by all four feet.
+        """
         self._pybullet_client.changeDynamics(self.quadruped,
                                              link_id,
                                              restitution=foot_restitution)
@@ -1003,9 +997,9 @@ class Spot(object):
     def RealisticObservation(self):
         """Receive the observation from sensors.
 
-    This function is called once per step. The observations are only updated
-    when this function is called.
-    """
+        This function is called once per step. The observations are only updated
+        when this function is called.
+        """
         self._observation_history.appendleft(self.GetObservation())
         self._control_observation = self._GetDelayedObservation(
             self._control_latency)
@@ -1016,11 +1010,11 @@ class Spot(object):
     def _GetDelayedObservation(self, latency):
         """Get observation that is delayed by the amount specified in latency.
 
-    Args:
-      latency: The latency (in seconds) of the delayed observation.
-    Returns:
-      observation: The observation which was actually latency seconds ago.
-    """
+        Args:
+          latency: The latency (in seconds) of the delayed observation.
+        Returns:
+          observation: The observation which was actually latency seconds ago.
+        """
         if latency <= 0 or len(self._observation_history) == 1:
             observation = self._observation_history[0]
         else:
@@ -1052,33 +1046,33 @@ class Spot(object):
     def SetControlLatency(self, latency):
         """Set the latency of the control loop.
 
-    It measures the duration between sending an action from Nvidia TX2 and
-    receiving the observation from microcontroller.
+        It measures the duration between sending an action from Nvidia TX2 and
+        receiving the observation from microcontroller.
 
-    Args:
-      latency: The latency (in seconds) of the control loop.
-    """
+        Args:
+          latency: The latency (in seconds) of the control loop.
+        """
         self._control_latency = latency
 
     def GetControlLatency(self):
         """Get the control latency.
 
-    Returns:
-      The latency (in seconds) between when the motor command is sent and when
-        the sensor measurements are reported back to the controller.
-    """
+        Returns:
+          The latency (in seconds) between when the motor command is sent and when
+            the sensor measurements are reported back to the controller.
+        """
         return self._control_latency
 
     def SetMotorGains(self, kp, kd):
         """Set the gains of all motors.
 
-    These gains are PD gains for motor positional control. kp is the
-    proportional gain and kd is the derivative gain.
+        These gains are PD gains for motor positional control. kp is the
+        proportional gain and kd is the derivative gain.
 
-    Args:
-      kp: proportional gain of the motors.
-      kd: derivative gain of the motors.
-    """
+        Args:
+          kp: proportional gain of the motors.
+          kd: derivative gain of the motors.
+        """
         self._kp = kp
         self._kd = kd
         if self._accurate_motor_model_enabled:
@@ -1087,38 +1081,38 @@ class Spot(object):
     def GetMotorGains(self):
         """Get the gains of the motor.
 
-    Returns:
-      The proportional gain.
-      The derivative gain.
-    """
+        Returns:
+          The proportional gain.
+          The derivative gain.
+        """
         return self._kp, self._kd
 
     def SetMotorStrengthRatio(self, ratio):
         """Set the strength of all motors relative to the default value.
 
-    Args:
-      ratio: The relative strength. A scalar range from 0.0 to 1.0.
-    """
+        Args:
+          ratio: The relative strength. A scalar range from 0.0 to 1.0.
+        """
         if self._accurate_motor_model_enabled:
             self._motor_model.set_strength_ratios([ratio] * self.num_motors)
 
     def SetMotorStrengthRatios(self, ratios):
         """Set the strength of each motor relative to the default value.
 
-    Args:
-      ratios: The relative strength. A numpy array ranging from 0.0 to 1.0.
-    """
+        Args:
+          ratios: The relative strength. A numpy array ranging from 0.0 to 1.0.
+        """
         if self._accurate_motor_model_enabled:
             self._motor_model.set_strength_ratios(ratios)
 
     def SetTimeSteps(self, action_repeat, simulation_step):
         """Set the time steps of the control and simulation.
 
-    Args:
-      action_repeat: The number of simulation steps that the same action is
-        repeated.
-      simulation_step: The simulation time step.
-    """
+        Args:
+          action_repeat: The number of simulation steps that the same action is
+            repeated.
+          simulation_step: The simulation time step.
+        """
         self.time_step = simulation_step
         self._action_repeat = action_repeat
 
