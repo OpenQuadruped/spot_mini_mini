@@ -134,9 +134,6 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 ![RANDENV](spot_bullet/media/spot_random_terrain.gif)
 
 #### Reinforcement Learning
-Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `#POLICY_NUMBER` (for example, 149 for the rough terrain example).
-
-Make sure you `git checkout spot_forward` for the most up-to-date RL environment which includes the body and terrain randomizer. Once this project is complete, I will merge this branch into `spot`, which is the main branch.
-
+Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `#EPOCH_NUMBER`. For example, if you enter `149`, you will see the first successful policy, but if you enter `2229`, you will see a much more aggressive policy.
 
 
