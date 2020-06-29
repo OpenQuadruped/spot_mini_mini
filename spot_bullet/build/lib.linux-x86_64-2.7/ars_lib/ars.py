@@ -30,13 +30,19 @@ Y_SCALE = 0.1
 CH_SCALE = 0.007
 PD_SCALE = 0.0025
 
-CD_SCALE = 0.001
-SLV_SCALE = 0.01
+CD_SCALE = 0.05
+SLV_SCALE = 0.05
 
-RESIDUALS_SCALE = 0.001
+RESIDUALS_SCALE = 0.03
+Z_SCALE = 0.05
 
 # Filter actions
 alpha = 0.7
+# -1 for all
+actions_to_filter = 2
+
+# For auto yaw control
+P_yaw = 5.0
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
@@ -119,9 +125,12 @@ def ParallelWorker(childPipe, env, nb_states):
             T_b0 = copy.deepcopy(spot.WorldToFoot)
             action = env.action_space.sample()
             action[:] = 0.0
-            old_act = action
+            old_act = action[:actions_to_filter]
+
+            # For auto yaw control
+            yaw = 0.0
             while not done and timesteps < policy.episode_steps:
-                smach.ramp_up()
+                # smach.ramp_up()
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = smach.StateMachine(
                 )
 
@@ -130,7 +139,8 @@ def ParallelWorker(childPipe, env, nb_states):
                 # Read UPDATED state based on controls and phase
                 state = env.return_state()
                 normalizer.observe(state)
-                state = normalizer.normalize(state)
+                # Don't normalize contacts
+                state[:-4] = normalizer.normalize(state)[:-4]
                 action = policy.evaluate(state, delta, direction)
 
                 contacts = state[-4:]
@@ -138,16 +148,17 @@ def ParallelWorker(childPipe, env, nb_states):
                 action = np.tanh(action)
 
                 # EXP FILTER
-                action = alpha * old_act + (1.0 - alpha) * action
-                old_act = action
+                action[:actions_to_filter] = alpha * old_act + (
+                    1.0 - alpha) * action[:actions_to_filter]
+                old_act = action[:actions_to_filter]
 
                 # Bezier params specced by action
                 # StepLength += action[0] * CD_SCALE
                 # StepVelocity += action[1] * SLV_SCALE
                 # LateralFraction += action[2] * CD_SCALE
-                YawRate = action[0]
-                # ClearanceHeight += action[4] * CD_SCALE
-                # PenetrationDepth += action[5] * CD_SCALE
+                # YawRate = action[0]
+                ClearanceHeight += action[0] * CD_SCALE
+                # PenetrationDepth += action[1] * CD_SCALE
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -167,21 +178,34 @@ def ParallelWorker(childPipe, env, nb_states):
                                            smach.PenetrationDepth_LIMITS[0],
                                            smach.PenetrationDepth_LIMITS[1])
 
+                # For auto yaw control
+                yaw = env.return_yaw()
+                YawRate += - yaw * P_yaw
+
                 # Get Desired Foot Poses
-                T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
-                                              YawRate, StepVelocity, T_b0,
-                                              T_bf, ClearanceHeight,
-                                              PenetrationDepth, contacts)
+                if timesteps > 20:
+                    T_bf = TGP.GenerateTrajectory(StepLength, LateralFraction,
+                                                  YawRate, StepVelocity, T_b0,
+                                                  T_bf, ClearanceHeight,
+                                                  PenetrationDepth, contacts)
+                else:
+                    T_bf = TGP.GenerateTrajectory(0.0, 0.0, 0.0, 0.1, T_b0,
+                                                  T_bf, ClearanceHeight,
+                                                  PenetrationDepth, contacts)
+                    action[:] = 0.0
 
                 # Add DELTA to XYZ Foot Poses
-                # T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-                # T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
-                # T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
-                # T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
+                T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
+                T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
+                T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
+                T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
                 # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
                 # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
                 # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
                 # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
+
+                # Adjust Height!
+                pos[2] += action[1] * Z_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
                 # Pass Joint Angles
@@ -403,11 +427,14 @@ class ARSAgent():
         yr = []
         ch = []
         pd = []
+        heightmod = []
         action = self.env.action_space.sample()
         action[:] = 0.0
-        old_act = action
+        old_act = action[:actions_to_filter]
+        # For auto yaw correction
+        yaw = 0.0
         while not done and timesteps < self.policy.episode_steps:
-            self.smach.ramp_up()
+            # self.smach.ramp_up()
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
 
@@ -416,12 +443,13 @@ class ARSAgent():
             # Read UPDATED state based on controls and phase
             state = self.env.return_state()
             self.normalizer.observe(state)
-            state = self.normalizer.normalize(state)
+            # Don't normalize contacts
+            state[:-4] = self.normalizer.normalize(state)[:-4]
             action = self.policy.evaluate(state, delta, direction)
             action = np.tanh(action)
             # EXP FILTER
-            action = alpha * old_act + (1.0 - alpha) * action
-            old_act = action
+            action[:actions_to_filter] = alpha * old_act + (1.0 - alpha) * action[:actions_to_filter]
+            old_act = action[:actions_to_filter]
 
             # print("ACT: {}".format(action))
 
@@ -432,11 +460,11 @@ class ARSAgent():
             # sv.append(action[1] * SLV_SCALE)
             # LateralFraction += action[2] * CD_SCALE
             # lf.append(action[2] * CD_SCALE)
-            YawRate = action[0]
-            yr.append(YawRate)
-            # ClearanceHeight += action[4] * CD_SCALE
-            # ch.append(action[4] * CD_SCALE)
-            # PenetrationDepth += action[5] * CD_SCALE
+            # YawRate = action[0]
+            # yr.append(YawRate)
+            ClearanceHeight += action[0] * CD_SCALE
+            ch.append(action[0] * CD_SCALE)
+            # PenetrationDepth += action[1] * CD_SCALE
             # pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
@@ -457,25 +485,43 @@ class ARSAgent():
                                        self.smach.PenetrationDepth_LIMITS[0],
                                        self.smach.PenetrationDepth_LIMITS[1])
 
-            contacts = state[-4:]
+            contacts = copy.deepcopy(state[-4:])
+
+            # print("CONTACTS: {}".format(contacts))
+
+            yaw = self.env.return_yaw()
+            YawRate += - yaw * P_yaw
 
             # Get Desired Foot Poses
-            T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
-                                               YawRate, StepVelocity, T_b0,
-                                               T_bf, ClearanceHeight,
-                                               PenetrationDepth, contacts)
+            if timesteps > 20:
+                T_bf = self.TGP.GenerateTrajectory(StepLength, LateralFraction,
+                                                   YawRate, StepVelocity, T_b0,
+                                                   T_bf, ClearanceHeight,
+                                                   PenetrationDepth, contacts)
+            else:
+                T_bf = self.TGP.GenerateTrajectory(0.0, 0.0, 0.0, 0.1, T_b0,
+                                                   T_bf, ClearanceHeight,
+                                                   PenetrationDepth, contacts)
+                action[:] = 0.0
 
             # Add DELTA to XYZ Foot Poses
-            # T_bf["FL"][3, :3] += action[6:9] * RESIDUALS_SCALE
-            # T_bf["FR"][3, :3] += action[9:12] * RESIDUALS_SCALE
-            # T_bf["BL"][3, :3] += action[12:15] * RESIDUALS_SCALE
-            # T_bf["BR"][3, :3] += action[15:18] * RESIDUALS_SCALE
+            T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
+            T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
+            T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
+            T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
             # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
             # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
             # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
             # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
             # print("ACTIONS: {}".format(action))
+
+            # Adjust Height!
+            pos[2] += action[1] * Z_SCALE
+            heightmod.append(action[1] * Z_SCALE)
+
+            # print("ACT1: {}".format(action[1] * RESIDUALS_SCALE))
+            # print("Z: {}".format(pos[2]))
 
             joint_angles = self.spot.IK(orn, pos, T_bf)
             # Pass Joint Angles
@@ -489,8 +535,9 @@ class ARSAgent():
         # plt.plot(sl, label="Step Len")
         # plt.plot(sv, label="Step Vel")
         # plt.plot(lf, label="Lat Frac")
-        plt.plot(yr, label="Yaw Rate")
-        # plt.plot(ch, label="Clear Height")
+        # plt.plot(yr, label="Yaw Rate")
+        plt.plot(ch, label="Clear Height")
+        plt.plot(heightmod, label="Z MOD")
         # plt.plot(pd, label="Pen Depth")
         plt.xlabel("dt")
         plt.ylabel("value")

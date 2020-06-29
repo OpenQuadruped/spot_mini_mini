@@ -15,6 +15,7 @@ from gym.envs.registration import register
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.spot_gym_env import spotGymEnv
 import spotmicro.Kinematics.LieAlgebra as LA
+from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
 SENSOR_NOISE_STDDEV = spot.SENSOR_NOISE_STDDEV
 
@@ -46,9 +47,9 @@ class spotBezierEnv(spotGymEnv):
                  rotation_weight=0.0,
                  energy_weight=0.000,
                  shake_weight=0.00,
-                 drift_weight=5.0,
-                 rp_weight=2.0,
-                 rate_weight=1.0,
+                 drift_weight=2.0,
+                 rp_weight=5.0,
+                 rate_weight=.05,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
                  distance_limit=float("inf"),
@@ -71,7 +72,7 @@ class spotBezierEnv(spotGymEnv):
                  num_steps_to_log=1000,
                  action_repeat=1,
                  control_time_step=None,
-                 env_randomizer=None,
+                 env_randomizer=SpotEnvRandomizer(),
                  forward_reward_cap=float("inf"),
                  reflection=True,
                  log_path=None,
@@ -81,7 +82,7 @@ class spotBezierEnv(spotGymEnv):
                  draw_foot_path=False,
                  height_field=False,
                  AutoStepper=True,
-                 action_dim=1):
+                 action_dim=15):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,
@@ -130,6 +131,8 @@ class spotBezierEnv(spotGymEnv):
         print("Action SPACE: {}".format(self.action_space))
 
         self.prev_pos = np.array([0.0, 0.0, 0.0])
+
+        self.yaw = 0.0
 
     def pass_joint_angles(self, ja):
         """ For executing joint angles
@@ -186,10 +189,14 @@ class spotBezierEnv(spotGymEnv):
         # DRAW FOOT PATH
         if self.draw_foot_path:
             self.DrawFootPath()
+
         return np.array(self._get_observation()), reward, done, {}
 
     def return_state(self):
         return np.array(self._get_observation())
+
+    def return_yaw(self):
+        return self.yaw
 
     def _reward(self):
         # get observation
@@ -225,7 +232,11 @@ class spotBezierEnv(spotGymEnv):
             yaw -= np.pi
 
         # penalty for nonzero PITCH and YAW(hidden) ONLY
-        rp_reward = -(abs(obs[0]) + abs(obs[1]) + abs(yaw))
+        # NOTE: Added Yaw mult
+        rp_reward = -(abs(obs[0]) + abs(obs[1]))
+
+        # For auto correct
+        self.yaw = yaw
 
         # print("YAW: {}".format(yaw))
         # print("RP RWD: {:.2f}".format(rp_reward))
@@ -253,4 +264,5 @@ class spotBezierEnv(spotGymEnv):
         self._objectives.append(
             [forward_reward, energy_reward, drift_reward, shake_reward])
         # print("REWARD: ", reward)
+        # NOTE: return yaw for automatic correction (not part of RL)
         return reward

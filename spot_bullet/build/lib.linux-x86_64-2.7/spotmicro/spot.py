@@ -98,6 +98,7 @@ class Spot(object):
                  pd_control_enabled=False,
                  accurate_motor_model_enabled=False,
                  remove_default_joint_damping=False,
+                 max_force=100.0,
                  motor_kp=1.0,
                  motor_kd=0.02,
                  pd_latency=0.0,
@@ -170,7 +171,7 @@ class Spot(object):
         self._motor_direction = np.ones(self.num_motors)
         self._observed_motor_torques = np.zeros(self.num_motors)
         self._applied_motor_torques = np.zeros(self.num_motors)
-        self._max_force = 3.5
+        self._max_force = max_force
         self._pd_latency = pd_latency
         self._control_latency = control_latency
         self._observation_noise_stdev = observation_noise_stdev
@@ -224,6 +225,16 @@ class Spot(object):
             self._leg_masses_urdf.append(
                 self._pybullet_client.getDynamicsInfo(self.quadruped,
                                                       motor_id)[0])
+
+    def GetBaseMassFromURDF(self):
+        """Get the mass of the base from the URDF file."""
+        return self._base_mass_urdf
+
+    def SetBaseMass(self, base_mass):
+        for i in range(len(self._chassis_link_ids)):
+            self._pybullet_client.changeDynamics(self.quadruped,
+                                                 self._chassis_link_ids[i],
+                                                 mass=base_mass[i])
 
     def _RecordInertiaInfoFromURDF(self):
         """Record the inertia of each body from URDF file."""
@@ -372,9 +383,7 @@ class Spot(object):
         self.RealisticObservation()
 
         # Set Foot Friction
-        for idx in self._foot_link_ids:
-            self.SetFootFriction(idx)
-            # self.SetFootRestitution(idx)
+        self.SetFootFriction()
 
     def _RemoveDefaultJointDamping(self):
         num_joints = self._pybullet_client.getNumJoints(self.quadruped)
@@ -653,6 +662,7 @@ class Spot(object):
         observation.append(FRC)
         observation.append(BLC)
         observation.append(BRC)
+        # print("CONTACTS: {}  {}  {}  {}".format(FLC, FRC, BLC, BRC))
         return observation
 
     def GetControlInput(self, controller):
@@ -671,14 +681,6 @@ class Spot(object):
             0->1: Stance
             1->2 Swing
         """
-        if self.StepVelocity != 0.0:
-            Tswing = 2.0 * abs(self.StepLength) / abs(self.StepVelocity)
-        else:
-            Tswing = 0.0
-        for i in range(4):
-            TrajectoryGenerator.GetPhase(i, TrajectoryGenerator.Tstance,
-                                         Tswing)
-
         self.LegPhases = TrajectoryGenerator.Phases
 
     def GetExternalObservations(self, TrajectoryGenerator, controller):
@@ -953,16 +955,17 @@ class Spot(object):
             self._pybullet_client.changeDynamics(
                 self.quadruped, link_id, localInertiaDiagonal=motor_inertia)
 
-    def SetFootFriction(self, link_id, foot_friction=100.0):
+    def SetFootFriction(self, foot_friction=100.0):
         """Set the lateral friction of the feet.
 
     Args:
       foot_friction: The lateral friction coefficient of the foot. This value is
         shared by all four feet.
     """
-        self._pybullet_client.changeDynamics(self.quadruped,
-                                             link_id,
-                                             lateralFriction=foot_friction)
+        for link_id in self._foot_link_ids:
+            self._pybullet_client.changeDynamics(self.quadruped,
+                                                 link_id,
+                                                 lateralFriction=foot_friction)
 
     # TODO(b/73748980): Add more API's to set other contact parameters.
     def SetFootRestitution(self, link_id, foot_restitution=1.0):

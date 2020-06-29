@@ -2,6 +2,7 @@
 """
 import numpy as np
 from random import shuffle
+import copy
 # Ensuring totally random seed every step!
 np.random.seed()
 
@@ -21,9 +22,9 @@ class BezierStepper():
                  StepLength=0.03,
                  LateralFraction=0.0,
                  YawRate=0.0,
-                 StepVelocity=0.5,
-                 ClearanceHeight=0.02,
-                 PenetrationDepth=0.01,
+                 StepVelocity=0.1,
+                 ClearanceHeight=0.03,
+                 PenetrationDepth=0.005,
                  episode_length=2000,
                  dt=0.01,
                  num_shuffles=2,
@@ -31,14 +32,14 @@ class BezierStepper():
         self.pos = pos
         self.orn = orn
         self.desired_StepLength = StepLength
-        self.StepLength = 0.0
+        self.StepLength = StepLength
         self.StepLength_LIMITS = [-0.05, 0.05]
         self.LateralFraction = LateralFraction
         self.LateralFraction_LIMITS = [-np.pi / 2.0, np.pi / 2.0]
         self.YawRate = YawRate
         self.YawRate_LIMITS = [-1.0, 1.0]
         self.StepVelocity = StepVelocity
-        self.StepVelocity_LIMITS = [0.3, 1.5]
+        self.StepVelocity_LIMITS = [0.1, 1.5]
         self.ClearanceHeight = ClearanceHeight
         self.ClearanceHeight_LIMITS = [0.0, 0.05]
         self.PenetrationDepth = PenetrationDepth
@@ -161,9 +162,19 @@ class BezierStepper():
                                         self.PenetrationDepth_LIMITS[0],
                                         self.PenetrationDepth_LIMITS[1])
         # Then, return
-        return self.pos, self.orn, self.StepLength, self.LateralFraction,\
-            self.YawRate, self.StepVelocity,\
-            self.ClearanceHeight, self.PenetrationDepth
+        # FIRST COPY TO AVOID OVERWRITING
+        pos = copy.deepcopy(self.pos)
+        orn = copy.deepcopy(self.orn)
+        StepLength = copy.deepcopy(self.StepLength)
+        LateralFraction = copy.deepcopy(self.LateralFraction)
+        YawRate = copy.deepcopy(self.YawRate)
+        StepVelocity = copy.deepcopy(self.StepVelocity)
+        ClearanceHeight = copy.deepcopy(self.ClearanceHeight)
+        PenetrationDepth = copy.deepcopy(self.PenetrationDepth)
+
+        return pos, orn, StepLength, LateralFraction,\
+            YawRate, StepVelocity,\
+            ClearanceHeight, PenetrationDepth
 
     def FB(self):
         """ Here, we can modulate StepLength and StepVelocity

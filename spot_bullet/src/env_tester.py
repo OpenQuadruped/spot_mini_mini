@@ -43,7 +43,7 @@ def main():
 
     env = spotBezierEnv(render=True,
                         on_rack=False,
-                        height_field=False,
+                        height_field=True,
                         draw_foot_path=False)
 
     # Set seeds
@@ -75,6 +75,7 @@ def main():
     FR_phases = []
     BL_phases = []
     BR_phases = []
+    yaw = 0.0
 
     print("STARTED SPOT TEST ENV")
     t = 0
@@ -87,6 +88,14 @@ def main():
 
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
         )
+
+        yaw = env.return_yaw()
+
+        P_yaw = 5.0
+
+        YawRate += - yaw * P_yaw
+
+        # print("YAW RATE: {}".format(YawRate))
 
         # TEMP
         bz_step.StepLength = StepLength

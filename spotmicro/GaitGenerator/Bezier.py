@@ -107,8 +107,8 @@ class BezierGait():
             self.StanceSwing = StanceSwing
             self.SwRef = Sw_phase
             # REF Touchdown at End of Swing
-            # if self.SwRef >= 0.999:
-            #     self.TD = True
+            if self.SwRef >= 0.999:
+                self.TD = True
             # else:
             #     self.TD = False
         return Sw_phase, StanceSwing
