@@ -1,0 +1,151 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Simulation &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Reinforcement Learning Environment" href="rl.html" />
+    <link rel="prev" title="Welcome to spot_mini_mini’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="simulation">
+<h1>Simulation<a class="headerlink" href="#simulation" title="Permalink to this headline">¶</a></h1>
+<p>This section contains information on the most up-to-date simulation solutions.</p>
+<div class="section" id="quickstart-pybullet">
+<h2>Quickstart PyBullet<a class="headerlink" href="#quickstart-pybullet" title="Permalink to this headline">¶</a></h2>
+<p>I have deployed a 12-point Bezier Curve gait to make Spot walk:</p>
+<p><img alt="PyBullet" src="_images/spot-mini-mini.gif" /></p>
+<p>This example can be found in this <a class="reference external" href="https://github.com/moribots/spot_mini_mini">repository</a>. You can optionally use a Game Pad:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">numpy</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="n">pybullet</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="n">gym</span>
+
+<span class="n">cd</span> <span class="n">spot_bullet</span><span class="o">/</span><span class="n">src</span>
+
+<span class="o">./</span><span class="n">env_tester</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p><strong>Optional Arguments</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>          <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<span class="o">-</span><span class="n">hf</span><span class="p">,</span> <span class="o">--</span><span class="n">HeightField</span>  <span class="n">Use</span> <span class="n">HeightField</span>
+<span class="o">-</span><span class="n">r</span><span class="p">,</span> <span class="o">--</span><span class="n">DebugRack</span>     <span class="n">Put</span> <span class="n">Spot</span> <span class="n">on</span> <span class="n">an</span> <span class="n">Elevated</span> <span class="n">Rack</span>
+<span class="o">-</span><span class="n">p</span><span class="p">,</span> <span class="o">--</span><span class="n">DebugPath</span>     <span class="n">Draw</span> <span class="n">Spot</span><span class="s1">&#39;s Foot Path</span>
+<span class="o">-</span><span class="n">ay</span><span class="p">,</span> <span class="o">--</span><span class="n">AutoYaw</span>      <span class="n">Automatically</span> <span class="n">Adjust</span> <span class="n">Spot</span><span class="s1">&#39;s Yaw</span>
+</pre></div>
+</div>
+<p>If you decide to use a controller, you can achieve some fairly fluid motions!</p>
+<p>Changing Step Length:</p>
+<p><img alt="PyBullet" src="_images/steplen_mod.gif" /></p>
+<p>Yaw in Place:</p>
+<p><img alt="PyBullet" src="_images/yaw_in_place.gif" /></p>
+</div>
+<div class="section" id="kinematics">
+<h2>Kinematics<a class="headerlink" href="#kinematics" title="Permalink to this headline">¶</a></h2>
+<p>In this <a class="reference external" href="https://github.com/moribots/spot_mini_mini">repository</a>, there is a working IK solver for both Spot’s legs and its body:</p>
+<p><img alt="IK" src="_images/spot_rpy.gif" /></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart-pybullet">Quickstart PyBullet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kinematics">Kinematics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to spot_mini_mini’s documentation!</a></li>
+      <li>Next: <a href="rl.html" title="next chapter">Reinforcement Learning Environment</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/simulation.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
