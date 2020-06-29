@@ -1,0 +1,204 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spotmicro.Kinematics.LegKinematics &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spotmicro.Kinematics.LegKinematics</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="LegIK"><a class="viewcode-back" href="../../../source/spotmicro.Kinematics.html#spotmicro.Kinematics.LegKinematics.LegIK">[docs]</a><span class="k">class</span> <span class="nc">LegIK</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">legtype</span><span class="o">=</span><span class="s2">&quot;RIGHT&quot;</span><span class="p">,</span>
+                 <span class="n">hip_length</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span>
+                 <span class="n">shoulder_length</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">leg_length</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">hip_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.548</span><span class="p">,</span> <span class="mf">0.548</span><span class="p">],</span>
+                 <span class="n">shoulder_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">2.17</span><span class="p">,</span> <span class="mf">0.97</span><span class="p">],</span>
+                 <span class="n">leg_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">2.59</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">legtype</span> <span class="o">=</span> <span class="n">legtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hip_length</span> <span class="o">=</span> <span class="n">hip_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shoulder_length</span> <span class="o">=</span> <span class="n">shoulder_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leg_length</span> <span class="o">=</span> <span class="n">leg_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hip_lim</span> <span class="o">=</span> <span class="n">hip_lim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shoulder_lim</span> <span class="o">=</span> <span class="n">shoulder_lim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leg_lim</span> <span class="o">=</span> <span class="n">leg_lim</span>
+
+<div class="viewcode-block" id="LegIK.get_domain"><a class="viewcode-back" href="../../../source/spotmicro.Kinematics.html#spotmicro.Kinematics.LegKinematics.LegIK.get_domain">[docs]</a>    <span class="k">def</span> <span class="nf">get_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates the leg&#39;s Domain and caps it in case of a breach</span>
+
+<span class="sd">        :param x,y,z: hip-to-foot distances in each dimension</span>
+<span class="sd">        :return: Leg Domain D</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hip_length</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
+             <span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">shoulder_length</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">leg_length</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">leg_length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shoulder_length</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">D</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">D</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># DOMAIN BREACHED</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---------DOMAIN BREACH---------&quot;</span><span class="p">)</span>
+            <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">D</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">D</span></div>
+
+<div class="viewcode-block" id="LegIK.solve"><a class="viewcode-back" href="../../../source/spotmicro.Kinematics.html#spotmicro.Kinematics.LegKinematics.LegIK.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz_coord</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generic Leg Inverse Kinematics Solver</span>
+
+<span class="sd">        :param xyz_coord: hip-to-foot distances in each dimension</span>
+<span class="sd">        :return: Joint Angles required for desired position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xyz_coord</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">xyz_coord</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">xyz_coord</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_domain</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">legtype</span> <span class="o">==</span> <span class="s2">&quot;RIGHT&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">RightIK</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">LeftIK</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LegIK.RightIK"><a class="viewcode-back" href="../../../source/spotmicro.Kinematics.html#spotmicro.Kinematics.LegKinematics.LegIK.RightIK">[docs]</a>    <span class="k">def</span> <span class="nf">RightIK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Right Leg Inverse Kinematics Solver</span>
+
+<span class="sd">        :param x,y,z: hip-to-foot distances in each dimension</span>
+<span class="sd">        :param D: leg domain</span>
+<span class="sd">        :return: Joint Angles required for desired position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">leg_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
+        <span class="n">sqrt_component</span> <span class="o">=</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hip_length</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="n">sqrt_component</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NEGATIVE SQRT&quot;</span><span class="p">)</span>
+            <span class="n">sqrt_component</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">hip_angle</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sqrt_component</span><span class="p">),</span>
+                                                   <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">hip_length</span><span class="p">)</span>
+        <span class="n">shoulder_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sqrt_component</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">leg_length</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">leg_angle</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shoulder_length</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">leg_length</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">leg_angle</span><span class="p">))</span>
+        <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">hip_angle</span><span class="p">,</span> <span class="o">-</span><span class="n">shoulder_angle</span><span class="p">,</span> <span class="o">-</span><span class="n">leg_angle</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">joint_angles</span></div>
+
+<div class="viewcode-block" id="LegIK.LeftIK"><a class="viewcode-back" href="../../../source/spotmicro.Kinematics.html#spotmicro.Kinematics.LegKinematics.LegIK.LeftIK">[docs]</a>    <span class="k">def</span> <span class="nf">LeftIK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Left Leg Inverse Kinematics Solver</span>
+
+<span class="sd">        :param x,y,z: hip-to-foot distances in each dimension</span>
+<span class="sd">        :param D: leg domain</span>
+<span class="sd">        :return: Joint Angles required for desired position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">leg_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">D</span><span class="p">)</span>
+        <span class="n">sqrt_component</span> <span class="o">=</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hip_length</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="n">sqrt_component</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NEGATIVE SQRT&quot;</span><span class="p">)</span>
+            <span class="n">sqrt_component</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">hip_angle</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sqrt_component</span><span class="p">),</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">hip_length</span><span class="p">)</span>
+        <span class="n">shoulder_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sqrt_component</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">leg_length</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">leg_angle</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shoulder_length</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">leg_length</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">leg_angle</span><span class="p">))</span>
+        <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">hip_angle</span><span class="p">,</span> <span class="o">-</span><span class="n">shoulder_angle</span><span class="p">,</span> <span class="o">-</span><span class="n">leg_angle</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">joint_angles</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

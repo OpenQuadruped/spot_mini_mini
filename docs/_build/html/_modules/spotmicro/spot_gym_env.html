@@ -1,0 +1,843 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spotmicro.spot_gym_env &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spotmicro.spot_gym_env</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; This file implements the gym environment of SpotMicro.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pybullet</span>
+<span class="kn">import</span> <span class="nn">pybullet_data</span>
+<span class="kn">from</span> <span class="nn">gym</span> <span class="kn">import</span> <span class="n">spaces</span>
+<span class="kn">from</span> <span class="nn">gym.utils</span> <span class="kn">import</span> <span class="n">seeding</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">parse_version</span>
+<span class="kn">from</span> <span class="nn">spotmicro</span> <span class="kn">import</span> <span class="n">spot</span>
+<span class="kn">import</span> <span class="nn">pybullet_utils.bullet_client</span> <span class="k">as</span> <span class="nn">bullet_client</span>
+<span class="kn">from</span> <span class="nn">gym.envs.registration</span> <span class="kn">import</span> <span class="n">register</span>
+<span class="kn">from</span> <span class="nn">spotmicro.heightfield</span> <span class="kn">import</span> <span class="n">HeightField</span>
+<span class="kn">from</span> <span class="nn">spotmicro.OpenLoopSM.SpotOL</span> <span class="kn">import</span> <span class="n">BezierStepper</span>
+<span class="kn">import</span> <span class="nn">spotmicro.Kinematics.LieAlgebra</span> <span class="k">as</span> <span class="nn">LA</span>
+<span class="kn">from</span> <span class="nn">spotmicro.spot_env_randomizer</span> <span class="kn">import</span> <span class="n">SpotEnvRandomizer</span>
+
+<span class="n">NUM_SUBSTEPS</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">NUM_MOTORS</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">MOTOR_ANGLE_OBSERVATION_INDEX</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">MOTOR_VELOCITY_OBSERVATION_INDEX</span> <span class="o">=</span> <span class="n">MOTOR_ANGLE_OBSERVATION_INDEX</span> <span class="o">+</span> <span class="n">NUM_MOTORS</span>
+<span class="n">MOTOR_TORQUE_OBSERVATION_INDEX</span> <span class="o">=</span> <span class="n">MOTOR_VELOCITY_OBSERVATION_INDEX</span> <span class="o">+</span> <span class="n">NUM_MOTORS</span>
+<span class="n">BASE_ORIENTATION_OBSERVATION_INDEX</span> <span class="o">=</span> <span class="n">MOTOR_TORQUE_OBSERVATION_INDEX</span> <span class="o">+</span> <span class="n">NUM_MOTORS</span>
+<span class="n">ACTION_EPS</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">OBSERVATION_EPS</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">RENDER_HEIGHT</span> <span class="o">=</span> <span class="mi">720</span>
+<span class="n">RENDER_WIDTH</span> <span class="o">=</span> <span class="mi">960</span>
+<span class="n">SENSOR_NOISE_STDDEV</span> <span class="o">=</span> <span class="n">spot</span><span class="o">.</span><span class="n">SENSOR_NOISE_STDDEV</span>
+<span class="n">DEFAULT_URDF_VERSION</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span>
+<span class="n">NUM_SIMULATION_ITERATION_STEPS</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="n">spot_URDF_VERSION_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="n">DEFAULT_URDF_VERSION</span><span class="p">:</span> <span class="n">spot</span><span class="o">.</span><span class="n">Spot</span><span class="p">}</span>
+
+<span class="c1"># Register as OpenAI Gym Environment</span>
+<span class="n">register</span><span class="p">(</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;SpotMicroEnv-v0&quot;</span><span class="p">,</span>
+    <span class="n">entry_point</span><span class="o">=</span><span class="s1">&#39;spotmicro.spot_gym_env:spotGymEnv&#39;</span><span class="p">,</span>
+    <span class="n">max_episode_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="convert_to_list"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.convert_to_list">[docs]</a><span class="k">def</span> <span class="nf">convert_to_list</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">iter</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">obj</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="spotGymEnv"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv">[docs]</a><span class="k">class</span> <span class="nc">spotGymEnv</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The gym environment for spot.</span>
+
+<span class="sd">  It simulates the locomotion of spot, a quadruped robot. The state space</span>
+<span class="sd">  include the angles, velocities and torques for all the motors and the action</span>
+<span class="sd">  space is the desired motor angle for each motor. The reward function is based</span>
+<span class="sd">  on how far spot walks in 1000 steps and penalizes the energy</span>
+<span class="sd">  expenditure.</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;render.modes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="s2">&quot;rgb_array&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;video.frames_per_second&quot;</span><span class="p">:</span> <span class="mi">50</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">distance_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">rotation_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">energy_weight</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">,</span>
+                 <span class="n">shake_weight</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+                 <span class="n">drift_weight</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+                 <span class="n">rp_weight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">rate_weight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">urdf_root</span><span class="o">=</span><span class="n">pybullet_data</span><span class="o">.</span><span class="n">getDataPath</span><span class="p">(),</span>
+                 <span class="n">urdf_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">distance_limit</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                 <span class="n">observation_noise_stdev</span><span class="o">=</span><span class="n">SENSOR_NOISE_STDDEV</span><span class="p">,</span>
+                 <span class="n">self_collision_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">motor_velocity_limit</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+                 <span class="n">pd_control_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">leg_model_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">accurate_motor_model_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">remove_default_joint_damping</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">motor_kp</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+                 <span class="n">motor_kd</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+                 <span class="n">control_latency</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">pd_latency</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">torque_control_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">motor_overheat_protection</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">hard_reset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">on_rack</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">num_steps_to_log</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                 <span class="n">action_repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">control_time_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">env_randomizer</span><span class="o">=</span><span class="n">SpotEnvRandomizer</span><span class="p">(),</span>
+                 <span class="n">forward_reward_cap</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                 <span class="n">reflection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">log_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">desired_velocity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                 <span class="n">desired_rate</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">lateral</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">draw_foot_path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">height_field</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">AutoStepper</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the spot gym environment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      urdf_root: The path to the urdf data folder.</span>
+<span class="sd">      urdf_version: [DEFAULT_URDF_VERSION] are allowable</span>
+<span class="sd">        versions. If None, DEFAULT_URDF_VERSION is used.</span>
+<span class="sd">      distance_weight: The weight of the distance term in the reward.</span>
+<span class="sd">      energy_weight: The weight of the energy term in the reward.</span>
+<span class="sd">      shake_weight: The weight of the vertical shakiness term in the reward.</span>
+<span class="sd">      drift_weight: The weight of the sideways drift term in the reward.</span>
+<span class="sd">      distance_limit: The maximum distance to terminate the episode.</span>
+<span class="sd">      observation_noise_stdev: The standard deviation of observation noise.</span>
+<span class="sd">      self_collision_enabled: Whether to enable self collision in the sim.</span>
+<span class="sd">      motor_velocity_limit: The velocity limit of each motor.</span>
+<span class="sd">      pd_control_enabled: Whether to use PD controller for each motor.</span>
+<span class="sd">      leg_model_enabled: Whether to use a leg motor to reparameterize the action</span>
+<span class="sd">        space.</span>
+<span class="sd">      accurate_motor_model_enabled: Whether to use the accurate DC motor model.</span>
+<span class="sd">      remove_default_joint_damping: Whether to remove the default joint damping.</span>
+<span class="sd">      motor_kp: proportional gain for the accurate motor model.</span>
+<span class="sd">      motor_kd: derivative gain for the accurate motor model.</span>
+<span class="sd">      control_latency: It is the delay in the controller between when an</span>
+<span class="sd">        observation is made at some point, and when that reading is reported</span>
+<span class="sd">        back to the Neural Network.</span>
+<span class="sd">      pd_latency: latency of the PD controller loop. PD calculates PWM based on</span>
+<span class="sd">        the motor angle and velocity. The latency measures the time between when</span>
+<span class="sd">        the motor angle and velocity are observed on the microcontroller and</span>
+<span class="sd">        when the true state happens on the motor. It is typically (0.001-</span>
+<span class="sd">        0.002s).</span>
+<span class="sd">      torque_control_enabled: Whether to use the torque control, if set to</span>
+<span class="sd">        False, pose control will be used.</span>
+<span class="sd">      motor_overheat_protection: Whether to shutdown the motor that has exerted</span>
+<span class="sd">        large torque (OVERHEAT_SHUTDOWN_TORQUE) for an extended amount of time</span>
+<span class="sd">        (OVERHEAT_SHUTDOWN_TIME). See ApplyAction() in spot.py for more</span>
+<span class="sd">        details.</span>
+<span class="sd">      hard_reset: Whether to wipe the simulation and load everything when reset</span>
+<span class="sd">        is called. If set to false, reset just place spot back to start</span>
+<span class="sd">        position and set its pose to initial configuration.</span>
+<span class="sd">      on_rack: Whether to place spot on rack. This is only used to debug</span>
+<span class="sd">        the walking gait. In this mode, spot&#39;s base is hanged midair so</span>
+<span class="sd">        that its walking gait is clearer to visualize.</span>
+<span class="sd">      render: Whether to render the simulation.</span>
+<span class="sd">      num_steps_to_log: The max number of control steps in one episode that will</span>
+<span class="sd">        be logged. If the number of steps is more than num_steps_to_log, the</span>
+<span class="sd">        environment will still be running, but only first num_steps_to_log will</span>
+<span class="sd">        be recorded in logging.</span>
+<span class="sd">      action_repeat: The number of simulation steps before actions are applied.</span>
+<span class="sd">      control_time_step: The time step between two successive control signals.</span>
+<span class="sd">      env_randomizer: An instance (or a list) of EnvRandomizer(s). An</span>
+<span class="sd">        EnvRandomizer may randomize the physical property of spot, change</span>
+<span class="sd">          the terrrain during reset(), or add perturbation forces during step().</span>
+<span class="sd">      forward_reward_cap: The maximum value that forward reward is capped at.</span>
+<span class="sd">        Disabled (Inf) by default.</span>
+<span class="sd">      log_path: The path to write out logs. For the details of logging, refer to</span>
+<span class="sd">        spot_logging.proto.</span>
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: If the urdf_version is not supported.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="c1"># Enable Auto Stepper State Machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AutoStepper</span> <span class="o">=</span> <span class="n">AutoStepper</span>
+        <span class="c1"># Enable Rough Terrain or Not</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height_field</span> <span class="o">=</span> <span class="n">height_field</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_foot_path</span> <span class="o">=</span> <span class="n">draw_foot_path</span>
+        <span class="c1"># DRAWING FEET PATH</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+
+        <span class="c1"># CONTROL METRICS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desired_velocity</span> <span class="o">=</span> <span class="n">desired_velocity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desired_rate</span> <span class="o">=</span> <span class="n">desired_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lateral</span> <span class="o">=</span> <span class="n">lateral</span>
+
+        <span class="c1"># Set up logging.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_path</span> <span class="o">=</span> <span class="n">log_path</span>
+        <span class="c1"># @TODO fix logging</span>
+
+        <span class="c1"># NUM ITERS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span> <span class="o">=</span> <span class="mf">0.01</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span> <span class="o">=</span> <span class="n">action_repeat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_bullet_solver_iterations</span> <span class="o">=</span> <span class="mi">300</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">pd_control_enabled</span> <span class="ow">or</span> <span class="n">accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span> <span class="o">/=</span> <span class="n">NUM_SUBSTEPS</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_num_bullet_solver_iterations</span> <span class="o">/=</span> <span class="n">NUM_SUBSTEPS</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span> <span class="o">*=</span> <span class="n">NUM_SUBSTEPS</span>
+        <span class="c1"># PD control needs smaller time step for stability.</span>
+        <span class="k">if</span> <span class="n">control_time_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">control_time_step</span> <span class="o">=</span> <span class="n">control_time_step</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Get Control Timestep</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">control_time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span>
+        <span class="c1"># TODO: Fix the value of self._num_bullet_solver_iterations.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_bullet_solver_iterations</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">NUM_SIMULATION_ITERATION_STEPS</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span><span class="p">)</span>
+
+        <span class="c1"># URDF</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_root</span> <span class="o">=</span> <span class="n">urdf_root</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_self_collision_enabled</span> <span class="o">=</span> <span class="n">self_collision_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_velocity_limit</span> <span class="o">=</span> <span class="n">motor_velocity_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_true_observation</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objective_weights</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">distance_weight</span><span class="p">,</span> <span class="n">energy_weight</span><span class="p">,</span> <span class="n">drift_weight</span><span class="p">,</span> <span class="n">shake_weight</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_step_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_steps_to_log</span> <span class="o">=</span> <span class="n">num_steps_to_log</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_render</span> <span class="o">=</span> <span class="n">render</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_position</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_orientation</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_weight</span> <span class="o">=</span> <span class="n">distance_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_weight</span> <span class="o">=</span> <span class="n">rotation_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy_weight</span> <span class="o">=</span> <span class="n">energy_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drift_weight</span> <span class="o">=</span> <span class="n">drift_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shake_weight</span> <span class="o">=</span> <span class="n">shake_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rp_weight</span> <span class="o">=</span> <span class="n">rp_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rate_weight</span> <span class="o">=</span> <span class="n">rate_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_limit</span> <span class="o">=</span> <span class="n">distance_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_noise_stdev</span> <span class="o">=</span> <span class="n">observation_noise_stdev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_bound</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span> <span class="o">=</span> <span class="n">pd_control_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_model_enabled</span> <span class="o">=</span> <span class="n">leg_model_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span> <span class="o">=</span> <span class="n">accurate_motor_model_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_default_joint_damping</span> <span class="o">=</span> <span class="n">remove_default_joint_damping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_kp</span> <span class="o">=</span> <span class="n">motor_kp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_kd</span> <span class="o">=</span> <span class="n">motor_kd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_torque_control_enabled</span> <span class="o">=</span> <span class="n">torque_control_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_overheat_protection</span> <span class="o">=</span> <span class="n">motor_overheat_protection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_rack</span> <span class="o">=</span> <span class="n">on_rack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cam_dist</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cam_yaw</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cam_pitch</span> <span class="o">=</span> <span class="o">-</span><span class="mi">30</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forward_reward_cap</span> <span class="o">=</span> <span class="n">forward_reward_cap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_latency</span> <span class="o">=</span> <span class="n">control_latency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pd_latency</span> <span class="o">=</span> <span class="n">pd_latency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_version</span> <span class="o">=</span> <span class="n">urdf_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ground_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reflection</span> <span class="o">=</span> <span class="n">reflection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_randomizer</span> <span class="o">=</span> <span class="n">env_randomizer</span>
+        <span class="c1"># @TODO fix logging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_episode_proto</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_render</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span> <span class="o">=</span> <span class="n">bullet_client</span><span class="o">.</span><span class="n">BulletClient</span><span class="p">(</span>
+                <span class="n">connection_mode</span><span class="o">=</span><span class="n">pybullet</span><span class="o">.</span><span class="n">GUI</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span> <span class="o">=</span> <span class="n">bullet_client</span><span class="o">.</span><span class="n">BulletClient</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_version</span> <span class="o">=</span> <span class="n">DEFAULT_URDF_VERSION</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setPhysicsEngineParameter</span><span class="p">(</span><span class="n">enableConeFriction</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+        <span class="c1"># Only update after HF has been generated</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height_field</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">observation_high</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetObservationUpperBound</span><span class="p">()</span> <span class="o">+</span>
+                            <span class="n">OBSERVATION_EPS</span><span class="p">)</span>
+        <span class="n">observation_low</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetObservationLowerBound</span><span class="p">()</span> <span class="o">-</span>
+                           <span class="n">OBSERVATION_EPS</span><span class="p">)</span>
+        <span class="n">action_dim</span> <span class="o">=</span> <span class="n">NUM_MOTORS</span>
+        <span class="n">action_high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_bound</span><span class="p">]</span> <span class="o">*</span> <span class="n">action_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="o">-</span><span class="n">action_high</span><span class="p">,</span> <span class="n">action_high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">observation_low</span><span class="p">,</span> <span class="n">observation_high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span> <span class="o">=</span> <span class="n">hard_reset</span>  <span class="c1"># This assignment need to be after reset()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal_reached</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Generate HeightField or not</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height_field</span> <span class="o">=</span> <span class="n">height_field</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hf</span> <span class="o">=</span> <span class="n">HeightField</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">height_field</span><span class="p">:</span>
+            <span class="c1"># Do 3x for extra roughness</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">_generate_field</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">_generate_field</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="spotGymEnv.set_env_randomizer"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.set_env_randomizer">[docs]</a>    <span class="k">def</span> <span class="nf">set_env_randomizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_randomizer</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_randomizer</span> <span class="o">=</span> <span class="n">env_randomizer</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.configure"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.configure">[docs]</a>    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.reset"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">initial_motor_angles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">reset_duration</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+              <span class="n">desired_velocity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">desired_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Use Autostepper</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">AutoStepper</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">StateMachine</span> <span class="o">=</span> <span class="n">BezierStepper</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span><span class="p">)</span>
+            <span class="c1"># Shuffle order of states</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">StateMachine</span><span class="o">.</span><span class="n">reshuffle</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">configureDebugVisualizer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">COV_ENABLE_RENDERING</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetSimulation</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setPhysicsEngineParameter</span><span class="p">(</span>
+                <span class="n">numSolverIterations</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_bullet_solver_iterations</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setTimeStep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ground_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">loadURDF</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/plane.urdf&quot;</span> <span class="o">%</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_root</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reflection</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeVisualShape</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_ground_id</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">rgbaColor</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">configureDebugVisualizer</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">COV_ENABLE_PLANAR_REFLECTION</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_ground_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setGravity</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.81</span><span class="p">)</span>
+            <span class="n">acc_motor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span>
+            <span class="n">motor_protect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_overheat_protection</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spot_URDF_VERSION_MAP</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a supported urdf_version.&quot;</span> <span class="o">%</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_version</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">spot</span> <span class="o">=</span> <span class="p">(</span><span class="n">spot_URDF_VERSION_MAP</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_urdf_version</span><span class="p">](</span>
+                    <span class="n">pybullet_client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="p">,</span>
+                    <span class="n">action_repeat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span><span class="p">,</span>
+                    <span class="n">urdf_root</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_urdf_root</span><span class="p">,</span>
+                    <span class="n">time_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span><span class="p">,</span>
+                    <span class="n">self_collision_enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_self_collision_enabled</span><span class="p">,</span>
+                    <span class="n">motor_velocity_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_motor_velocity_limit</span><span class="p">,</span>
+                    <span class="n">pd_control_enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span><span class="p">,</span>
+                    <span class="n">accurate_motor_model_enabled</span><span class="o">=</span><span class="n">acc_motor</span><span class="p">,</span>
+                    <span class="n">remove_default_joint_damping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span>
+                    <span class="n">_remove_default_joint_damping</span><span class="p">,</span>
+                    <span class="n">motor_kp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_motor_kp</span><span class="p">,</span>
+                    <span class="n">motor_kd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_motor_kd</span><span class="p">,</span>
+                    <span class="n">control_latency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_control_latency</span><span class="p">,</span>
+                    <span class="n">pd_latency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pd_latency</span><span class="p">,</span>
+                    <span class="n">observation_noise_stdev</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_noise_stdev</span><span class="p">,</span>
+                    <span class="n">torque_control_enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_torque_control_enabled</span><span class="p">,</span>
+                    <span class="n">motor_overheat_protection</span><span class="o">=</span><span class="n">motor_protect</span><span class="p">,</span>
+                    <span class="n">on_rack</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_rack</span><span class="p">,</span>
+                    <span class="n">np_random</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">np_random</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">Reset</span><span class="p">(</span><span class="n">reload_urdf</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">default_motor_angles</span><span class="o">=</span><span class="n">initial_motor_angles</span><span class="p">,</span>
+                        <span class="n">reset_time</span><span class="o">=</span><span class="n">reset_duration</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_randomizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_env_randomizer</span><span class="o">.</span><span class="n">randomize_env</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">desired_velocity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">desired_velocity</span> <span class="o">=</span> <span class="n">desired_velocity</span>
+        <span class="k">if</span> <span class="n">desired_rate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">desired_rate</span> <span class="o">=</span> <span class="n">desired_rate</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">height_field</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">UpdateHeightField</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setPhysicsEngineParameter</span><span class="p">(</span><span class="n">enableConeFriction</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_step_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_position</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_orientation</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetDebugVisualizerCamera</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cam_dist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cam_yaw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cam_pitch</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">configureDebugVisualizer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">COV_ENABLE_RENDERING</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_observation</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.seed"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.seed">[docs]</a>    <span class="k">def</span> <span class="nf">seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">np_random</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="n">seeding</span><span class="o">.</span><span class="n">np_random</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">seed</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_transform_action_to_motor_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leg_model_enabled</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">action_component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">action</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_bound</span> <span class="o">-</span> <span class="n">ACTION_EPS</span> <span class="o">&lt;=</span> <span class="n">action_component</span> <span class="o">&lt;=</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_action_bound</span> <span class="o">+</span> <span class="n">ACTION_EPS</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">th action </span><span class="si">{}</span><span class="s2"> out of bounds.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">i</span><span class="p">,</span> <span class="n">action_component</span><span class="p">))</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">ConvertFromLegModel</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">action</span>
+
+<div class="viewcode-block" id="spotGymEnv.step"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Step forward the simulation, given the action.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      action: A list of desired motor angles for eight motors.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      observations: The angles, velocities and torques of all motors.</span>
+<span class="sd">      reward: The reward for the current state-action pair.</span>
+<span class="sd">      done: Whether the episode has ended.</span>
+<span class="sd">      info: A dictionary that stores diagnostic information.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: The action dimension is not the same as the number of motors.</span>
+<span class="sd">      ValueError: The magnitude of actions is out of bounds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBaseOrientation</span><span class="p">()</span>
+        <span class="c1"># print(&quot;ACTION:&quot;)</span>
+        <span class="c1"># print(action)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_render</span><span class="p">:</span>
+            <span class="c1"># Sleep, otherwise the computation takes less time than real time,</span>
+            <span class="c1"># which will make the visualization like a fast-forward video.</span>
+            <span class="n">time_spent</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame_time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">time_to_sleep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_time_step</span> <span class="o">-</span> <span class="n">time_spent</span>
+            <span class="k">if</span> <span class="n">time_to_sleep</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time_to_sleep</span><span class="p">)</span>
+            <span class="n">base_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+            <span class="c1"># Keep the previous orientation of the camera set by the user.</span>
+            <span class="p">[</span><span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span>
+             <span class="n">dist</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getDebugVisualizerCamera</span><span class="p">()[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetDebugVisualizerCamera</span><span class="p">(</span>
+                <span class="n">dist</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">base_pos</span><span class="p">)</span>
+
+        <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_action_to_motor_command</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">Step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reward</span><span class="p">()</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_termination</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_step_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># DRAW FOOT PATH</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">draw_foot_path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DrawFootPath</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_observation</span><span class="p">()),</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.render"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rgb_array&quot;</span><span class="p">,</span> <span class="n">close</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;rgb_array&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">base_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+        <span class="n">view_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">computeViewMatrixFromYawPitchRoll</span><span class="p">(</span>
+            <span class="n">cameraTargetPosition</span><span class="o">=</span><span class="n">base_pos</span><span class="p">,</span>
+            <span class="n">distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cam_dist</span><span class="p">,</span>
+            <span class="n">yaw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cam_yaw</span><span class="p">,</span>
+            <span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cam_pitch</span><span class="p">,</span>
+            <span class="n">roll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">upAxisIndex</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">proj_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">computeProjectionMatrixFOV</span><span class="p">(</span>
+            <span class="n">fov</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+            <span class="n">aspect</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">RENDER_WIDTH</span><span class="p">)</span> <span class="o">/</span> <span class="n">RENDER_HEIGHT</span><span class="p">,</span>
+            <span class="n">nearVal</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">farVal</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">px</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getCameraImage</span><span class="p">(</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">RENDER_WIDTH</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">RENDER_HEIGHT</span><span class="p">,</span>
+            <span class="n">renderer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">ER_BULLET_HARDWARE_OPENGL</span><span class="p">,</span>
+            <span class="n">viewMatrix</span><span class="o">=</span><span class="n">view_matrix</span><span class="p">,</span>
+            <span class="n">projectionMatrix</span><span class="o">=</span><span class="n">proj_matrix</span><span class="p">)</span>
+        <span class="n">rgb_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">px</span><span class="p">)</span>
+        <span class="n">rgb_array</span> <span class="o">=</span> <span class="n">rgb_array</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">rgb_array</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.DrawFootPath"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.DrawFootPath">[docs]</a>    <span class="k">def</span> <span class="nf">DrawFootPath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Get Foot Positions</span>
+        <span class="n">FL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getLinkState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">FR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getLinkState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">BL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getLinkState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">2</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">BR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getLinkState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">3</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">lifetime</span> <span class="o">=</span> <span class="mf">3.0</span>  <span class="c1"># sec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">addUserDebugLine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                               <span class="n">FL</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                               <span class="n">lifeTime</span><span class="o">=</span><span class="n">lifetime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">addUserDebugLine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                               <span class="n">FR</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                               <span class="n">lifeTime</span><span class="o">=</span><span class="n">lifetime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">addUserDebugLine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                               <span class="n">BL</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                               <span class="n">lifeTime</span><span class="o">=</span><span class="n">lifetime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">addUserDebugLine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                                               <span class="n">BR</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                               <span class="n">lifeTime</span><span class="o">=</span><span class="n">lifetime</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">FL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">FR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">BL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_feet_path</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">BR</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.get_spot_motor_angles"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_angles">[docs]</a>    <span class="k">def</span> <span class="nf">get_spot_motor_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the spot&#39;s motor angles.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      A numpy array of motor angles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span><span class="p">[</span><span class="n">MOTOR_ANGLE_OBSERVATION_INDEX</span><span class="p">:</span>
+                              <span class="n">MOTOR_ANGLE_OBSERVATION_INDEX</span> <span class="o">+</span> <span class="n">NUM_MOTORS</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.get_spot_motor_velocities"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_velocities">[docs]</a>    <span class="k">def</span> <span class="nf">get_spot_motor_velocities</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the spot&#39;s motor velocities.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      A numpy array of motor velocities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span><span class="p">[</span><span class="n">MOTOR_VELOCITY_OBSERVATION_INDEX</span><span class="p">:</span>
+                              <span class="n">MOTOR_VELOCITY_OBSERVATION_INDEX</span> <span class="o">+</span> <span class="n">NUM_MOTORS</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.get_spot_motor_torques"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_torques">[docs]</a>    <span class="k">def</span> <span class="nf">get_spot_motor_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the spot&#39;s motor torques.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      A numpy array of motor torques.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span><span class="p">[</span><span class="n">MOTOR_TORQUE_OBSERVATION_INDEX</span><span class="p">:</span>
+                              <span class="n">MOTOR_TORQUE_OBSERVATION_INDEX</span> <span class="o">+</span> <span class="n">NUM_MOTORS</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.get_spot_base_orientation"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.get_spot_base_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">get_spot_base_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the spot&#39;s base orientation, represented by a quaternion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      A numpy array of spot&#39;s orientation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation</span><span class="p">[</span><span class="n">BASE_ORIENTATION_OBSERVATION_INDEX</span><span class="p">:])</span></div>
+
+<div class="viewcode-block" id="spotGymEnv.is_fallen"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.is_fallen">[docs]</a>    <span class="k">def</span> <span class="nf">is_fallen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decide whether spot has fallen.</span>
+
+<span class="sd">    If the up directions between the base and the world is larger (the dot</span>
+<span class="sd">    product is smaller than 0.85) or the base is very low on the ground</span>
+<span class="sd">    (the height is smaller than 0.13 meter), spot is considered fallen.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Boolean value that indicates whether spot has fallen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="n">orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBaseOrientation</span><span class="p">()</span>
+        <span class="n">rot_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getMatrixFromQuaternion</span><span class="p">(</span><span class="n">orientation</span><span class="p">)</span>
+        <span class="n">local_up</span> <span class="o">=</span> <span class="n">rot_mat</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+        <span class="c1">#  or pos[2] &lt; 0.13</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">local_up</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.75</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_termination</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fallen</span><span class="p">()</span> <span class="ow">or</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_limit</span>
+
+    <span class="k">def</span> <span class="nf">_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; NOTE: reward now consists of:</span>
+<span class="sd">        roll, pitch at desired 0</span>
+<span class="sd">        acc (y,z) = 0</span>
+<span class="sd">        FORWARD-BACKWARD: rate(x,y,z) = 0</span>
+<span class="sd">        --&gt; HIDDEN REWARD: x(+-) velocity reference, not incl. in obs</span>
+<span class="sd">        SPIN: acc(x) = 0, rate(x,y) = 0, rate (z) = rate reference</span>
+<span class="sd">        Also include drift, energy vanilla rewards</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_base_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+
+        <span class="c1"># get observation</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_observation</span><span class="p">()</span>
+        <span class="c1"># forward_reward = current_base_position[0] - self._last_base_position[0]</span>
+
+        <span class="c1"># # POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN</span>
+        <span class="c1"># GETTING TWIST IN BODY FRAME</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+        <span class="n">orn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBaseOrientation</span><span class="p">()</span>
+        <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getEulerFromQuaternion</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">orn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="n">rpy</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">RPY</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">)</span>
+        <span class="n">R</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">TransToRp</span><span class="p">(</span><span class="n">rpy</span><span class="p">)</span>
+        <span class="n">T_wb</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">RpToTrans</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]]))</span>
+        <span class="n">T_bw</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">TransInv</span><span class="p">(</span><span class="n">T_wb</span><span class="p">)</span>
+        <span class="n">Adj_Tbw</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">Adjoint</span><span class="p">(</span><span class="n">T_bw</span><span class="p">)</span>
+
+        <span class="n">Vw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">prev_ang_twist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">prev_lin_twist</span><span class="p">))</span>
+        <span class="n">Vb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Adj_Tbw</span><span class="p">,</span> <span class="n">Vw</span><span class="p">)</span>
+
+        <span class="c1"># New Twist in Body Frame</span>
+        <span class="c1"># POSITIVE FOR FORWARD, NEGATIVE FOR BACKWARD | NOTE: HIDDEN</span>
+        <span class="n">fwd_speed</span> <span class="o">=</span> <span class="o">-</span><span class="n">Vb</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># vx</span>
+        <span class="n">lat_speed</span> <span class="o">=</span> <span class="o">-</span><span class="n">Vb</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>  <span class="c1"># vy</span>
+        <span class="c1"># fwd_speed = self.spot.prev_lin_twist[0]</span>
+        <span class="c1"># lat_speed = self.spot.prev_lin_twist[1]</span>
+        <span class="c1"># print(&quot;FORWARD SPEED: {} \t STATE SPEED: {}&quot;.format(</span>
+        <span class="c1">#     fwd_speed, self.desired_velocity))</span>
+        <span class="c1"># self.desired_velocity = 0.4</span>
+
+        <span class="c1"># Modification for lateral/fwd rewards</span>
+        <span class="n">reward_max</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="c1"># FORWARD</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">lateral</span><span class="p">:</span>
+            <span class="c1"># f(x)=-(x-desired))^(2)*((1/desired)^2)+1</span>
+            <span class="c1"># to make sure that at 0vel there is 0 reawrd.</span>
+            <span class="c1"># also squishes allowable tolerance</span>
+            <span class="n">forward_reward</span> <span class="o">=</span> <span class="n">reward_max</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                <span class="o">-</span><span class="p">(</span><span class="n">fwd_speed</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_velocity</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">))</span>
+        <span class="c1"># LATERAL</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">forward_reward</span> <span class="o">=</span> <span class="n">reward_max</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                <span class="o">-</span><span class="p">(</span><span class="n">lat_speed</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_velocity</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">))</span>
+
+        <span class="n">yaw_rate</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+        <span class="n">rot_reward</span> <span class="o">=</span> <span class="n">reward_max</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">yaw_rate</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_rate</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span>
+                                         <span class="p">(</span><span class="mf">0.1</span><span class="p">))</span>
+
+        <span class="c1"># Make sure that for forward-policy there is the appropriate rotation penalty</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_velocity</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate_weight</span>
+            <span class="n">rot_reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_rate</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">forward_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># penalty for nonzero roll, pitch</span>
+        <span class="n">rp_reward</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="c1"># print(&quot;ROLL: {} \t PITCH: {}&quot;.format(obs[0], obs[1]))</span>
+
+        <span class="c1"># penalty for nonzero acc(z)</span>
+        <span class="n">shake_reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+
+        <span class="c1"># penalty for nonzero rate (x,y,z)</span>
+        <span class="n">rate_reward</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+
+        <span class="c1"># drift_reward = -abs(current_base_position[1] -</span>
+        <span class="c1">#                     self._last_base_position[1])</span>
+
+        <span class="c1"># this penalizes absolute error, and does not penalize correction</span>
+        <span class="c1"># NOTE: for side-side, drift reward becomes in x instead</span>
+        <span class="n">drift_reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">current_base_position</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># If Lateral, change drift reward</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lateral</span><span class="p">:</span>
+            <span class="n">drift_reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">current_base_position</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># shake_reward = -abs(current_base_position[2] -</span>
+        <span class="c1">#                     self._last_base_position[2])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_position</span> <span class="o">=</span> <span class="n">current_base_position</span>
+        <span class="n">energy_reward</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetMotorTorques</span><span class="p">(),</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetMotorVelocities</span><span class="p">()))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_weight</span> <span class="o">*</span> <span class="n">forward_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_weight</span> <span class="o">*</span> <span class="n">rot_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_energy_weight</span> <span class="o">*</span> <span class="n">energy_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_drift_weight</span> <span class="o">*</span> <span class="n">drift_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_shake_weight</span> <span class="o">*</span> <span class="n">shake_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_rp_weight</span> <span class="o">*</span> <span class="n">rp_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_rate_weight</span> <span class="o">*</span> <span class="n">rate_reward</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">forward_reward</span><span class="p">,</span> <span class="n">energy_reward</span><span class="p">,</span> <span class="n">drift_reward</span><span class="p">,</span> <span class="n">shake_reward</span><span class="p">])</span>
+        <span class="c1"># print(&quot;REWARD: &quot;, reward)</span>
+        <span class="k">return</span> <span class="n">reward</span>
+
+<div class="viewcode-block" id="spotGymEnv.get_objectives"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.get_objectives">[docs]</a>    <span class="k">def</span> <span class="nf">get_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">objective_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accessor for the weights for all the objectives.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      List of floating points that corresponds to weights for the objectives in</span>
+<span class="sd">      the order that objectives are stored.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objective_weights</span>
+
+    <span class="k">def</span> <span class="nf">_get_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get observation of this environment, including noise and latency.</span>
+
+<span class="sd">    spot class maintains a history of true observations. Based on the</span>
+<span class="sd">    latency, this function will find the observation at the right time,</span>
+<span class="sd">    interpolate if necessary. Then Gaussian noise is added to this observation</span>
+<span class="sd">    based on self.observation_noise_stdev.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      The noisy observation with latency.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetObservation</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span>
+
+    <span class="k">def</span> <span class="nf">_get_realistic_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the observations of this environment.</span>
+
+<span class="sd">    It includes the angles, velocities, torques and the orientation of the base.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      The observation list. observation[0:8] are motor angles. observation[8:16]</span>
+<span class="sd">      are motor velocities, observation[16:24] are motor torques.</span>
+<span class="sd">      observation[24:28] is the orientation of the base, in quaternion form.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">RealisticObservation</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation</span>
+
+    <span class="k">if</span> <span class="n">parse_version</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">parse_version</span><span class="p">(</span><span class="s1">&#39;0.9.6&#39;</span><span class="p">):</span>
+        <span class="n">_render</span> <span class="o">=</span> <span class="n">render</span>
+        <span class="n">_reset</span> <span class="o">=</span> <span class="n">reset</span>
+        <span class="n">_seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="n">_step</span> <span class="o">=</span> <span class="n">step</span>
+
+<div class="viewcode-block" id="spotGymEnv.set_time_step"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot_gym_env.spotGymEnv.set_time_step">[docs]</a>    <span class="k">def</span> <span class="nf">set_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">control_step</span><span class="p">,</span> <span class="n">simulation_step</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the time step of the environment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      control_step: The time period (in seconds) between two adjacent control</span>
+<span class="sd">        actions are applied.</span>
+<span class="sd">      simulation_step: The simulation time step in PyBullet. By default, the</span>
+<span class="sd">        simulation step is 0.001s, which is a good trade-off between simulation</span>
+<span class="sd">        speed and accuracy.</span>
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: If the control step is smaller than the simulation step.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">control_step</span> <span class="o">&lt;</span> <span class="n">simulation_step</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Control step should be larger than or equal to simulation step.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_time_step</span> <span class="o">=</span> <span class="n">control_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span> <span class="o">=</span> <span class="n">simulation_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">control_step</span> <span class="o">/</span> <span class="n">simulation_step</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_bullet_solver_iterations</span> <span class="o">=</span> <span class="p">(</span><span class="n">NUM_SIMULATION_ITERATION_STEPS</span> <span class="o">/</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setPhysicsEngineParameter</span><span class="p">(</span>
+            <span class="n">numSolverIterations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_bullet_solver_iterations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setTimeStep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">SetTimeSteps</span><span class="p">(</span><span class="n">action_repeat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span><span class="p">,</span>
+                               <span class="n">simulation_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pybullet_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ground_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ground_id</span>
+
+    <span class="nd">@ground_id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ground_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_ground_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ground_id</span> <span class="o">=</span> <span class="n">new_ground_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">env_step_counter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_step_counter</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

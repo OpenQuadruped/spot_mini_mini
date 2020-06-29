@@ -1,0 +1,1228 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spotmicro.spot &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spotmicro.spot</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This file models a spot using pybullet.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">motor</span>
+<span class="kn">from</span> <span class="nn">spotmicro.util</span> <span class="kn">import</span> <span class="n">pybullet_data</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pybullet_data</span><span class="o">.</span><span class="n">getDataPath</span><span class="p">())</span>
+<span class="kn">from</span> <span class="nn">spotmicro.Kinematics.SpotKinematics</span> <span class="kn">import</span> <span class="n">SpotModel</span>
+<span class="kn">import</span> <span class="nn">spotmicro.Kinematics.LieAlgebra</span> <span class="k">as</span> <span class="nn">LA</span>
+
+<span class="n">INIT_POSITION</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.21</span><span class="p">]</span>
+<span class="n">INIT_RACK_POSITION</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="c1"># NOTE: URDF IS FACING THE WRONG WAY</span>
+<span class="c1"># TEMP FIX</span>
+<span class="n">INIT_ORIENTATION</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">OVERHEAT_SHUTDOWN_TORQUE</span> <span class="o">=</span> <span class="mf">2.45</span>
+<span class="n">OVERHEAT_SHUTDOWN_TIME</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="c1"># -math.pi / 5</span>
+<span class="n">INIT_LEG_POS</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.658319</span>
+<span class="c1"># math.pi / 3</span>
+<span class="n">INIT_FOOT_POS</span> <span class="o">=</span> <span class="mf">1.0472</span>
+
+<span class="n">LEG_POSITION</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;front_left&quot;</span><span class="p">,</span> <span class="s2">&quot;front_right&quot;</span><span class="p">,</span> <span class="s2">&quot;rear_left&quot;</span><span class="p">,</span> <span class="s2">&quot;rear_right&quot;</span><span class="p">]</span>
+<span class="n">MOTOR_NAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;motor_front_left_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;motor_front_left_leg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;foot_motor_front_left&quot;</span><span class="p">,</span> <span class="s2">&quot;motor_front_right_shoulder&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;motor_front_right_leg&quot;</span><span class="p">,</span> <span class="s2">&quot;foot_motor_front_right&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;motor_rear_left_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;motor_rear_left_leg&quot;</span><span class="p">,</span> <span class="s2">&quot;foot_motor_rear_left&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;motor_rear_right_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;motor_rear_right_leg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;foot_motor_rear_right&quot;</span>
+<span class="p">]</span>
+
+<span class="n">MOTOR_LIMITS_BY_NAME</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">MOTOR_NAMES</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;shoulder&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">MOTOR_LIMITS_BY_NAME</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s2">&quot;leg&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">MOTOR_LIMITS_BY_NAME</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.17</span><span class="p">,</span> <span class="mf">0.97</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s2">&quot;foot&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">MOTOR_LIMITS_BY_NAME</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">2.59</span><span class="p">]</span>
+
+<span class="n">FOOT_NAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;front_left_toe&quot;</span><span class="p">,</span> <span class="s2">&quot;front_right_toe&quot;</span><span class="p">,</span> <span class="s2">&quot;rear_left_toe&quot;</span><span class="p">,</span> <span class="s2">&quot;rear_right_toe&quot;</span>
+<span class="p">]</span>
+
+<span class="n">_CHASSIS_NAME_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;chassis\D*&quot;</span><span class="p">)</span>
+<span class="n">_MOTOR_NAME_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;motor\D*&quot;</span><span class="p">)</span>
+<span class="n">_FOOT_NAME_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;foot_motor\D*&quot;</span><span class="p">)</span>
+<span class="n">SENSOR_NOISE_STDDEV</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">TWO_PI</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+
+
+<div class="viewcode-block" id="MapToMinusPiToPi"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.MapToMinusPiToPi">[docs]</a><span class="k">def</span> <span class="nf">MapToMinusPiToPi</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Maps a list of angles to [-pi, pi].</span>
+
+<span class="sd">  Args:</span>
+<span class="sd">    angles: A list of angles in rad.</span>
+<span class="sd">  Returns:</span>
+<span class="sd">    A list of angle mapped to [-pi, pi].</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+    <span class="n">mapped_angles</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">angles</span><span class="p">)):</span>
+        <span class="n">mapped_angles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">fmod</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">TWO_PI</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mapped_angles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+            <span class="n">mapped_angles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">TWO_PI</span>
+        <span class="k">elif</span> <span class="n">mapped_angles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+            <span class="n">mapped_angles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">TWO_PI</span>
+    <span class="k">return</span> <span class="n">mapped_angles</span></div>
+
+
+<div class="viewcode-block" id="Spot"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot">[docs]</a><span class="k">class</span> <span class="nc">Spot</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The spot class that simulates a quadruped robot.</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+    <span class="n">INIT_POSES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;stand&#39;</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="o">-</span><span class="mf">0.15192765</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7552236</span><span class="p">,</span> <span class="mf">1.5104472</span><span class="p">,</span> <span class="mf">0.15192765</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7552236</span><span class="p">,</span>
+            <span class="mf">1.5104472</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.15192765</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7552236</span><span class="p">,</span> <span class="mf">1.5104472</span><span class="p">,</span> <span class="mf">0.15192765</span><span class="p">,</span>
+            <span class="o">-</span><span class="mf">0.7552236</span><span class="p">,</span> <span class="mf">1.5104472</span>
+        <span class="p">]),</span>
+        <span class="s1">&#39;liedown&#39;</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">pybullet_client</span><span class="p">,</span>
+                 <span class="n">urdf_root</span><span class="o">=</span><span class="n">pybullet_data</span><span class="o">.</span><span class="n">getDataPath</span><span class="p">(),</span>
+                 <span class="n">time_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                 <span class="n">action_repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">self_collision_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">motor_velocity_limit</span><span class="o">=</span><span class="mf">9.7</span><span class="p">,</span>
+                 <span class="n">pd_control_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">accurate_motor_model_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">remove_default_joint_damping</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">max_force</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
+                 <span class="n">motor_kp</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">motor_kd</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
+                 <span class="n">pd_latency</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">control_latency</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">observation_noise_stdev</span><span class="o">=</span><span class="n">SENSOR_NOISE_STDDEV</span><span class="p">,</span>
+                 <span class="n">torque_control_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">motor_overheat_protection</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">on_rack</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">kd_for_pd_controllers</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+                 <span class="n">pose_id</span><span class="o">=</span><span class="s1">&#39;stand&#39;</span><span class="p">,</span>
+                 <span class="n">np_random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a spot and reset it to the initial states.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      pybullet_client: The instance of BulletClient to manage different</span>
+<span class="sd">        simulations.</span>
+<span class="sd">      urdf_root: The path to the urdf folder.</span>
+<span class="sd">      time_step: The time step of the simulation.</span>
+<span class="sd">      action_repeat: The number of ApplyAction() for each control step.</span>
+<span class="sd">      self_collision_enabled: Whether to enable self collision.</span>
+<span class="sd">      motor_velocity_limit: The upper limit of the motor velocity.</span>
+<span class="sd">      pd_control_enabled: Whether to use PD control for the motors.</span>
+<span class="sd">      accurate_motor_model_enabled: Whether to use the accurate DC motor model.</span>
+<span class="sd">      remove_default_joint_damping: Whether to remove the default joint damping.</span>
+<span class="sd">      motor_kp: proportional gain for the accurate motor model.</span>
+<span class="sd">      motor_kd: derivative gain for the accurate motor model.</span>
+<span class="sd">      pd_latency: The latency of the observations (in seconds) used to calculate</span>
+<span class="sd">        PD control. On the real hardware, it is the latency between the</span>
+<span class="sd">        microcontroller and the motor controller.</span>
+<span class="sd">      control_latency: The latency of the observations (in second) used to</span>
+<span class="sd">        calculate action. On the real hardware, it is the latency from the motor</span>
+<span class="sd">        controller, the microcontroller to the host (Nvidia TX2).</span>
+<span class="sd">      observation_noise_stdev: The standard deviation of a Gaussian noise model</span>
+<span class="sd">        for the sensor. It should be an array for separate sensors in the</span>
+<span class="sd">        following order [motor_angle, motor_velocity, motor_torque,</span>
+<span class="sd">        base_roll_pitch_yaw, base_angular_velocity]</span>
+<span class="sd">      torque_control_enabled: Whether to use the torque control, if set to</span>
+<span class="sd">        False, pose control will be used.</span>
+<span class="sd">      motor_overheat_protection: Whether to shutdown the motor that has exerted</span>
+<span class="sd">        large torque (OVERHEAT_SHUTDOWN_TORQUE) for an extended amount of time</span>
+<span class="sd">        (OVERHEAT_SHUTDOWN_TIME). See ApplyAction() in spot.py for more</span>
+<span class="sd">        details.</span>
+<span class="sd">      on_rack: Whether to place the spot on rack. This is only used to debug</span>
+<span class="sd">        the walking gait. In this mode, the spot&#39;s base is hanged midair so</span>
+<span class="sd">        that its walking gait is clearer to visualize.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="c1"># SPOT MODEL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spot</span> <span class="o">=</span> <span class="n">SpotModel</span><span class="p">()</span>
+        <span class="c1"># Control Inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1"># Leg Phases</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LegPhases</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+        <span class="c1"># used to calculate minitaur acceleration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_leg</span> <span class="o">=</span> <span class="n">INIT_LEG_POS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_foot</span> <span class="o">=</span> <span class="n">INIT_FOOT_POS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_ang_twist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_lin_twist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_lin_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span> <span class="o">=</span> <span class="mi">12</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_legs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span> <span class="o">=</span> <span class="n">pybullet_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span> <span class="o">=</span> <span class="n">action_repeat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_urdf_root</span> <span class="o">=</span> <span class="n">urdf_root</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_self_collision_enabled</span> <span class="o">=</span> <span class="n">self_collision_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_velocity_limit</span> <span class="o">=</span> <span class="n">motor_velocity_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span> <span class="o">=</span> <span class="n">pd_control_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observed_motor_torques</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_applied_motor_torques</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_force</span> <span class="o">=</span> <span class="n">max_force</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pd_latency</span> <span class="o">=</span> <span class="n">pd_latency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_latency</span> <span class="o">=</span> <span class="n">control_latency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_noise_stdev</span> <span class="o">=</span> <span class="n">observation_noise_stdev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span> <span class="o">=</span> <span class="n">accurate_motor_model_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_default_joint_damping</span> <span class="o">=</span> <span class="n">remove_default_joint_damping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_observation</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_torque_control_enabled</span> <span class="o">=</span> <span class="n">torque_control_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_overheat_protection</span> <span class="o">=</span> <span class="n">motor_overheat_protection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_rack</span> <span class="o">=</span> <span class="n">on_rack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pose_id</span> <span class="o">=</span> <span class="n">pose_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">np_random</span> <span class="o">=</span> <span class="n">np_random</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kp</span> <span class="o">=</span> <span class="n">motor_kp</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span> <span class="o">=</span> <span class="n">motor_kd</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_motor_model</span> <span class="o">=</span> <span class="n">motor</span><span class="o">.</span><span class="n">MotorModel</span><span class="p">(</span>
+                <span class="n">torque_control_enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_torque_control_enabled</span><span class="p">,</span>
+                <span class="n">kp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_kp</span><span class="p">,</span>
+                <span class="n">kd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_kd</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kp</span> <span class="o">=</span> <span class="mi">8</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span> <span class="o">=</span> <span class="n">kd_for_pd_controllers</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kp</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">time_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># reset_time=-1.0 means skipping the reset motion.</span>
+        <span class="c1"># See Reset for more details.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Reset</span><span class="p">(</span><span class="n">reset_time</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_on_rack_position</span> <span class="o">=</span> <span class="n">INIT_RACK_POSITION</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_position</span> <span class="o">=</span> <span class="n">INIT_POSITION</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">INIT_POSES</span><span class="p">[</span><span class="n">pose_id</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_RecordMassInfoFromURDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_mass_urdf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">chassis_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_base_mass_urdf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getDynamicsInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                      <span class="n">chassis_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_masses_urdf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">leg_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_leg_masses_urdf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getDynamicsInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                      <span class="n">leg_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">motor_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_leg_masses_urdf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getDynamicsInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                      <span class="n">motor_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Spot.GetBaseMassFromURDF"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBaseMassFromURDF">[docs]</a>    <span class="k">def</span> <span class="nf">GetBaseMassFromURDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the mass of the base from the URDF file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_mass_urdf</span></div>
+
+<div class="viewcode-block" id="Spot.SetBaseMass"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetBaseMass">[docs]</a>    <span class="k">def</span> <span class="nf">SetBaseMass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_mass</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                                 <span class="n">mass</span><span class="o">=</span><span class="n">base_mass</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
+
+    <span class="k">def</span> <span class="nf">_RecordInertiaInfoFromURDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Record the inertia of each body from URDF file.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_urdf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">num_bodies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getNumJoints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">body_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_bodies</span><span class="p">):</span>  <span class="c1"># -1 is for the base link.</span>
+            <span class="n">inertia</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getDynamicsInfo</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">body_id</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_urdf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inertia</span><span class="p">)</span>
+        <span class="c1"># We need to use id+1 to index self._link_urdf because it has the base</span>
+        <span class="c1"># (index = -1) at the first element.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_inertia_urdf</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_urdf</span><span class="p">[</span><span class="n">chassis_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">chassis_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_inertia_urdf</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_urdf</span><span class="p">[</span><span class="n">leg_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">leg_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_inertia_urdf</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_urdf</span><span class="p">[</span><span class="n">motor_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">motor_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span>
+        <span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_BuildJointNameToIdDict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_joints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getNumJoints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_joints</span><span class="p">):</span>
+            <span class="n">joint_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getJointInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="n">joint_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span>
+                <span class="s2">&quot;UTF-8&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">joint_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_BuildMotorIdList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_id_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="n">motor_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">motor_name</span> <span class="ow">in</span> <span class="n">MOTOR_NAMES</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_BuildFootIdList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_foot_id_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="n">foot_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">foot_name</span> <span class="ow">in</span> <span class="n">FOOT_NAMES</span>
+        <span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_BuildUrdfIds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build the link Ids from its name in the URDF file.&quot;&quot;&quot;</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lg</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">num_joints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getNumJoints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># the self._leg_link_ids include both the upper and lower links of the leg.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_joints</span><span class="p">):</span>
+            <span class="n">joint_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getJointInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">joint_name</span> <span class="o">=</span> <span class="n">joint_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
+            <span class="n">joint_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="n">joint_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">_CHASSIS_NAME_PATTERN</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">joint_name</span><span class="p">):</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_id</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">_MOTOR_NAME_PATTERN</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">joint_name</span><span class="p">):</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_id</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">_FOOT_NAME_PATTERN</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">joint_name</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Spot.Reset"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.Reset">[docs]</a>    <span class="k">def</span> <span class="nf">Reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">reload_urdf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">default_motor_angles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">reset_time</span><span class="o">=</span><span class="mf">3.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the spot to its initial states.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      reload_urdf: Whether to reload the urdf file. If not, Reset() just place</span>
+<span class="sd">        the spot back to its starting position.</span>
+<span class="sd">      default_motor_angles: The default motor angles. If it is None, spot</span>
+<span class="sd">        will hold a default pose for 100 steps. In</span>
+<span class="sd">        torque control mode, the phase of holding the default pose is skipped.</span>
+<span class="sd">      reset_time: The duration (in seconds) to hold the default motor angles. If</span>
+<span class="sd">        reset_time &lt;= 0 or in torque control mode, the phase of holding the</span>
+<span class="sd">        default pose is skipped.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_rack</span><span class="p">:</span>
+            <span class="n">init_position</span> <span class="o">=</span> <span class="n">INIT_RACK_POSITION</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">init_position</span> <span class="o">=</span> <span class="n">INIT_POSITION</span>
+
+        <span class="k">if</span> <span class="n">reload_urdf</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_self_collision_enabled</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">loadURDF</span><span class="p">(</span>
+                    <span class="n">pybullet_data</span><span class="o">.</span><span class="n">getDataPath</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/assets/urdf/spot.urdf&quot;</span><span class="p">,</span>
+                    <span class="n">init_position</span><span class="p">,</span>
+                    <span class="n">INIT_ORIENTATION</span><span class="p">,</span>
+                    <span class="n">useFixedBase</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_rack</span><span class="p">,</span>
+                    <span class="n">flags</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">URDF_USE_SELF_COLLISION</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">loadURDF</span><span class="p">(</span>
+                    <span class="n">pybullet_data</span><span class="o">.</span><span class="n">getDataPath</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/assets/urdf/spot.urdf&quot;</span><span class="p">,</span>
+                    <span class="n">init_position</span><span class="p">,</span>
+                    <span class="n">INIT_ORIENTATION</span><span class="p">,</span>
+                    <span class="n">useFixedBase</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_rack</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_BuildJointNameToIdDict</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_BuildUrdfIds</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_default_joint_damping</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_RemoveDefaultJointDamping</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_BuildMotorIdList</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_BuildFootIdList</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_RecordMassInfoFromURDF</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_RecordInertiaInfoFromURDF</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ResetPose</span><span class="p">(</span><span class="n">add_constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetBasePositionAndOrientation</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">init_position</span><span class="p">,</span> <span class="n">INIT_ORIENTATION</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetBaseVelocity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                                    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="c1"># self._pybullet_client.changeDynamics(self.quadruped, -1, lateralFriction=0.8)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ResetPose</span><span class="p">(</span><span class="n">add_constraint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overheat_counter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_enabled_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Perform reset motion within reset_duration if in position control mode.</span>
+        <span class="c1"># Nothing is performed if in torque control mode for now.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">reset_time</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">default_motor_angles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RealisticObservation</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ApplyAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_pose</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">stepSimulation</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">RealisticObservation</span><span class="p">()</span>
+            <span class="n">num_steps_to_reset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">reset_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_steps_to_reset</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ApplyAction</span><span class="p">(</span><span class="n">default_motor_angles</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">stepSimulation</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">RealisticObservation</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RealisticObservation</span><span class="p">()</span>
+
+        <span class="c1"># Set Foot Friction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetFootFriction</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_RemoveDefaultJointDamping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_joints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getNumJoints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_joints</span><span class="p">):</span>
+            <span class="n">joint_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getJointInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span><span class="n">joint_info</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                 <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                                 <span class="n">linearDamping</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                                 <span class="n">angularDamping</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_SetMotorTorqueById</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor_id</span><span class="p">,</span> <span class="n">torque</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setJointMotorControl2</span><span class="p">(</span>
+            <span class="n">bodyIndex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+            <span class="n">jointIndex</span><span class="o">=</span><span class="n">motor_id</span><span class="p">,</span>
+            <span class="n">controlMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">TORQUE_CONTROL</span><span class="p">,</span>
+            <span class="n">force</span><span class="o">=</span><span class="n">torque</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_SetDesiredMotorAngleById</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor_id</span><span class="p">,</span> <span class="n">desired_angle</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setJointMotorControl2</span><span class="p">(</span>
+                <span class="n">bodyIndex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                <span class="n">jointIndex</span><span class="o">=</span><span class="n">motor_id</span><span class="p">,</span>
+                <span class="n">controlMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">POSITION_CONTROL</span><span class="p">,</span>
+                <span class="n">targetPosition</span><span class="o">=</span><span class="n">desired_angle</span><span class="p">,</span>
+                <span class="n">positionGain</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_kp</span><span class="p">,</span>
+                <span class="n">velocityGain</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_kd</span><span class="p">,</span>
+                <span class="n">force</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_force</span><span class="p">)</span>
+        <span class="c1"># Pybullet has a &#39;perfect&#39; joint controller with its default p,d</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setJointMotorControl2</span><span class="p">(</span>
+                <span class="n">bodyIndex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                <span class="n">jointIndex</span><span class="o">=</span><span class="n">motor_id</span><span class="p">,</span>
+                <span class="n">controlMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">POSITION_CONTROL</span><span class="p">,</span>
+                <span class="n">targetPosition</span><span class="o">=</span><span class="n">desired_angle</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_SetDesiredMotorAngleByName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor_name</span><span class="p">,</span> <span class="n">desired_angle</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_SetDesiredMotorAngleById</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="n">motor_name</span><span class="p">],</span>
+                                       <span class="n">desired_angle</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Spot.ResetPose"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.ResetPose">[docs]</a>    <span class="k">def</span> <span class="nf">ResetPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_constraint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the pose of the spot.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      add_constraint: Whether to add a constraint at the joints of two feet.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_legs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ResetPoseForLeg</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">add_constraint</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_ResetPoseForLeg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leg_id</span><span class="p">,</span> <span class="n">add_constraint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the initial pose for the leg.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      leg_id: It should be 0, 1, 2, or 3, which represents the leg at</span>
+<span class="sd">        front_left, back_left, front_right and back_right.</span>
+<span class="sd">      add_constraint: Whether to add a constraint at the joints of two feet.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="n">knee_friction_force</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">leg_position</span> <span class="o">=</span> <span class="n">LEG_POSITION</span><span class="p">[</span><span class="n">leg_id</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetJointState</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="s2">&quot;motor_&quot;</span> <span class="o">+</span> <span class="n">leg_position</span> <span class="o">+</span> <span class="s2">&quot;_shoulder&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">INIT_POSES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pose_id</span><span class="p">][</span><span class="mi">3</span> <span class="o">*</span> <span class="n">leg_id</span><span class="p">],</span>
+            <span class="n">targetVelocity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetJointState</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="s2">&quot;motor_&quot;</span> <span class="o">+</span> <span class="n">leg_position</span> <span class="o">+</span> <span class="s2">&quot;_leg&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">INIT_POSES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pose_id</span><span class="p">][</span><span class="mi">3</span> <span class="o">*</span> <span class="n">leg_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">targetVelocity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetJointState</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="s2">&quot;foot_motor_&quot;</span> <span class="o">+</span> <span class="n">leg_position</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">INIT_POSES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pose_id</span><span class="p">][</span><span class="mi">3</span> <span class="o">*</span> <span class="n">leg_id</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="n">targetVelocity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span><span class="p">:</span>
+            <span class="c1"># Disable the default motor in pybullet.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setJointMotorControl2</span><span class="p">(</span>
+                <span class="n">bodyIndex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                <span class="n">jointIndex</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="s2">&quot;motor_&quot;</span> <span class="o">+</span> <span class="n">leg_position</span> <span class="o">+</span>
+                                                   <span class="s2">&quot;_shoulder&quot;</span><span class="p">]),</span>
+                <span class="n">controlMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">VELOCITY_CONTROL</span><span class="p">,</span>
+                <span class="n">targetVelocity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">force</span><span class="o">=</span><span class="n">knee_friction_force</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setJointMotorControl2</span><span class="p">(</span>
+                <span class="n">bodyIndex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                <span class="n">jointIndex</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="s2">&quot;motor_&quot;</span> <span class="o">+</span> <span class="n">leg_position</span> <span class="o">+</span>
+                                                   <span class="s2">&quot;_leg&quot;</span><span class="p">]),</span>
+                <span class="n">controlMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">VELOCITY_CONTROL</span><span class="p">,</span>
+                <span class="n">targetVelocity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">force</span><span class="o">=</span><span class="n">knee_friction_force</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setJointMotorControl2</span><span class="p">(</span>
+                <span class="n">bodyIndex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                <span class="n">jointIndex</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_joint_name_to_id</span><span class="p">[</span><span class="s2">&quot;foot_motor_&quot;</span> <span class="o">+</span>
+                                                   <span class="n">leg_position</span><span class="p">]),</span>
+                <span class="n">controlMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">VELOCITY_CONTROL</span><span class="p">,</span>
+                <span class="n">targetVelocity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">force</span><span class="o">=</span><span class="n">knee_friction_force</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Spot.GetBasePosition"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBasePosition">[docs]</a>    <span class="k">def</span> <span class="nf">GetBasePosition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the position of spot&#39;s base.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The position of spot&#39;s base.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">position</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getBasePositionAndOrientation</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">position</span></div>
+
+<div class="viewcode-block" id="Spot.GetBaseOrientation"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBaseOrientation">[docs]</a>    <span class="k">def</span> <span class="nf">GetBaseOrientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the orientation of spot&#39;s base, represented as quaternion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The orientation of spot&#39;s base.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">orientation</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getBasePositionAndOrientation</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">orientation</span></div>
+
+<div class="viewcode-block" id="Spot.GetBaseRollPitchYaw"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBaseRollPitchYaw">[docs]</a>    <span class="k">def</span> <span class="nf">GetBaseRollPitchYaw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the rate of orientation change of the spot&#39;s base in euler angle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          rate of (roll, pitch, yaw) change of the spot&#39;s base.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getBaseVelocity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">vel</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">vel</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">vel</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]])</span></div>
+
+<div class="viewcode-block" id="Spot.GetBaseRollPitchYawRate"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBaseRollPitchYawRate">[docs]</a>    <span class="k">def</span> <span class="nf">GetBaseRollPitchYawRate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the rate of orientation change of the spot&#39;s base in euler angle.</span>
+
+<span class="sd">        This function mimicks the noisy sensor reading and adds latency.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          rate of (roll, pitch, yaw) change of the spot&#39;s base polluted by noise</span>
+<span class="sd">          and latency.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_AddSensorNoise</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_control_observation</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span> <span class="o">+</span>
+                                               <span class="mi">4</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span> <span class="o">+</span> <span class="mi">7</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation_noise_stdev</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Spot.GetBaseTwist"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBaseTwist">[docs]</a>    <span class="k">def</span> <span class="nf">GetBaseTwist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the Twist of minitaur&#39;s base.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          The Twist of the minitaur&#39;s base.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getBaseVelocity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.GetActionDimension"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetActionDimension">[docs]</a>    <span class="k">def</span> <span class="nf">GetActionDimension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the length of the action list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The length of the action list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span></div>
+
+<div class="viewcode-block" id="Spot.GetObservationUpperBound"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetObservationUpperBound">[docs]</a>    <span class="k">def</span> <span class="nf">GetObservationUpperBound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the upper bound of the observation.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          The upper bound of an observation. See GetObservation() for the details</span>
+<span class="sd">            of each element of an observation.</span>
+<span class="sd">          NOTE: Changed just like GetObservation()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetObservationDimension</span><span class="p">())</span>
+        <span class="c1"># roll, pitch</span>
+        <span class="n">upper_bound</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="c1"># acc, rate in x,y,z</span>
+        <span class="n">upper_bound</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="c1"># Leg Phases</span>
+        <span class="n">upper_bound</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span>
+        <span class="c1"># Contacts</span>
+        <span class="n">upper_bound</span><span class="p">[</span><span class="mi">12</span><span class="p">:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="n">upper_bound</span></div>
+
+<div class="viewcode-block" id="Spot.GetObservationLowerBound"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetObservationLowerBound">[docs]</a>    <span class="k">def</span> <span class="nf">GetObservationLowerBound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the lower bound of the observation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">GetObservationUpperBound</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Spot.GetObservationDimension"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetObservationDimension">[docs]</a>    <span class="k">def</span> <span class="nf">GetObservationDimension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the length of the observation list.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      The length of the observation list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetObservation</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Spot.GetObservation"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetObservation">[docs]</a>    <span class="k">def</span> <span class="nf">GetObservation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the observations of minitaur.</span>
+<span class="sd">        It includes the angles, velocities, torques and the orientation of the base.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          The observation list. observation[0:8] are motor angles. observation[8:16]</span>
+<span class="sd">          are motor velocities, observation[16:24] are motor torques.</span>
+<span class="sd">          observation[24:28] is the orientation of the base, in quaternion form.</span>
+<span class="sd">          NOTE: DIVERGES FROM STOCK MINITAUR ENV. WILL LEAVE ORIGINAL COMMENTED</span>
+<span class="sd">          For my purpose, the observation space includes Roll and Pitch, as well as</span>
+<span class="sd">          acceleration and gyroscopic rate along the x,y,z axes. All of this</span>
+<span class="sd">          information can be collected from an onboard IMU. The reward function</span>
+<span class="sd">          will contain a hidden velocity reward (fwd, bwd) which cannot be measured</span>
+<span class="sd">          and so is not included. For spinning, the gyroscopic z rate will be used</span>
+<span class="sd">          as the (explicit) velocity reward.</span>
+<span class="sd">          This version operates without motor torques, angles and velocities. Erwin</span>
+<span class="sd">          Coumans&#39; paper suggests a sparse observation space leads to higher reward</span>
+
+<span class="sd">          # NOTE: use True version for perfect data, or other for realistic data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">observation</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># GETTING TWIST IN BODY FRAME</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+        <span class="n">orn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetBaseOrientation</span><span class="p">()</span>
+        <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getEulerFromQuaternion</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">orn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="n">rpy</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">RPY</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">)</span>
+        <span class="n">R</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">TransToRp</span><span class="p">(</span><span class="n">rpy</span><span class="p">)</span>
+        <span class="n">T_wb</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">RpToTrans</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]]))</span>
+        <span class="n">T_bw</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">TransInv</span><span class="p">(</span><span class="n">T_wb</span><span class="p">)</span>
+        <span class="n">Adj_Tbw</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">Adjoint</span><span class="p">(</span><span class="n">T_bw</span><span class="p">)</span>
+
+        <span class="c1"># Get Linear and Angular Twist in WORLD FRAME</span>
+        <span class="n">lin_twist</span><span class="p">,</span> <span class="n">ang_twist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetBaseTwist</span><span class="p">()</span>
+
+        <span class="n">Vw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">ang_twist</span><span class="p">,</span> <span class="n">lin_twist</span><span class="p">))</span>
+        <span class="n">Vb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Adj_Tbw</span><span class="p">,</span> <span class="n">Vw</span><span class="p">)</span>
+
+        <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getEulerFromQuaternion</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">orn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+
+        <span class="c1"># Get linear accelerations</span>
+        <span class="n">lin_twist</span> <span class="o">=</span> <span class="o">-</span><span class="n">Vb</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="n">lin_acc</span> <span class="o">=</span> <span class="n">lin_twist</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_lin_twist</span>
+        <span class="k">if</span> <span class="n">lin_acc</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">lin_acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_lin_acc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_lin_acc</span> <span class="o">=</span> <span class="n">lin_acc</span>
+        <span class="c1"># print(&quot;LIN TWIST: &quot;, lin_twist)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_lin_twist</span> <span class="o">=</span> <span class="n">lin_twist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_ang_twist</span> <span class="o">=</span> <span class="n">Vb</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="n">ang_twist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_ang_twist</span>
+
+        <span class="c1"># Get Contacts</span>
+        <span class="n">CONTACT</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getContactPoints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">))</span>
+
+        <span class="n">FLC</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">FRC</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">BLC</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">BRC</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">CONTACT</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">CONTACT</span><span class="p">)):</span>
+                <span class="n">Contact_Link_Index</span> <span class="o">=</span> <span class="n">CONTACT</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">Contact_Link_Index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">FLC</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="c1"># print(&quot;FL CONTACT&quot;)</span>
+                <span class="k">if</span> <span class="n">Contact_Link_Index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">FRC</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="c1"># print(&quot;FR CONTACT&quot;)</span>
+                <span class="k">if</span> <span class="n">Contact_Link_Index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+                    <span class="n">BLC</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="c1"># print(&quot;BL CONTACT&quot;)</span>
+                <span class="k">if</span> <span class="n">Contact_Link_Index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_foot_id_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+                    <span class="n">BRC</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="c1"># print(&quot;BR CONTACT&quot;)</span>
+        <span class="c1"># order: roll, pitch, gyro(x,y,z), acc(x, y, z)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pitch</span><span class="p">)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ang_twist</span><span class="p">))</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">lin_acc</span><span class="p">))</span>
+        <span class="c1"># Control Input</span>
+        <span class="c1"># observation.append(self.StepLength)</span>
+        <span class="c1"># observation.append(self.StepVelocity)</span>
+        <span class="c1"># observation.append(self.LateralFraction)</span>
+        <span class="c1"># observation.append(self.YawRate)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LegPhases</span><span class="p">)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FLC</span><span class="p">)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FRC</span><span class="p">)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BLC</span><span class="p">)</span>
+        <span class="n">observation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BRC</span><span class="p">)</span>
+        <span class="c1"># print(&quot;CONTACTS: {}  {}  {}  {}&quot;.format(FLC, FRC, BLC, BRC))</span>
+        <span class="k">return</span> <span class="n">observation</span></div>
+
+<div class="viewcode-block" id="Spot.GetControlInput"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetControlInput">[docs]</a>    <span class="k">def</span> <span class="nf">GetControlInput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Store Control Input as Observation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">StepLength</span><span class="p">,</span> <span class="n">LateralFraction</span><span class="p">,</span> <span class="n">YawRate</span><span class="p">,</span> <span class="n">StepVelocity</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">return_bezier_params</span><span class="p">(</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">=</span> <span class="n">StepLength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span> <span class="o">=</span> <span class="n">StepVelocity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span> <span class="o">=</span> <span class="n">LateralFraction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span> <span class="o">=</span> <span class="n">YawRate</span></div>
+
+<div class="viewcode-block" id="Spot.GetLegPhases"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetLegPhases">[docs]</a>    <span class="k">def</span> <span class="nf">GetLegPhases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">TrajectoryGenerator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Leg phases according to TG from 0-&gt;2</span>
+<span class="sd">            0-&gt;1: Stance</span>
+<span class="sd">            1-&gt;2 Swing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LegPhases</span> <span class="o">=</span> <span class="n">TrajectoryGenerator</span><span class="o">.</span><span class="n">Phases</span></div>
+
+<div class="viewcode-block" id="Spot.GetExternalObservations"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetExternalObservations">[docs]</a>    <span class="k">def</span> <span class="nf">GetExternalObservations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">TrajectoryGenerator</span><span class="p">,</span> <span class="n">controller</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Augment State Space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetControlInput</span><span class="p">(</span><span class="n">controller</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetLegPhases</span><span class="p">(</span><span class="n">TrajectoryGenerator</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.ConvertFromLegModel"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.ConvertFromLegModel">[docs]</a>    <span class="k">def</span> <span class="nf">ConvertFromLegModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">action</span>
+
+        <span class="k">return</span> <span class="n">joint_angles</span></div>
+
+<div class="viewcode-block" id="Spot.ApplyMotorLimits"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.ApplyMotorLimits">[docs]</a>    <span class="k">def</span> <span class="nf">ApplyMotorLimits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_angles</span><span class="p">):</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="mf">0.001</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">)):</span>
+            <span class="n">LIM</span> <span class="o">=</span> <span class="n">MOTOR_LIMITS_BY_NAME</span><span class="p">[</span><span class="n">MOTOR_NAMES</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+            <span class="n">joint_angles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">LIM</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">eps</span><span class="p">,</span>
+                                      <span class="n">LIM</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">joint_angles</span></div>
+
+<div class="viewcode-block" id="Spot.ApplyAction"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.ApplyAction">[docs]</a>    <span class="k">def</span> <span class="nf">ApplyAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor_commands</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the desired motor angles to the motors of the minitaur.</span>
+<span class="sd">        The desired motor angles are clipped based on the maximum allowed velocity.</span>
+<span class="sd">        If the pd_control_enabled is True, a torque is calculated according to</span>
+<span class="sd">        the difference between current and desired joint angle, as well as the joint</span>
+<span class="sd">        velocity. This torque is exerted to the motor. For more information about</span>
+<span class="sd">        PD control, please refer to: https://en.wikipedia.org/wiki/PID_controller.</span>
+<span class="sd">        Args:</span>
+<span class="sd">          motor_commands: The eight desired motor angles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># FIRST, APPLY MOTOR LIMITS:</span>
+        <span class="n">motor_commands</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ApplyMotorLimits</span><span class="p">(</span><span class="n">motor_commands</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_velocity_limit</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+            <span class="n">current_motor_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetMotorAngles</span><span class="p">()</span>
+            <span class="n">motor_commands_max</span> <span class="o">=</span> <span class="p">(</span><span class="n">current_motor_angle</span> <span class="o">+</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_velocity_limit</span><span class="p">)</span>
+            <span class="n">motor_commands_min</span> <span class="o">=</span> <span class="p">(</span><span class="n">current_motor_angle</span> <span class="o">-</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_velocity_limit</span><span class="p">)</span>
+            <span class="n">motor_commands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">motor_commands</span><span class="p">,</span> <span class="n">motor_commands_min</span><span class="p">,</span>
+                                     <span class="n">motor_commands_max</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetMotorAngles</span><span class="p">()</span>
+            <span class="n">qdot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetMotorVelocities</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+                <span class="n">actual_torque</span><span class="p">,</span> <span class="n">observed_torque</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_model</span><span class="o">.</span><span class="n">convert_to_torque</span><span class="p">(</span>
+                    <span class="n">motor_commands</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">qdot</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_overheat_protection</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">actual_torque</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">OVERHEAT_SHUTDOWN_TORQUE</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_overheat_counter</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_overheat_counter</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_overheat_counter</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span>
+                                <span class="n">OVERHEAT_SHUTDOWN_TIME</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_motor_enabled_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="c1"># The torque is already in the observation space because we use</span>
+                <span class="c1"># GetMotorAngles and GetMotorVelocities.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_observed_motor_torques</span> <span class="o">=</span> <span class="n">observed_torque</span>
+
+                <span class="c1"># Transform into the motor space when applying the torque.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_applied_motor_torque</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                    <span class="n">actual_torque</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_direction</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">motor_id</span><span class="p">,</span> <span class="n">motor_torque</span><span class="p">,</span> <span class="n">motor_enabled</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_id_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_applied_motor_torque</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_motor_enabled_list</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">motor_enabled</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_SetMotorTorqueById</span><span class="p">(</span><span class="n">motor_id</span><span class="p">,</span> <span class="n">motor_torque</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_SetMotorTorqueById</span><span class="p">(</span><span class="n">motor_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">torque_commands</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_kp</span> <span class="o">*</span> <span class="p">(</span>
+                    <span class="n">q</span> <span class="o">-</span> <span class="n">motor_commands</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span> <span class="o">*</span> <span class="n">qdot</span>
+
+                <span class="c1"># The torque is already in the observation space because we use</span>
+                <span class="c1"># GetMotorAngles and GetMotorVelocities.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_observed_motor_torques</span> <span class="o">=</span> <span class="n">torque_commands</span>
+
+                <span class="c1"># Transform into the motor space when applying the torque.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_applied_motor_torques</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_observed_motor_torques</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_direction</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">motor_id</span><span class="p">,</span> <span class="n">motor_torque</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_motor_id_list</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">_applied_motor_torques</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_SetMotorTorqueById</span><span class="p">(</span><span class="n">motor_id</span><span class="p">,</span> <span class="n">motor_torque</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">motor_commands_with_direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                <span class="n">motor_commands</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_direction</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">motor_id</span><span class="p">,</span> <span class="n">motor_command_with_direction</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_motor_id_list</span><span class="p">,</span> <span class="n">motor_commands_with_direction</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_SetDesiredMotorAngleById</span><span class="p">(</span><span class="n">motor_id</span><span class="p">,</span>
+                                               <span class="n">motor_command_with_direction</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.Step"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.Step">[docs]</a>    <span class="k">def</span> <span class="nf">Step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ApplyAction</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">stepSimulation</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RealisticObservation</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_step_counter</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Spot.GetTimeSinceReset"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetTimeSinceReset">[docs]</a>    <span class="k">def</span> <span class="nf">GetTimeSinceReset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_counter</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span></div>
+
+<div class="viewcode-block" id="Spot.GetMotorAngles"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetMotorAngles">[docs]</a>    <span class="k">def</span> <span class="nf">GetMotorAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the eight motor angles at the current moment, mapped to [-pi, pi].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Motor angles, mapped to [-pi, pi].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">motor_angles</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getJointState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">motor_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">motor_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_id_list</span>
+        <span class="p">]</span>
+        <span class="n">motor_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">motor_angles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_direction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MapToMinusPiToPi</span><span class="p">(</span><span class="n">motor_angles</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.GetMotorVelocities"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetMotorVelocities">[docs]</a>    <span class="k">def</span> <span class="nf">GetMotorVelocities</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the velocity of all eight motors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Velocities of all eight motors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">motor_velocities</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getJointState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">motor_id</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">motor_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_id_list</span>
+        <span class="p">]</span>
+        <span class="n">motor_velocities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">motor_velocities</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_direction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">motor_velocities</span></div>
+
+<div class="viewcode-block" id="Spot.GetMotorTorques"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetMotorTorques">[docs]</a>    <span class="k">def</span> <span class="nf">GetMotorTorques</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the amount of torque the motors are exerting.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Motor torques of all eight motors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pd_control_enabled</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed_motor_torques</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">motor_torques</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getJointState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                    <span class="n">motor_id</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">motor_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_id_list</span>
+            <span class="p">]</span>
+            <span class="n">motor_torques</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">motor_torques</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_motor_direction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">motor_torques</span></div>
+
+<div class="viewcode-block" id="Spot.GetBaseMassesFromURDF"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBaseMassesFromURDF">[docs]</a>    <span class="k">def</span> <span class="nf">GetBaseMassesFromURDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the mass of the base from the URDF file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_mass_urdf</span></div>
+
+<div class="viewcode-block" id="Spot.GetBaseInertiasFromURDF"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetBaseInertiasFromURDF">[docs]</a>    <span class="k">def</span> <span class="nf">GetBaseInertiasFromURDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the inertia of the base from the URDF file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_inertia_urdf</span></div>
+
+<div class="viewcode-block" id="Spot.GetLegMassesFromURDF"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetLegMassesFromURDF">[docs]</a>    <span class="k">def</span> <span class="nf">GetLegMassesFromURDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the mass of the legs from the URDF file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leg_masses_urdf</span></div>
+
+<div class="viewcode-block" id="Spot.GetLegInertiasFromURDF"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetLegInertiasFromURDF">[docs]</a>    <span class="k">def</span> <span class="nf">GetLegInertiasFromURDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the inertia of the legs from the URDF file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leg_inertia_urdf</span></div>
+
+<div class="viewcode-block" id="Spot.SetBaseMasses"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetBaseMasses">[docs]</a>    <span class="k">def</span> <span class="nf">SetBaseMasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_mass</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the mass of spot&#39;s base.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          base_mass: A list of masses of each body link in CHASIS_LINK_IDS. The</span>
+<span class="sd">            length of this list should be the same as the length of CHASIS_LINK_IDS.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: It is raised when the length of base_mass is not the same as</span>
+<span class="sd">            the length of self._chassis_link_ids.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_mass</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The length of base_mass </span><span class="si">{}</span><span class="s2"> and self._chassis_link_ids </span><span class="si">{}</span><span class="s2"> are not &quot;</span>
+                <span class="s2">&quot;the same.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_mass</span><span class="p">),</span>
+                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">chassis_id</span><span class="p">,</span> <span class="n">chassis_mass</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">,</span> <span class="n">base_mass</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                 <span class="n">chassis_id</span><span class="p">,</span>
+                                                 <span class="n">mass</span><span class="o">=</span><span class="n">chassis_mass</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetLegMasses"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetLegMasses">[docs]</a>    <span class="k">def</span> <span class="nf">SetLegMasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leg_masses</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the mass of the legs.</span>
+<span class="sd">        Args:</span>
+<span class="sd">          leg_masses: The leg and motor masses for all the leg links and motors.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: It is raised when the length of masses is not equal to number</span>
+<span class="sd">            of links + motors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">leg_masses</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of values passed to SetLegMasses are &quot;</span>
+                             <span class="s2">&quot;different than number of leg links and motors.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">leg_id</span><span class="p">,</span> <span class="n">leg_mass</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="p">,</span> <span class="n">leg_masses</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                 <span class="n">leg_id</span><span class="p">,</span>
+                                                 <span class="n">mass</span><span class="o">=</span><span class="n">leg_mass</span><span class="p">)</span>
+        <span class="n">motor_masses</span> <span class="o">=</span> <span class="n">leg_masses</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="p">):]</span>
+        <span class="k">for</span> <span class="n">link_id</span><span class="p">,</span> <span class="n">motor_mass</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span><span class="p">,</span> <span class="n">motor_masses</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                 <span class="n">link_id</span><span class="p">,</span>
+                                                 <span class="n">mass</span><span class="o">=</span><span class="n">motor_mass</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetBaseInertias"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetBaseInertias">[docs]</a>    <span class="k">def</span> <span class="nf">SetBaseInertias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_inertias</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the inertias of spot&#39;s base.</span>
+<span class="sd">        Args:</span>
+<span class="sd">          base_inertias: A list of inertias of each body link in CHASIS_LINK_IDS.</span>
+<span class="sd">            The length of this list should be the same as the length of</span>
+<span class="sd">            CHASIS_LINK_IDS.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: It is raised when the length of base_inertias is not the same</span>
+<span class="sd">            as the length of self._chassis_link_ids and base_inertias contains</span>
+<span class="sd">            negative values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_inertias</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The length of base_inertias </span><span class="si">{}</span><span class="s2"> and self._chassis_link_ids </span><span class="si">{}</span><span class="s2"> are &quot;</span>
+                <span class="s2">&quot;not the same.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_inertias</span><span class="p">),</span>
+                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">chassis_id</span><span class="p">,</span> <span class="n">chassis_inertia</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span><span class="p">,</span>
+                                               <span class="n">base_inertias</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">inertia_value</span> <span class="ow">in</span> <span class="n">chassis_inertia</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">inertia_value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Values in inertia matrix should be non-negative.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                <span class="n">chassis_id</span><span class="p">,</span>
+                <span class="n">localInertiaDiagonal</span><span class="o">=</span><span class="n">chassis_inertia</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetLegInertias"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetLegInertias">[docs]</a>    <span class="k">def</span> <span class="nf">SetLegInertias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leg_inertias</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the inertias of the legs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          leg_inertias: The leg and motor inertias for all the leg links and motors.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          ValueError: It is raised when the length of inertias is not equal to</span>
+<span class="sd">          the number of links + motors or leg_inertias contains negative values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">leg_inertias</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of values passed to SetLegMasses are &quot;</span>
+                             <span class="s2">&quot;different than number of leg links and motors.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">leg_id</span><span class="p">,</span> <span class="n">leg_inertia</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="p">,</span> <span class="n">leg_inertias</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">inertia_value</span> <span class="ow">in</span> <span class="n">leg_inertias</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">inertia_value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Values in inertia matrix should be non-negative.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">leg_id</span><span class="p">,</span> <span class="n">localInertiaDiagonal</span><span class="o">=</span><span class="n">leg_inertia</span><span class="p">)</span>
+
+        <span class="n">motor_inertias</span> <span class="o">=</span> <span class="n">leg_inertias</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_leg_link_ids</span><span class="p">):]</span>
+        <span class="k">for</span> <span class="n">link_id</span><span class="p">,</span> <span class="n">motor_inertia</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_motor_link_ids</span><span class="p">,</span>
+                                          <span class="n">motor_inertias</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">inertia_value</span> <span class="ow">in</span> <span class="n">motor_inertias</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">inertia_value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Values in inertia matrix should be non-negative.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span> <span class="n">link_id</span><span class="p">,</span> <span class="n">localInertiaDiagonal</span><span class="o">=</span><span class="n">motor_inertia</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetFootFriction"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetFootFriction">[docs]</a>    <span class="k">def</span> <span class="nf">SetFootFriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">foot_friction</span><span class="o">=</span><span class="mf">100.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the lateral friction of the feet.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          foot_friction: The lateral friction coefficient of the foot. This value is</span>
+<span class="sd">            shared by all four feet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">link_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                                 <span class="n">link_id</span><span class="p">,</span>
+                                                 <span class="n">lateralFriction</span><span class="o">=</span><span class="n">foot_friction</span><span class="p">)</span></div>
+
+    <span class="c1"># TODO(b/73748980): Add more API&#39;s to set other contact parameters.</span>
+<div class="viewcode-block" id="Spot.SetFootRestitution"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetFootRestitution">[docs]</a>    <span class="k">def</span> <span class="nf">SetFootRestitution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link_id</span><span class="p">,</span> <span class="n">foot_restitution</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the coefficient of restitution at the feet.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          foot_restitution: The coefficient of restitution (bounciness) of the feet.</span>
+<span class="sd">            This value is shared by all four feet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">changeDynamics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                                             <span class="n">link_id</span><span class="p">,</span>
+                                             <span class="n">restitution</span><span class="o">=</span><span class="n">foot_restitution</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetJointFriction"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetJointFriction">[docs]</a>    <span class="k">def</span> <span class="nf">SetJointFriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_frictions</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">knee_joint_id</span><span class="p">,</span> <span class="n">friction</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span><span class="p">,</span>
+                                           <span class="n">joint_frictions</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">setJointMotorControl2</span><span class="p">(</span>
+                <span class="n">bodyIndex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quadruped</span><span class="p">,</span>
+                <span class="n">jointIndex</span><span class="o">=</span><span class="n">knee_joint_id</span><span class="p">,</span>
+                <span class="n">controlMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">VELOCITY_CONTROL</span><span class="p">,</span>
+                <span class="n">targetVelocity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">force</span><span class="o">=</span><span class="n">friction</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.GetNumKneeJoints"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetNumKneeJoints">[docs]</a>    <span class="k">def</span> <span class="nf">GetNumKneeJoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_foot_link_ids</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetBatteryVoltage"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetBatteryVoltage">[docs]</a>    <span class="k">def</span> <span class="nf">SetBatteryVoltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_motor_model</span><span class="o">.</span><span class="n">set_voltage</span><span class="p">(</span><span class="n">voltage</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetMotorViscousDamping"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetMotorViscousDamping">[docs]</a>    <span class="k">def</span> <span class="nf">SetMotorViscousDamping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viscous_damping</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_motor_model</span><span class="o">.</span><span class="n">set_viscous_damping</span><span class="p">(</span><span class="n">viscous_damping</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.RealisticObservation"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.RealisticObservation">[docs]</a>    <span class="k">def</span> <span class="nf">RealisticObservation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Receive the observation from sensors.</span>
+
+<span class="sd">        This function is called once per step. The observations are only updated</span>
+<span class="sd">        when this function is called.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetObservation</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GetDelayedObservation</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_control_latency</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_AddSensorNoise</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_control_observation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_noise_stdev</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control_observation</span></div>
+
+    <span class="k">def</span> <span class="nf">_GetDelayedObservation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latency</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get observation that is delayed by the amount specified in latency.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          latency: The latency (in seconds) of the delayed observation.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">          observation: The observation which was actually latency seconds ago.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">latency</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_steps_ago</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">latency</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_steps_ago</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">remaining_latency</span> <span class="o">=</span> <span class="n">latency</span> <span class="o">-</span> <span class="n">n_steps_ago</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span>
+            <span class="n">blend_alpha</span> <span class="o">=</span> <span class="n">remaining_latency</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span>
+            <span class="n">observation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">blend_alpha</span><span class="p">)</span> <span class="o">*</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="p">[</span><span class="n">n_steps_ago</span><span class="p">])</span> <span class="o">+</span>
+                <span class="n">blend_alpha</span> <span class="o">*</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observation_history</span><span class="p">[</span><span class="n">n_steps_ago</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">observation</span>
+
+    <span class="k">def</span> <span class="nf">_GetPDObservation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pd_delayed_observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GetDelayedObservation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pd_latency</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">pd_delayed_observation</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">]</span>
+        <span class="n">qdot</span> <span class="o">=</span> <span class="n">pd_delayed_observation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">q</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">qdot</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_AddSensorNoise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">,</span> <span class="n">noise_stdev</span><span class="p">):</span>
+        <span class="c1"># if self._observation_noise_stdev &gt; 0:</span>
+        <span class="c1">#     observation += (self.np_random.normal(scale=noise_stdev,</span>
+        <span class="c1">#                                           size=observation.shape) *</span>
+        <span class="c1">#                     self.GetObservationUpperBound())</span>
+        <span class="k">return</span> <span class="n">observation</span>
+
+<div class="viewcode-block" id="Spot.SetControlLatency"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetControlLatency">[docs]</a>    <span class="k">def</span> <span class="nf">SetControlLatency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latency</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the latency of the control loop.</span>
+
+<span class="sd">        It measures the duration between sending an action from Nvidia TX2 and</span>
+<span class="sd">        receiving the observation from microcontroller.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          latency: The latency (in seconds) of the control loop.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_latency</span> <span class="o">=</span> <span class="n">latency</span></div>
+
+<div class="viewcode-block" id="Spot.GetControlLatency"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetControlLatency">[docs]</a>    <span class="k">def</span> <span class="nf">GetControlLatency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the control latency.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The latency (in seconds) between when the motor command is sent and when</span>
+<span class="sd">            the sensor measurements are reported back to the controller.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control_latency</span></div>
+
+<div class="viewcode-block" id="Spot.SetMotorGains"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetMotorGains">[docs]</a>    <span class="k">def</span> <span class="nf">SetMotorGains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kp</span><span class="p">,</span> <span class="n">kd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the gains of all motors.</span>
+
+<span class="sd">        These gains are PD gains for motor positional control. kp is the</span>
+<span class="sd">        proportional gain and kd is the derivative gain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          kp: proportional gain of the motors.</span>
+<span class="sd">          kd: derivative gain of the motors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kp</span> <span class="o">=</span> <span class="n">kp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span> <span class="o">=</span> <span class="n">kd</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_motor_model</span><span class="o">.</span><span class="n">set_motor_gains</span><span class="p">(</span><span class="n">kp</span><span class="p">,</span> <span class="n">kd</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.GetMotorGains"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.GetMotorGains">[docs]</a>    <span class="k">def</span> <span class="nf">GetMotorGains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the gains of the motor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The proportional gain.</span>
+<span class="sd">          The derivative gain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span></div>
+
+<div class="viewcode-block" id="Spot.SetMotorStrengthRatio"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetMotorStrengthRatio">[docs]</a>    <span class="k">def</span> <span class="nf">SetMotorStrengthRatio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ratio</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the strength of all motors relative to the default value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ratio: The relative strength. A scalar range from 0.0 to 1.0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_motor_model</span><span class="o">.</span><span class="n">set_strength_ratios</span><span class="p">([</span><span class="n">ratio</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_motors</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetMotorStrengthRatios"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetMotorStrengthRatios">[docs]</a>    <span class="k">def</span> <span class="nf">SetMotorStrengthRatios</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ratios</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the strength of each motor relative to the default value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ratios: The relative strength. A numpy array ranging from 0.0 to 1.0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accurate_motor_model_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_motor_model</span><span class="o">.</span><span class="n">set_strength_ratios</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Spot.SetTimeSteps"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.spot.Spot.SetTimeSteps">[docs]</a>    <span class="k">def</span> <span class="nf">SetTimeSteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_repeat</span><span class="p">,</span> <span class="n">simulation_step</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the time steps of the control and simulation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          action_repeat: The number of simulation steps that the same action is</span>
+<span class="sd">            repeated.</span>
+<span class="sd">          simulation_step: The simulation time step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">simulation_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_repeat</span> <span class="o">=</span> <span class="n">action_repeat</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">chassis_link_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chassis_link_ids</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
