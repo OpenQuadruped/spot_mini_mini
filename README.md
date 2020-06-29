@@ -2,7 +2,41 @@
 
 ![SIK](spot_bullet/media/spot-mini-mini.gif)
 
-### Kinematics and Gait:
+### Kinematics:
+
+Pybullet Environment and body manipulation with leg IK from: https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot
+
+![SIK](spot_bullet/media/spot_rpy.gif)
+
+### Reinforcement Learning
+
+#### Stability on Difficult Terrain
+An interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself.For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
+
+Here, the action space is 14-dimensional, consisting of `Clearance Height` (1), `Body Height` (1), and `Foot XYZ Residual` modulations (12). `Clearance Height` is treated through an exponential filter (`alpha = 0.7`), but all other actions are processed directly. These results were trained with only 149 epochs.
+
+Before training, the robot falls almost immediately:
+
+![FALL](spot_bullet/media/spot_rough_falls.gif)
+
+After training, the robot successfully navigates the terrain:
+
+![FALL](spot_bullet/media/spot_rough_ARS.gif)
+
+#### Drift Correction
+I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
+
+![DRIFT](spot_bullet/media/spot_drift.gif)
+
+With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observation space [`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)], an `Augmented Random Search` agent (linear) was able to correct the trajectory after 299 epochs:
+
+![NODRIFT](spot_bullet/media/spot_no_drift.gif)
+
+Here is the policy output for this demo. It's clearly biased on one end to account for Spot's drift:
+
+![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
+
+### Gait:
 
 Pybullet Environment and body manipulation with leg IK from: https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot
 
@@ -58,36 +92,6 @@ Changing `Step Length` while moving forward:
 Yaw In Place: Slightly push the `Right Stick` forward while pushing the `Left Stick` maximally in either direction:
 
 ![SVMOD](mini_ros/media/yaw_in_place.gif)
-
-
-
-### Reinforcement Learning
-
-#### Stability on Difficult Terrain
-An interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself.For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
-
-Here, the action space is 14-dimensional, consisting of `Clearance Height` (1), `Body Height` (1), and `Foot XYZ Residual` modulations (12). `Clearance Height` is treated through an exponential filter (`alpha = 0.7`), but all other actions are processed directly. These results were trained with only 149 epochs.
-
-Before training, the robot falls almost immediately:
-
-![FALL](spot_bullet/media/spot_rough_falls.gif)
-
-After training, the robot successfully navigates the terrain:
-
-![FALL](spot_bullet/media/spot_rough_ARS.gif)
-
-#### Drift Correction
-I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
-
-![DRIFT](spot_bullet/media/spot_drift.gif)
-
-With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observation space [`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)], an `Augmented Random Search` agent (linear) was able to correct the trajectory after 299 epochs:
-
-![NODRIFT](spot_bullet/media/spot_no_drift.gif)
-
-Here is the policy output for this demo. It's clearly biased on one end to account for Spot's drift:
-
-![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
 
 
 ## How To Run
