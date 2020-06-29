@@ -42,6 +42,10 @@ parser.add_argument("-ay",
                     "--AutoYaw",
                     help="Automatically Adjust Spot's Yaw",
                     action='store_true')
+parser.add_argument("-ar",
+                    "--AutoReset",
+                    help="Automatically Reset Environment When Spot Falls",
+                    action='store_true')
 ARGS = parser.parse_args()
 
 
@@ -161,7 +165,8 @@ def main():
         state, reward, done, _ = env.step(action)
         if done:
             print("DONE")
-            env.reset()
+            if ARGS.AutoReset:
+                env.reset()
             # plt.plot()
             # plt.plot(FL_phases, label="FL")
             # plt.plot(FR_phases, label="FR")

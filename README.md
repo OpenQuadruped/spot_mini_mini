@@ -122,6 +122,7 @@ If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. 
 -r, --DebugRack     Put Spot on an Elevated Rack
 -p, --DebugPath     Draw Spot's Foot Path
 -ay, --AutoYaw      Automatically Adjust Spot's Yaw
+-ar, --AutoReset    Automatically Reset Environment When Spot Falls
 ```
 
 **Reinforcement Learning Agent Evaluation**
