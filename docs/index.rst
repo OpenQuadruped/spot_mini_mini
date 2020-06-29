@@ -10,6 +10,9 @@ Welcome to spot_mini_mini's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   simulation
+   rl
+
 
 
 Indices and tables
