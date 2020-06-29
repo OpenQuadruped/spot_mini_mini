@@ -38,10 +38,6 @@ Here is the policy output for this demo. It's clearly biased on one end to accou
 
 ### Gait:
 
-Pybullet Environment and body manipulation with leg IK from: https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot
-
-![SIK](spot_bullet/media/spot_rpy.gif)
-
 Open-Loop Gait using 12-Point Bezier Curves based on: https://dspace.mit.edu/handle/1721.1/98270
 
 Forward and Lateral Motion:
