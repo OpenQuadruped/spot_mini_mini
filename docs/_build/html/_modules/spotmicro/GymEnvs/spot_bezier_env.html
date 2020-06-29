@@ -1,0 +1,375 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spotmicro.GymEnvs.spot_bezier_env &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spotmicro.GymEnvs.spot_bezier_env</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; This file implements the gym environment of SpotMicro with Bezier Curve.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pybullet</span>
+<span class="kn">import</span> <span class="nn">pybullet_data</span>
+<span class="kn">from</span> <span class="nn">gym</span> <span class="kn">import</span> <span class="n">spaces</span>
+<span class="kn">from</span> <span class="nn">gym.utils</span> <span class="kn">import</span> <span class="n">seeding</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">parse_version</span>
+<span class="kn">from</span> <span class="nn">spotmicro</span> <span class="kn">import</span> <span class="n">spot</span>
+<span class="kn">import</span> <span class="nn">pybullet_utils.bullet_client</span> <span class="k">as</span> <span class="nn">bullet_client</span>
+<span class="kn">from</span> <span class="nn">gym.envs.registration</span> <span class="kn">import</span> <span class="n">register</span>
+<span class="kn">from</span> <span class="nn">spotmicro.OpenLoopSM.SpotOL</span> <span class="kn">import</span> <span class="n">BezierStepper</span>
+<span class="kn">from</span> <span class="nn">spotmicro.spot_gym_env</span> <span class="kn">import</span> <span class="n">spotGymEnv</span>
+<span class="kn">import</span> <span class="nn">spotmicro.Kinematics.LieAlgebra</span> <span class="k">as</span> <span class="nn">LA</span>
+<span class="kn">from</span> <span class="nn">spotmicro.spot_env_randomizer</span> <span class="kn">import</span> <span class="n">SpotEnvRandomizer</span>
+
+<span class="n">SENSOR_NOISE_STDDEV</span> <span class="o">=</span> <span class="n">spot</span><span class="o">.</span><span class="n">SENSOR_NOISE_STDDEV</span>
+
+<span class="c1"># Register as OpenAI Gym Environment</span>
+<span class="n">register</span><span class="p">(</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;SpotMicroEnv-v1&quot;</span><span class="p">,</span>
+    <span class="n">entry_point</span><span class="o">=</span><span class="s1">&#39;spotmicro.GymEnvs.spot_bezier_env:spotBezierEnv&#39;</span><span class="p">,</span>
+    <span class="n">max_episode_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="spotBezierEnv"><a class="viewcode-back" href="../../../source/spotmicro.GymEnvs.html#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv">[docs]</a><span class="k">class</span> <span class="nc">spotBezierEnv</span><span class="p">(</span><span class="n">spotGymEnv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The gym environment for spot.</span>
+
+<span class="sd">  It simulates the locomotion of spot, a quadruped robot. The state space</span>
+<span class="sd">  include the angles, velocities and torques for all the motors and the action</span>
+<span class="sd">  space is the desired motor angle for each motor. The reward function is based</span>
+<span class="sd">  on how far spot walks in 1000 steps and penalizes the energy</span>
+<span class="sd">  expenditure.</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;render.modes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="s2">&quot;rgb_array&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;video.frames_per_second&quot;</span><span class="p">:</span> <span class="mi">50</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">distance_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">rotation_weight</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">energy_weight</span><span class="o">=</span><span class="mf">0.000</span><span class="p">,</span>
+                 <span class="n">shake_weight</span><span class="o">=</span><span class="mf">0.00</span><span class="p">,</span>
+                 <span class="n">drift_weight</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+                 <span class="n">rp_weight</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+                 <span class="n">rate_weight</span><span class="o">=.</span><span class="mi">05</span><span class="p">,</span>
+                 <span class="n">urdf_root</span><span class="o">=</span><span class="n">pybullet_data</span><span class="o">.</span><span class="n">getDataPath</span><span class="p">(),</span>
+                 <span class="n">urdf_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">distance_limit</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                 <span class="n">observation_noise_stdev</span><span class="o">=</span><span class="n">SENSOR_NOISE_STDDEV</span><span class="p">,</span>
+                 <span class="n">self_collision_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">motor_velocity_limit</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+                 <span class="n">pd_control_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">leg_model_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">accurate_motor_model_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">remove_default_joint_damping</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">motor_kp</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+                 <span class="n">motor_kd</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+                 <span class="n">control_latency</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">pd_latency</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">torque_control_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">motor_overheat_protection</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">hard_reset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">on_rack</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">num_steps_to_log</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                 <span class="n">action_repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">control_time_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">env_randomizer</span><span class="o">=</span><span class="n">SpotEnvRandomizer</span><span class="p">(),</span>
+                 <span class="n">forward_reward_cap</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                 <span class="n">reflection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">log_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">desired_velocity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                 <span class="n">desired_rate</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">lateral</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">draw_foot_path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">height_field</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">AutoStepper</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">action_dim</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">spotBezierEnv</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">distance_weight</span><span class="o">=</span><span class="n">distance_weight</span><span class="p">,</span>
+            <span class="n">rotation_weight</span><span class="o">=</span><span class="n">rotation_weight</span><span class="p">,</span>
+            <span class="n">energy_weight</span><span class="o">=</span><span class="n">energy_weight</span><span class="p">,</span>
+            <span class="n">shake_weight</span><span class="o">=</span><span class="n">shake_weight</span><span class="p">,</span>
+            <span class="n">drift_weight</span><span class="o">=</span><span class="n">drift_weight</span><span class="p">,</span>
+            <span class="n">rp_weight</span><span class="o">=</span><span class="n">rp_weight</span><span class="p">,</span>
+            <span class="n">rate_weight</span><span class="o">=</span><span class="n">rate_weight</span><span class="p">,</span>
+            <span class="n">urdf_root</span><span class="o">=</span><span class="n">urdf_root</span><span class="p">,</span>
+            <span class="n">urdf_version</span><span class="o">=</span><span class="n">urdf_version</span><span class="p">,</span>
+            <span class="n">distance_limit</span><span class="o">=</span><span class="n">distance_limit</span><span class="p">,</span>
+            <span class="n">observation_noise_stdev</span><span class="o">=</span><span class="n">observation_noise_stdev</span><span class="p">,</span>
+            <span class="n">self_collision_enabled</span><span class="o">=</span><span class="n">self_collision_enabled</span><span class="p">,</span>
+            <span class="n">motor_velocity_limit</span><span class="o">=</span><span class="n">motor_velocity_limit</span><span class="p">,</span>
+            <span class="n">pd_control_enabled</span><span class="o">=</span><span class="n">pd_control_enabled</span><span class="p">,</span>
+            <span class="n">leg_model_enabled</span><span class="o">=</span><span class="n">leg_model_enabled</span><span class="p">,</span>
+            <span class="n">accurate_motor_model_enabled</span><span class="o">=</span><span class="n">accurate_motor_model_enabled</span><span class="p">,</span>
+            <span class="n">remove_default_joint_damping</span><span class="o">=</span><span class="n">remove_default_joint_damping</span><span class="p">,</span>
+            <span class="n">motor_kp</span><span class="o">=</span><span class="n">motor_kp</span><span class="p">,</span>
+            <span class="n">motor_kd</span><span class="o">=</span><span class="n">motor_kd</span><span class="p">,</span>
+            <span class="n">control_latency</span><span class="o">=</span><span class="n">control_latency</span><span class="p">,</span>
+            <span class="n">pd_latency</span><span class="o">=</span><span class="n">pd_latency</span><span class="p">,</span>
+            <span class="n">torque_control_enabled</span><span class="o">=</span><span class="n">torque_control_enabled</span><span class="p">,</span>
+            <span class="n">motor_overheat_protection</span><span class="o">=</span><span class="n">motor_overheat_protection</span><span class="p">,</span>
+            <span class="n">hard_reset</span><span class="o">=</span><span class="n">hard_reset</span><span class="p">,</span>
+            <span class="n">on_rack</span><span class="o">=</span><span class="n">on_rack</span><span class="p">,</span>
+            <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">,</span>
+            <span class="n">num_steps_to_log</span><span class="o">=</span><span class="n">num_steps_to_log</span><span class="p">,</span>
+            <span class="n">action_repeat</span><span class="o">=</span><span class="n">action_repeat</span><span class="p">,</span>
+            <span class="n">control_time_step</span><span class="o">=</span><span class="n">control_time_step</span><span class="p">,</span>
+            <span class="n">env_randomizer</span><span class="o">=</span><span class="n">env_randomizer</span><span class="p">,</span>
+            <span class="n">forward_reward_cap</span><span class="o">=</span><span class="n">forward_reward_cap</span><span class="p">,</span>
+            <span class="n">reflection</span><span class="o">=</span><span class="n">reflection</span><span class="p">,</span>
+            <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">,</span>
+            <span class="n">desired_velocity</span><span class="o">=</span><span class="n">desired_velocity</span><span class="p">,</span>
+            <span class="n">desired_rate</span><span class="o">=</span><span class="n">desired_rate</span><span class="p">,</span>
+            <span class="n">lateral</span><span class="o">=</span><span class="n">lateral</span><span class="p">,</span>
+            <span class="n">draw_foot_path</span><span class="o">=</span><span class="n">draw_foot_path</span><span class="p">,</span>
+            <span class="n">height_field</span><span class="o">=</span><span class="n">height_field</span><span class="p">,</span>
+            <span class="n">AutoStepper</span><span class="o">=</span><span class="n">AutoStepper</span><span class="p">)</span>
+
+        <span class="c1"># Residuals + Clearance Height + Penetration Depth</span>
+        <span class="n">action_high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_bound</span><span class="p">]</span> <span class="o">*</span> <span class="n">action_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="o">-</span><span class="n">action_high</span><span class="p">,</span> <span class="n">action_high</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Action SPACE: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">yaw</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<div class="viewcode-block" id="spotBezierEnv.pass_joint_angles"><a class="viewcode-back" href="../../../source/spotmicro.GymEnvs.html#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.pass_joint_angles">[docs]</a>    <span class="k">def</span> <span class="nf">pass_joint_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ja</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; For executing joint angles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ja</span> <span class="o">=</span> <span class="n">ja</span></div>
+
+<div class="viewcode-block" id="spotBezierEnv.step"><a class="viewcode-back" href="../../../source/spotmicro.GymEnvs.html#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Step forward the simulation, given the action.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      action: A list of desired motor angles for eight motors.</span>
+<span class="sd">      smach: the bezier state machine containing simulated</span>
+<span class="sd">             random controll inputs</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      observations: The angles, velocities and torques of all motors.</span>
+<span class="sd">      reward: The reward for the current state-action pair.</span>
+<span class="sd">      done: Whether the episode has ended.</span>
+<span class="sd">      info: A dictionary that stores diagnostic information.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: The action dimension is not the same as the number of motors.</span>
+<span class="sd">      ValueError: The magnitude of actions is out of bounds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="c1"># Discard all but joint angles</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ja</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_base_orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBaseOrientation</span><span class="p">()</span>
+        <span class="c1"># print(&quot;ACTION:&quot;)</span>
+        <span class="c1"># print(action)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_render</span><span class="p">:</span>
+            <span class="c1"># Sleep, otherwise the computation takes less time than real time,</span>
+            <span class="c1"># which will make the visualization like a fast-forward video.</span>
+            <span class="n">time_spent</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame_time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last_frame_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">time_to_sleep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_time_step</span> <span class="o">-</span> <span class="n">time_spent</span>
+            <span class="k">if</span> <span class="n">time_to_sleep</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time_to_sleep</span><span class="p">)</span>
+            <span class="n">base_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+            <span class="c1"># Keep the previous orientation of the camera set by the user.</span>
+            <span class="p">[</span><span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span>
+             <span class="n">dist</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getDebugVisualizerCamera</span><span class="p">()[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">resetDebugVisualizerCamera</span><span class="p">(</span>
+                <span class="n">dist</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">base_pos</span><span class="p">)</span>
+
+        <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_action_to_motor_command</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">Step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="c1"># NOTE: SMACH is passed to the reward method</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reward</span><span class="p">()</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_termination</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_step_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># DRAW FOOT PATH</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">draw_foot_path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DrawFootPath</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_observation</span><span class="p">()),</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="spotBezierEnv.return_state"><a class="viewcode-back" href="../../../source/spotmicro.GymEnvs.html#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.return_state">[docs]</a>    <span class="k">def</span> <span class="nf">return_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_observation</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="spotBezierEnv.return_yaw"><a class="viewcode-back" href="../../../source/spotmicro.GymEnvs.html#spotmicro.GymEnvs.spot_bezier_env.spotBezierEnv.return_yaw">[docs]</a>    <span class="k">def</span> <span class="nf">return_yaw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">yaw</span></div>
+
+    <span class="k">def</span> <span class="nf">_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># get observation</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_observation</span><span class="p">()</span>
+
+        <span class="n">orn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBaseOrientation</span><span class="p">()</span>
+
+        <span class="c1"># Return StepVelocity with the sign of StepLength</span>
+        <span class="n">DesiredVelicty</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">copysign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">StepVelocity</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">StepLength</span><span class="p">)</span>
+
+        <span class="n">fwd_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">prev_lin_twist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># vx</span>
+        <span class="n">lat_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">prev_lin_twist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># vy</span>
+
+        <span class="c1"># DEBUG</span>
+        <span class="n">lt</span><span class="p">,</span> <span class="n">at</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBaseTwist</span><span class="p">()</span>
+
+        <span class="c1"># ONLY WORKS FOR MOVING PURELY FORWARD</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetBasePosition</span><span class="p">()</span>
+
+        <span class="n">forward_reward</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># yaw_rate = obs[4]</span>
+
+        <span class="n">rot_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pybullet_client</span><span class="o">.</span><span class="n">getEulerFromQuaternion</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">orn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">orn</span><span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+
+        <span class="k">if</span> <span class="n">yaw</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">yaw</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">yaw</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="c1"># penalty for nonzero PITCH and YAW(hidden) ONLY</span>
+        <span class="c1"># NOTE: Added Yaw mult</span>
+        <span class="n">rp_reward</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># For auto correct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yaw</span> <span class="o">=</span> <span class="n">yaw</span>
+
+        <span class="c1"># print(&quot;YAW: {}&quot;.format(yaw))</span>
+        <span class="c1"># print(&quot;RP RWD: {:.2f}&quot;.format(rp_reward))</span>
+        <span class="c1"># print(&quot;ROLL: {} \t PITCH: {}&quot;.format(obs[0], obs[1]))</span>
+
+        <span class="c1"># penalty for nonzero acc(z) - UNRELIABLE ON IMU</span>
+        <span class="n">shake_reward</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># penalty for nonzero rate (x,y,z)</span>
+        <span class="n">rate_reward</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+
+        <span class="c1"># print(&quot;RATES: {}&quot;.format(obs[2:5]))</span>
+
+        <span class="n">drift_reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">energy_reward</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetMotorTorques</span><span class="p">(),</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">spot</span><span class="o">.</span><span class="n">GetMotorVelocities</span><span class="p">()))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_weight</span> <span class="o">*</span> <span class="n">forward_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_weight</span> <span class="o">*</span> <span class="n">rot_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_energy_weight</span> <span class="o">*</span> <span class="n">energy_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_drift_weight</span> <span class="o">*</span> <span class="n">drift_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_shake_weight</span> <span class="o">*</span> <span class="n">shake_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_rp_weight</span> <span class="o">*</span> <span class="n">rp_reward</span> <span class="o">+</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_rate_weight</span> <span class="o">*</span> <span class="n">rate_reward</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">forward_reward</span><span class="p">,</span> <span class="n">energy_reward</span><span class="p">,</span> <span class="n">drift_reward</span><span class="p">,</span> <span class="n">shake_reward</span><span class="p">])</span>
+        <span class="c1"># print(&quot;REWARD: &quot;, reward)</span>
+        <span class="c1"># NOTE: return yaw for automatic correction (not part of RL)</span>
+        <span class="k">return</span> <span class="n">reward</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

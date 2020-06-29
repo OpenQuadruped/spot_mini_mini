@@ -1,0 +1,360 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spotmicro.OpenLoopSM.SpotOL &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spotmicro.OpenLoopSM.SpotOL</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Open Loop Controller for Spot Micro. Takes GUI params or uses default</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">shuffle</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="c1"># Ensuring totally random seed every step!</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+
+<span class="n">FB</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">LAT</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">ROT</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">COMBI</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">FWD</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">ALL</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="BezierStepper"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper">[docs]</a><span class="k">class</span> <span class="nc">BezierStepper</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
+                 <span class="n">orn</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
+                 <span class="n">StepLength</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+                 <span class="n">LateralFraction</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">YawRate</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">StepVelocity</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">ClearanceHeight</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+                 <span class="n">PenetrationDepth</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+                 <span class="n">episode_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+                 <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                 <span class="n">num_shuffles</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">mode</span><span class="o">=</span><span class="n">FWD</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orn</span> <span class="o">=</span> <span class="n">orn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desired_StepLength</span> <span class="o">=</span> <span class="n">StepLength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">=</span> <span class="n">StepLength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span> <span class="o">=</span> <span class="n">LateralFraction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction_LIMITS</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span> <span class="o">=</span> <span class="n">YawRate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YawRate_LIMITS</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span> <span class="o">=</span> <span class="n">StepVelocity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity_LIMITS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ClearanceHeight</span> <span class="o">=</span> <span class="n">ClearanceHeight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ClearanceHeight_LIMITS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PenetrationDepth</span> <span class="o">=</span> <span class="n">PenetrationDepth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PenetrationDepth_LIMITS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+
+        <span class="c1"># Keep track of state machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Decide how long to stay in each phase based on maxtime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">episode_length</span>
+        <span class="sd">&quot;&quot;&quot; States</span>
+<span class="sd">                1: FWD/BWD</span>
+<span class="sd">                2: Lat</span>
+<span class="sd">                3: Rot</span>
+<span class="sd">                4: Combined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="p">[</span><span class="n">FB</span><span class="p">,</span> <span class="n">LAT</span><span class="p">,</span> <span class="n">ROT</span><span class="p">,</span> <span class="n">COMBI</span><span class="p">]</span>
+        <span class="c1"># Shuffles list in place so the order of states is unpredictable</span>
+        <span class="c1"># NOTE: increment num_shuffles by episode num (cap at 10</span>
+        <span class="c1"># and reset or someting) for some forced randomness</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_shuffles</span><span class="p">):</span>
+            <span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+
+        <span class="c1"># Forward/Backward always needs to be first!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reshuffle</span><span class="p">()</span>
+
+        <span class="c1"># Current State</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Divide by number of states (see RL_SM())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_per_episode</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">))</span>
+
+<div class="viewcode-block" id="BezierStepper.ramp_up"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.ramp_up">[docs]</a>    <span class="k">def</span> <span class="nf">ramp_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_StepLength</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_StepLength</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span></div>
+
+<div class="viewcode-block" id="BezierStepper.reshuffle"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.reshuffle">[docs]</a>    <span class="k">def</span> <span class="nf">reshuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Make sure FWD/BWD is always first state</span>
+        <span class="n">FB_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">FB</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">FB_index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">what_was_in_zero</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">FB</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">[</span><span class="n">FB_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">what_was_in_zero</span></div>
+
+<div class="viewcode-block" id="BezierStepper.which_state"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.which_state">[docs]</a>    <span class="k">def</span> <span class="nf">which_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Ensuring totally random seed every step!</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+            <span class="c1"># Combined</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">=</span> <span class="n">COMBI</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_per_episode</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BezierStepper.StateMachine"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.StateMachine">[docs]</a>    <span class="k">def</span> <span class="nf">StateMachine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        State Machined used for training robust RL on top of OL gait.</span>
+
+<span class="sd">        STATES:</span>
+<span class="sd">            Forward/Backward: All Default Values.</span>
+<span class="sd">                              Can have slow changes to</span>
+<span class="sd">                              StepLength(+-) and Velocity</span>
+
+<span class="sd">            Lateral: As above (fwd or bwd random) with added random</span>
+<span class="sd">                     slow changing LateralFraction param</span>
+
+<span class="sd">            Rotating: As above except with YawRate</span>
+
+<span class="sd">            Combined: ALL changeable values may change!</span>
+<span class="sd">                            StepLength</span>
+<span class="sd">                            StepVelocity</span>
+<span class="sd">                            LateralFraction</span>
+<span class="sd">                            YawRate</span>
+
+<span class="sd">        NOTE: the RL is solely responsible for modulating Clearance Height</span>
+<span class="sd">              and Penetration Depth</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">ALL</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">which_state</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">==</span> <span class="n">FB</span><span class="p">:</span>
+                <span class="c1"># print(&quot;FORWARD/BACKWARD&quot;)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">FB</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">==</span> <span class="n">LAT</span><span class="p">:</span>
+                <span class="c1"># print(&quot;LATERAL&quot;)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">LAT</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">==</span> <span class="n">ROT</span><span class="p">:</span>
+                <span class="c1"># print(&quot;ROTATION&quot;)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ROT</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span> <span class="o">==</span> <span class="n">COMBI</span><span class="p">:</span>
+                <span class="c1"># print(&quot;COMBINED&quot;)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">COMBI</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_bezier_params</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BezierStepper.return_bezier_params"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.return_bezier_params">[docs]</a>    <span class="k">def</span> <span class="nf">return_bezier_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># First, Clip Everything</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">YawRate_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">YawRate_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ClearanceHeight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ClearanceHeight</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">ClearanceHeight_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">ClearanceHeight_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PenetrationDepth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PenetrationDepth</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">PenetrationDepth_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">PenetrationDepth_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># Then, return</span>
+        <span class="c1"># FIRST COPY TO AVOID OVERWRITING</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+        <span class="n">orn</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orn</span><span class="p">)</span>
+        <span class="n">StepLength</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span><span class="p">)</span>
+        <span class="n">LateralFraction</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span><span class="p">)</span>
+        <span class="n">YawRate</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span><span class="p">)</span>
+        <span class="n">StepVelocity</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span><span class="p">)</span>
+        <span class="n">ClearanceHeight</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ClearanceHeight</span><span class="p">)</span>
+        <span class="n">PenetrationDepth</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PenetrationDepth</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pos</span><span class="p">,</span> <span class="n">orn</span><span class="p">,</span> <span class="n">StepLength</span><span class="p">,</span> <span class="n">LateralFraction</span><span class="p">,</span>\
+            <span class="n">YawRate</span><span class="p">,</span> <span class="n">StepVelocity</span><span class="p">,</span>\
+            <span class="n">ClearanceHeight</span><span class="p">,</span> <span class="n">PenetrationDepth</span></div>
+
+<div class="viewcode-block" id="BezierStepper.FB"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.FB">[docs]</a>    <span class="k">def</span> <span class="nf">FB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Here, we can modulate StepLength and StepVelocity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The maximum update amount for these element</span>
+        <span class="n">StepLength_DELTA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">6.0</span><span class="p">)</span>
+        <span class="n">StepVelocity_DELTA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+
+        <span class="c1"># Add either positive or negative or zero delta for each</span>
+        <span class="c1"># NOTE: &#39;High&#39; is open bracket ) so the max is 1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">&lt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">:</span>
+            <span class="n">StepLength_DIRECTION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">:</span>
+            <span class="n">StepLength_DIRECTION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">StepLength_DIRECTION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">StepVelocity_DIRECTION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Now, modify modifiable params AND CLIP</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">+=</span> <span class="n">StepLength_DIRECTION</span> <span class="o">*</span> <span class="n">StepLength_DELTA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepLength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">StepLength_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span> <span class="o">+=</span> <span class="n">StepVelocity_DIRECTION</span> <span class="o">*</span> <span class="n">StepVelocity_DELTA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">StepVelocity_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="BezierStepper.LAT"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.LAT">[docs]</a>    <span class="k">def</span> <span class="nf">LAT</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Here, we can modulate StepLength and LateralFraction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The maximum update amount for these element</span>
+        <span class="n">LateralFraction_DELTA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
+                                               <span class="mf">2.0</span><span class="p">)</span>
+
+        <span class="c1"># Add either positive or negative or zero delta for each</span>
+        <span class="c1"># NOTE: &#39;High&#39; is open bracket ) so the max is 1</span>
+        <span class="n">LateralFraction_DIRECTION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Now, modify modifiable params AND CLIP</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span> <span class="o">+=</span> <span class="n">LateralFraction_DIRECTION</span> <span class="o">*</span> <span class="n">LateralFraction_DELTA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">LateralFraction_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="BezierStepper.ROT"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.ROT">[docs]</a>    <span class="k">def</span> <span class="nf">ROT</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Here, we can modulate StepLength and YawRate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The maximum update amount for these element</span>
+        <span class="c1"># no dt since YawRate is already mult by dt</span>
+        <span class="n">YawRate_DELTA</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">YawRate_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">YawRate_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+
+        <span class="c1"># Add either positive or negative or zero delta for each</span>
+        <span class="c1"># NOTE: &#39;High&#39; is open bracket ) so the max is 1</span>
+        <span class="n">YawRate_DIRECTION</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Now, modify modifiable params AND CLIP</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span> <span class="o">+=</span> <span class="n">YawRate_DIRECTION</span> <span class="o">*</span> <span class="n">YawRate_DELTA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">YawRate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">YawRate_LIMITS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">YawRate_LIMITS</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="BezierStepper.COMBI"><a class="viewcode-back" href="../../../source/spotmicro.OpenLoopSM.html#spotmicro.OpenLoopSM.SpotOL.BezierStepper.COMBI">[docs]</a>    <span class="k">def</span> <span class="nf">COMBI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Here, we can modify all the parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">FB</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LAT</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ROT</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

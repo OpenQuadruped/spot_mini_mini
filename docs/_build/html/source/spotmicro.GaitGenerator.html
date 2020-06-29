@@ -1,181 +1,38 @@
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!DOCTYPE html>
-<html class="writer-html4" lang="en" >
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>spotmicro.GaitGenerator package &mdash; spot_mini_mini 1.0.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spotmicro.GaitGenerator package &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="spotmicro.GymEnvs package" href="spotmicro.GymEnvs.html" />
-    <link rel="prev" title="spotmicro package" href="spotmicro.html" /> 
-</head>
-
-<body class="wy-body-for-nav">
-
+    <link rel="prev" title="spotmicro package" href="spotmicro.html" />
    
-  <div class="wy-grid-for-nav">
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> spot_mini_mini
-          
-
-          
-          </a>
-
-          
-            
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">main</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="spotmicro.html">spotmicro package</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="spotmicro.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">spotmicro.GaitGenerator package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="spotmicro.GymEnvs.html">spotmicro.GymEnvs package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="spotmicro.Kinematics.html">spotmicro.Kinematics package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="spotmicro.OpenLoopSM.html">spotmicro.OpenLoopSM package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="spotmicro.util.html">spotmicro.util package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.env_randomizer_base">spotmicro.env_randomizer_base module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.heightfield">spotmicro.heightfield module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.motor">spotmicro.motor module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.spot">spotmicro.spot module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.spot_env_randomizer">spotmicro.spot_env_randomizer module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.spot_gym_env">spotmicro.spot_gym_env module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../simulation.html">Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../rl.html">Reinforcement Learning Environment</a></li>
-</ul>
-
-            
-          
-        </div>
-        
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">spot_mini_mini</a>
-        
-      </nav>
-
-
-      <div class="wy-nav-content">
-        
-        <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="modules.html">main</a> &raquo;</li>
-        
-          <li><a href="spotmicro.html">spotmicro package</a> &raquo;</li>
-        
-      <li>spotmicro.GaitGenerator package</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-            <a href="../_sources/source/spotmicro.GaitGenerator.rst.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-    
-  </ul>
-
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
             
   <div class="section" id="spotmicro-gaitgenerator-package">
 <h1>spotmicro.GaitGenerator package<a class="headerlink" href="#spotmicro-gaitgenerator-package" title="Permalink to this headline">¶</a></h1>
@@ -186,10 +43,10 @@
 <span id="spotmicro-gaitgenerator-bezier-module"></span><h2>spotmicro.GaitGenerator.Bezier module<a class="headerlink" href="#module-spotmicro.GaitGenerator.Bezier" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait">
-<em class="property">class </em><code class="descclassname">spotmicro.GaitGenerator.Bezier.</code><code class="descname">BezierGait</code><span class="sig-paren">(</span><em>dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tswing=0.15</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spotmicro.GaitGenerator.Bezier.</code><code class="descname">BezierGait</code><span class="sig-paren">(</span><em>dSref=[0.0, 0.0, 0.5, 0.5], dt=0.01, Tswing=0.15</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.BezierPoint">
-<code class="descname">BezierPoint</code><span class="sig-paren">(</span><em>t</em>, <em>k</em>, <em>point</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.BezierPoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">BezierPoint</code><span class="sig-paren">(</span><em>t</em>, <em>k</em>, <em>point</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.BezierPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.BezierPoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the point on the bezier curve
 based on phase (0-&gt;1), point number (0-11),
 and the value of the point itself</p>
@@ -213,7 +70,7 @@ and the value of the point itself</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.BezierSwing">
-<code class="descname">BezierSwing</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>clearance_height=0.04</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.BezierSwing" title="Permalink to this definition">¶</a></dt>
+<code class="descname">BezierSwing</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>clearance_height=0.04</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.BezierSwing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.BezierSwing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the step coordinates for the Bezier (swing) period</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -236,7 +93,7 @@ and the value of the point itself</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.Binomial">
-<code class="descname">Binomial</code><span class="sig-paren">(</span><em>k</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.Binomial" title="Permalink to this definition">¶</a></dt>
+<code class="descname">Binomial</code><span class="sig-paren">(</span><em>k</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.Binomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.Binomial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solves the binomial theorem given a Bezier point number
 relative to the total number of Bezier points.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -253,7 +110,7 @@ relative to the total number of Bezier points.</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.CheckTouchDown">
-<code class="descname">CheckTouchDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.CheckTouchDown" title="Permalink to this definition">¶</a></dt>
+<code class="descname">CheckTouchDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.CheckTouchDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.CheckTouchDown" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether a reference leg touchdown
 has occured, and whether this warrants
 resetting the touchdown time</p>
@@ -261,7 +118,7 @@ resetting the touchdown time</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.GenerateTrajectory">
-<code class="descname">GenerateTrajectory</code><span class="sig-paren">(</span><em>L, LateralFraction, YawRate, vel, T_bf_, T_bf_curr, clearance_height=0.06, penetration_depth=0.01, contacts=[0, 0, 0, 0], dt=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.GenerateTrajectory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">GenerateTrajectory</code><span class="sig-paren">(</span><em>L, LateralFraction, YawRate, vel, T_bf_, T_bf_curr, clearance_height=0.06, penetration_depth=0.01, contacts=[0, 0, 0, 0], dt=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.GenerateTrajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.GenerateTrajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the step coordinates for each foot</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -288,7 +145,7 @@ resetting the touchdown time</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.GetFootStep">
-<code class="descname">GetFootStep</code><span class="sig-paren">(</span><em>L</em>, <em>LateralFraction</em>, <em>YawRate</em>, <em>clearance_height</em>, <em>penetration_depth</em>, <em>Tstance</em>, <em>T_bf</em>, <em>index</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.GetFootStep" title="Permalink to this definition">¶</a></dt>
+<code class="descname">GetFootStep</code><span class="sig-paren">(</span><em>L</em>, <em>LateralFraction</em>, <em>YawRate</em>, <em>clearance_height</em>, <em>penetration_depth</em>, <em>Tstance</em>, <em>T_bf</em>, <em>index</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.GetFootStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.GetFootStep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the step coordinates in either the Bezier or
 Sine portion of the trajectory depending on the retrieved phase</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -318,7 +175,7 @@ Sine portion of the trajectory depending on the retrieved phase</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.GetPhase">
-<code class="descname">GetPhase</code><span class="sig-paren">(</span><em>index</em>, <em>Tstance</em>, <em>Tswing</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.GetPhase" title="Permalink to this definition">¶</a></dt>
+<code class="descname">GetPhase</code><span class="sig-paren">(</span><em>index</em>, <em>Tstance</em>, <em>Tswing</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.GetPhase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.GetPhase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves the phase of an individual leg</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -342,7 +199,7 @@ leg is in stance or swing mode</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.Get_ti">
-<code class="descname">Get_ti</code><span class="sig-paren">(</span><em>index</em>, <em>Tstride</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.Get_ti" title="Permalink to this definition">¶</a></dt>
+<code class="descname">Get_ti</code><span class="sig-paren">(</span><em>index</em>, <em>Tstride</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.Get_ti"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.Get_ti" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves the time index for the individual leg</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -364,7 +221,7 @@ phase lag</li>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.Increment">
-<code class="descname">Increment</code><span class="sig-paren">(</span><em>dt</em>, <em>Tstride</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.Increment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">Increment</code><span class="sig-paren">(</span><em>dt</em>, <em>Tstride</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.Increment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.Increment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increments the Bezier gait generator’s internal clock</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -386,7 +243,7 @@ phase lag</li>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.SineStance">
-<code class="descname">SineStance</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>penetration_depth=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.SineStance" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SineStance</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>penetration_depth=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.SineStance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.SineStance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the step coordinates for the Bezier (swing) period</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -409,7 +266,7 @@ phase lag</li>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.StanceStep">
-<code class="descname">StanceStep</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>YawRate</em>, <em>penetration_depth</em>, <em>T_bf</em>, <em>key</em>, <em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.StanceStep" title="Permalink to this definition">¶</a></dt>
+<code class="descname">StanceStep</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>YawRate</em>, <em>penetration_depth</em>, <em>T_bf</em>, <em>key</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.StanceStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.StanceStep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the step coordinates for the Sine (stance) period
 using a combination of forward and rotational step coordinates
 initially decomposed from user input of
@@ -439,7 +296,7 @@ L, LateralFraction and YawRate</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.SwingStep">
-<code class="descname">SwingStep</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>YawRate</em>, <em>clearance_height</em>, <em>T_bf</em>, <em>key</em>, <em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.SwingStep" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SwingStep</code><span class="sig-paren">(</span><em>phase</em>, <em>L</em>, <em>LateralFraction</em>, <em>YawRate</em>, <em>clearance_height</em>, <em>T_bf</em>, <em>key</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.SwingStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.SwingStep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the step coordinates for the Bezier (swing) period
 using a combination of forward and rotational step coordinates
 initially decomposed from user input of
@@ -469,7 +326,7 @@ L, LateralFraction and YawRate</p>
 
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.reset" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the parameters of the Bezier Gait Generator</p>
 </dd></dl>
 
@@ -485,59 +342,83 @@ L, LateralFraction and YawRate</p>
 </div>
 
 
-           </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="spotmicro.GymEnvs.html" class="btn btn-neutral float-right" title="spotmicro.GymEnvs package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="spotmicro.html" class="btn btn-neutral float-left" title="spotmicro package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">main</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="spotmicro.html">spotmicro package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">main</a><ul>
+  <li><a href="spotmicro.html">spotmicro package</a><ul>
+      <li>Previous: <a href="spotmicro.html" title="previous chapter">spotmicro package</a></li>
+      <li>Next: <a href="spotmicro.GymEnvs.html" title="next chapter">spotmicro.GymEnvs package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
     </div>
-  
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
 
-  <hr/>
 
-  <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2020, Maurice Rahme
 
-    </p>
-  </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-</footer>
+
+
+
 
         </div>
       </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/source/spotmicro.GaitGenerator.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
 
-    </section>
-
-  </div>
-  
-
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script>
-
-  
-  
     
-   
 
-</body>
+    
+  </body>
 </html>

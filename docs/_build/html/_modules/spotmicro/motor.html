@@ -1,0 +1,203 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>spotmicro.motor &#8212; spot_mini_mini 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spotmicro.motor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This file implements an accurate motor model.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">VOLTAGE_CLIPPING</span> <span class="o">=</span> <span class="mf">8.4</span>
+<span class="n">OBSERVED_TORQUE_LIMIT</span> <span class="o">=</span> <span class="mf">5.7</span>
+<span class="n">MOTOR_VOLTAGE</span> <span class="o">=</span> <span class="mf">7.4</span>
+<span class="n">MOTOR_RESISTANCE</span> <span class="o">=</span> <span class="mf">0.086</span>
+<span class="n">MOTOR_TORQUE_CONSTANT</span> <span class="o">=</span> <span class="mf">0.00954</span>
+<span class="n">MOTOR_VISCOUS_DAMPING</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">MOTOR_SPEED_LIMIT</span> <span class="o">=</span> <span class="mf">9.5</span>
+
+
+<div class="viewcode-block" id="MotorModel"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.motor.MotorModel">[docs]</a><span class="k">class</span> <span class="nc">MotorModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The accurate motor model, which is based on the physics of DC motors.</span>
+
+<span class="sd">  The motor model support two types of control: position control and torque</span>
+<span class="sd">  control. In position control mode, a desired motor angle is specified, and a</span>
+<span class="sd">  torque is computed based on the internal motor model. When the torque control</span>
+<span class="sd">  is specified, a pwm signal in the range of [-1.0, 1.0] is converted to the</span>
+<span class="sd">  torque.</span>
+
+<span class="sd">  The internal motor model takes the following factors into consideration:</span>
+<span class="sd">  pd gains, viscous friction, back-EMF voltage and current-torque profile.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">torque_control_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kp</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">kd</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_torque_control_enabled</span> <span class="o">=</span> <span class="n">torque_control_enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kp</span> <span class="o">=</span> <span class="n">kp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span> <span class="o">=</span> <span class="n">kd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resistance</span> <span class="o">=</span> <span class="n">MOTOR_RESISTANCE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_voltage</span> <span class="o">=</span> <span class="n">MOTOR_VOLTAGE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_torque_constant</span> <span class="o">=</span> <span class="n">MOTOR_TORQUE_CONSTANT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_viscous_damping</span> <span class="o">=</span> <span class="n">MOTOR_VISCOUS_DAMPING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_table</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_torque_table</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.9</span><span class="p">,</span> <span class="mf">2.45</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.25</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MotorModel.set_voltage"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.motor.MotorModel.set_voltage">[docs]</a>    <span class="k">def</span> <span class="nf">set_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_voltage</span> <span class="o">=</span> <span class="n">voltage</span></div>
+
+<div class="viewcode-block" id="MotorModel.get_voltage"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.motor.MotorModel.get_voltage">[docs]</a>    <span class="k">def</span> <span class="nf">get_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_voltage</span></div>
+
+<div class="viewcode-block" id="MotorModel.set_viscous_damping"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.motor.MotorModel.set_viscous_damping">[docs]</a>    <span class="k">def</span> <span class="nf">set_viscous_damping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viscous_damping</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_viscous_damping</span> <span class="o">=</span> <span class="n">viscous_damping</span></div>
+
+<div class="viewcode-block" id="MotorModel.get_viscous_dampling"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.motor.MotorModel.get_viscous_dampling">[docs]</a>    <span class="k">def</span> <span class="nf">get_viscous_dampling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viscous_damping</span></div>
+
+<div class="viewcode-block" id="MotorModel.convert_to_torque"><a class="viewcode-back" href="../../source/spotmicro.html#spotmicro.motor.MotorModel.convert_to_torque">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to_torque</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor_commands</span><span class="p">,</span> <span class="n">current_motor_angle</span><span class="p">,</span>
+                          <span class="n">current_motor_velocity</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert the commands (position control or torque control) to torque.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      motor_commands: The desired motor angle if the motor is in position</span>
+<span class="sd">        control mode. The pwm signal if the motor is in torque control mode.</span>
+<span class="sd">      current_motor_angle: The motor angle at the current time step.</span>
+<span class="sd">      current_motor_velocity: The motor velocity at the current time step.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      actual_torque: The torque that needs to be applied to the motor.</span>
+<span class="sd">      observed_torque: The torque observed by the sensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_torque_control_enabled</span><span class="p">:</span>
+            <span class="n">pwm</span> <span class="o">=</span> <span class="n">motor_commands</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pwm</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_kp</span> <span class="o">*</span> <span class="p">(</span><span class="n">current_motor_angle</span> <span class="o">-</span> <span class="n">motor_commands</span><span class="p">)</span> <span class="o">-</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">_kd</span> <span class="o">*</span> <span class="n">current_motor_velocity</span><span class="p">)</span>
+        <span class="n">pwm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">pwm</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_to_torque_from_pwm</span><span class="p">(</span><span class="n">pwm</span><span class="p">,</span> <span class="n">current_motor_velocity</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_convert_to_torque_from_pwm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pwm</span><span class="p">,</span> <span class="n">current_motor_velocity</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert the pwm signal to torque.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      pwm: The pulse width modulation.</span>
+<span class="sd">      current_motor_velocity: The motor velocity at the current time step.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">      actual_torque: The torque that needs to be applied to the motor.</span>
+<span class="sd">      observed_torque: The torque observed by the sensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="n">observed_torque</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_torque_constant</span> <span class="o">*</span> <span class="p">(</span><span class="n">pwm</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_voltage</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resistance</span><span class="p">),</span>
+            <span class="o">-</span><span class="n">OBSERVED_TORQUE_LIMIT</span><span class="p">,</span> <span class="n">OBSERVED_TORQUE_LIMIT</span><span class="p">)</span>
+
+        <span class="c1"># Net voltage is clipped at 50V by diodes on the motor controller.</span>
+        <span class="n">voltage_net</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+            <span class="n">pwm</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_voltage</span> <span class="o">-</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_torque_constant</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viscous_damping</span><span class="p">)</span> <span class="o">*</span>
+            <span class="n">current_motor_velocity</span><span class="p">,</span> <span class="o">-</span><span class="n">VOLTAGE_CLIPPING</span><span class="p">,</span> <span class="n">VOLTAGE_CLIPPING</span><span class="p">)</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">voltage_net</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resistance</span>
+        <span class="n">current_sign</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+        <span class="n">current_magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+
+        <span class="c1"># Saturate torque based on empirical current relation.</span>
+        <span class="n">actual_torque</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">current_magnitude</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_table</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">_torque_table</span><span class="p">)</span>
+        <span class="n">actual_torque</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">current_sign</span><span class="p">,</span> <span class="n">actual_torque</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">actual_torque</span><span class="p">,</span> <span class="n">observed_torque</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">spot_mini_mini</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Maurice Rahme.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
