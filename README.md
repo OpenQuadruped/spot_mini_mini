@@ -115,7 +115,27 @@ You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick
 
 **Non-Joystick Use**
 
-If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. A Pybullet sim will open up for you with the same controls you would have on the joystick, except each is on its own scrollbar.
+If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. A Pybullet sim will open up for you with the same controls you would have on the joystick, except each is on its own scrollbar. You may also use the following optional arguments:
+
+```
+-h, --help          show this help message and exit
+-hf, --HeightField  Use HeightField
+-r, --DebugRack     Put Spot on an Elevated Rack
+-p, --DebugPath     Draw Spot's Foot Path
+-ay, --AutoYaw      Automatically Adjust Spot's Yaw
+```
+
+**Reinforcement Learning Agent Evaluation**
+
+Go to `spot_bullet/src` and do `./spot_ars_eval.py`. You may also use the following optional arguments. Note that if you don't use the `-a` argument, no agent will be loaded, so you will be using the open-loop policy. For example, if you enter `149`, you will see the first successful policy, but if you enter `2229`, you will see a much more aggressive policy.
+
+```
+-h, --help          show this help message and exit
+-hf, --HeightField  Use HeightField
+-r, --DebugRack     Put Spot on an Elevated Rack
+-p, --DebugPath     Draw Spot's Foot Path
+-a, --AgentNum      Agent Number To Load
+```
 
 **Using Different Terrain**
 
@@ -132,8 +152,5 @@ Navigate to `spotmicro/heightfield.py` and take a look at `useProgrammatic` and 
 With this terrain type, I programmed in a randomizer that triggers upon reset. This, along with the body randomizer from `Pybullet's Minitaur` increases your RL Policy's robustness.
 
 ![RANDENV](spot_bullet/media/spot_random_terrain.gif)
-
-#### Reinforcement Learning
-Go to `spot_bullet/src` and do `./spot_ars_eval.py`. When prompted, enter `#EPOCH_NUMBER`. For example, if you enter `149`, you will see the first successful policy, but if you enter `2229`, you will see a much more aggressive policy.
 
 
