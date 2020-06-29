@@ -35,7 +35,9 @@
 
     
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="spotmicro.OpenLoopSM package" href="spotmicro.OpenLoopSM.html" />
+    <link rel="prev" title="spotmicro.GymEnvs package" href="spotmicro.GymEnvs.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -81,7 +83,29 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">main</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="spotmicro.html">spotmicro package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="spotmicro.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="spotmicro.GaitGenerator.html">spotmicro.GaitGenerator package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="spotmicro.GymEnvs.html">spotmicro.GymEnvs package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">spotmicro.Kinematics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="spotmicro.OpenLoopSM.html">spotmicro.OpenLoopSM package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="spotmicro.util.html">spotmicro.util package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.env_randomizer_base">spotmicro.env_randomizer_base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.heightfield">spotmicro.heightfield module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.motor">spotmicro.motor module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.spot">spotmicro.spot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.spot_env_randomizer">spotmicro.spot_env_randomizer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro.spot_gym_env">spotmicro.spot_gym_env module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.html#module-spotmicro">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../rl.html">Reinforcement Learning Environment</a></li>
 </ul>
@@ -129,6 +153,10 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">main</a> &raquo;</li>
+        
+          <li><a href="spotmicro.html">spotmicro package</a> &raquo;</li>
         
       <li>spotmicro.Kinematics package</li>
     
@@ -204,10 +232,7 @@
 <dl class="method">
 <dt id="spotmicro.Kinematics.LegKinematics.LegIK.get_domain">
 <code class="descname">get_domain</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LegKinematics.LegIK.get_domain" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Calculates the leg’s Domain</dt>
-<dd>and caps it in case of a breach</dd>
-</dl>
+<dd><p>Calculates the leg’s Domain and caps it in case of a breach</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -317,10 +342,7 @@ yaw = 0.0</dd>
 <dl class="function">
 <dt id="spotmicro.Kinematics.LieAlgebra.RotateTranslate">
 <code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">RotateTranslate</code><span class="sig-paren">(</span><em>rotation</em>, <em>position</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.RotateTranslate" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Creates a Transformation Matrix</dt>
-<dd>from a Rotation, THEN, a Translation</dd>
-</dl>
+<dd><p>Creates a Transformation Matrix from a Rotation, THEN, a Translation</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -456,10 +478,7 @@ and position vector</p>
 <dl class="function">
 <dt id="spotmicro.Kinematics.LieAlgebra.TransformVector">
 <code class="descclassname">spotmicro.Kinematics.LieAlgebra.</code><code class="descname">TransformVector</code><span class="sig-paren">(</span><em>xyz_coord</em>, <em>rotation</em>, <em>translation</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.LieAlgebra.TransformVector" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Transforms a vector by a specified</dt>
-<dd>Rotation THEN Translation Matrix</dd>
-</dl>
+<dd><p>Transforms a vector by a specified Rotation THEN Translation Matrix</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -514,15 +533,12 @@ and position vector</p>
 <dd><dl class="method">
 <dt id="spotmicro.Kinematics.SpotKinematics.SpotModel.IK">
 <code class="descname">IK</code><span class="sig-paren">(</span><em>orn</em>, <em>pos</em>, <em>T_bf</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.Kinematics.SpotKinematics.SpotModel.IK" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Converts a desired position and orientation wrt Spot’s</dt>
-<dd><p class="first">home position, with a desired body-to-foot Transform
+<dd><p>Converts a desired position and orientation wrt Spot’s
+home position, with a desired body-to-foot Transform
 into a body-to-hip Transform, of which the translational
 component can be fed into the LegIK solver.</p>
-<p class="last">Finally, the resultant joint angles are returned
+<p>Finally, the resultant joint angles are returned
 from the LegIK solver for each leg.</p>
-</dd>
-</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -554,6 +570,15 @@ from the LegIK solver for each leg.</p>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="spotmicro.OpenLoopSM.html" class="btn btn-neutral float-right" title="spotmicro.OpenLoopSM package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="spotmicro.GymEnvs.html" class="btn btn-neutral float-left" title="spotmicro.GymEnvs package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
