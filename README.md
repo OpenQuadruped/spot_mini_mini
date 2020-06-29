@@ -63,22 +63,8 @@ Yaw In Place: Slightly push the `Right Stick` forward while pushing the `Left St
 
 ### Reinforcement Learning
 
-#### Drift Correction
-I've found that the Bezier Curve gait lends itself well to optimization via RL. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
-
-![DRIFT](spot_bullet/media/spot_drift.gif)
-
-With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observation space [`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)], an `Augmented Random Search` agent (linear) was able to correct the trajectory after 299 epochs:
-
-![NODRIFT](spot_bullet/media/spot_no_drift.gif)
-
-Here is the policy output for this demo. It's clearly biased on one end to account for Spot's drift:
-
-![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
-
-
 #### Stability on Difficult Terrain
-Another, more interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself.For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
+An interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself.For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
 
 Here, the action space is 14-dimensional, consisting of `Clearance Height` (1), `Body Height` (1), and `Foot XYZ Residual` modulations (12). `Clearance Height` is treated through an exponential filter (`alpha = 0.7`), but all other actions are processed directly. These results were trained with only 149 epochs.
 
@@ -89,6 +75,19 @@ Before training, the robot falls almost immediately:
 After training, the robot successfully navigates the terrain:
 
 ![FALL](spot_bullet/media/spot_rough_ARS.gif)
+
+#### Drift Correction
+I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
+
+![DRIFT](spot_bullet/media/spot_drift.gif)
+
+With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observation space [`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)], an `Augmented Random Search` agent (linear) was able to correct the trajectory after 299 epochs:
+
+![NODRIFT](spot_bullet/media/spot_no_drift.gif)
+
+Here is the policy output for this demo. It's clearly biased on one end to account for Spot's drift:
+
+![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
 
 
 ## How To Run
@@ -127,7 +126,7 @@ If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. 
 
 **Reinforcement Learning Agent Evaluation**
 
-Go to `spot_bullet/src` and do `./spot_ars_eval.py`. You may also use the following optional arguments. Note that if you don't use the `-a` argument, no agent will be loaded, so you will be using the open-loop policy. For example, if you enter `149`, you will see the first successful policy, but if you enter `2229`, you will see a much more aggressive policy.
+Go to `spot_bullet/src` and do `./spot_ars_eval.py`. You may also use the following optional arguments. Note that if you don't use the `-a` argument, no agent will be loaded, so you will be using the open-loop policy. For example, if you enter `149` after `-a`, you will see the first successful policy, but if you enter `2229`, you will see a much more aggressive policy.
 
 ```
 -h, --help          show this help message and exit
