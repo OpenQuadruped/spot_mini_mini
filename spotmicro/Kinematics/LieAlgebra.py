@@ -6,7 +6,8 @@ import numpy as np
 
 
 def RpToTrans(R, p):
-    """Converts a rotation matrix and a position vector into homogeneous
+    """
+    Converts a rotation matrix and a position vector into homogeneous
     transformation matrix
 
     :param R: A 3x3 rotation matrix
@@ -18,6 +19,7 @@ def RpToTrans(R, p):
                       [0, 0, -1],
                       [0, 1,  0]])
         p = np.array([1, 2, 5])
+
     Output:
         np.array([[1, 0,  0, 1],
                   [0, 0, -1, 2],
@@ -28,7 +30,8 @@ def RpToTrans(R, p):
 
 
 def TransToRp(T):
-    """Converts a homogeneous transformation matrix into a rotation matrix
+    """
+    Converts a homogeneous transformation matrix into a rotation matrix
     and position vector
 
     :param T: A homogeneous transformation matrix
@@ -40,6 +43,7 @@ def TransToRp(T):
                       [0, 0, -1, 0],
                       [0, 1,  0, 3],
                       [0, 0,  0, 1]])
+
     Output:
         (np.array([[1, 0,  0],
                    [0, 0, -1],
@@ -51,7 +55,8 @@ def TransToRp(T):
 
 
 def TransInv(T):
-    """Inverts a homogeneous transformation matrix
+    """
+    Inverts a homogeneous transformation matrix
 
     :param T: A homogeneous transformation matrix
     :return: The inverse of T
@@ -75,7 +80,8 @@ def TransInv(T):
 
 
 def Adjoint(T):
-    """Computes the adjoint representation of a homogeneous transformation
+    """
+    Computes the adjoint representation of a homogeneous transformation
     matrix
 
     :param T: A homogeneous transformation matrix
@@ -99,7 +105,8 @@ def Adjoint(T):
 
 
 def VecToso3(omg):
-    """Converts a 3-vector to an so(3) representation
+    """
+    Converts a 3-vector to an so(3) representation
 
     :param omg: A 3-vector
     :return: The skew symmetric representation of omg
@@ -116,7 +123,8 @@ def VecToso3(omg):
 
 
 def RPY(roll, pitch, yaw):
-    """Creates a Roll, Pitch, Yaw Transformation Matrix
+    """
+    Creates a Roll, Pitch, Yaw Transformation Matrix
 
     :param roll: roll component of matrix
     :param pitch: pitch component of matrix
@@ -144,8 +152,8 @@ def RPY(roll, pitch, yaw):
 
 
 def RotateTranslate(rotation, position):
-    """Creates a Transformation Matrix
-       from a Rotation, THEN, a Translation
+    """
+    Creates a Transformation Matrix from a Rotation, THEN, a Translation
 
     :param rotation: pure rotation matrix
     :param translation: pure translation matrix
@@ -160,8 +168,8 @@ def RotateTranslate(rotation, position):
 
 
 def TransformVector(xyz_coord, rotation, translation):
-    """Transforms a vector by a specified
-       Rotation THEN Translation Matrix
+    """
+    Transforms a vector by a specified Rotation THEN Translation Matrix
 
     :param xyz_coord: the vector to transform
     :param rotation: pure rotation matrix

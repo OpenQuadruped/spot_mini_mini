@@ -14,7 +14,8 @@ class SpotModel:
                  hip_lim=[-0.548, 0.548],
                  shoulder_lim=[-2.17, 0.97],
                  leg_lim=[-0.1, 2.59]):
-        """ Spot Micro Kinematics
+        """
+        Spot Micro Kinematics
         """
         # Leg Parameters
         self.hip_length = hip_length
@@ -98,13 +99,14 @@ class SpotModel:
         self.WorldToFoot["BR"] = RpToTrans(Rwb, self.pf_BR)
 
     def IK(self, orn, pos, T_bf):
-        """ Converts a desired position and orientation wrt Spot's
-            home position, with a desired body-to-foot Transform
-            into a body-to-hip Transform, of which the translational
-            component can be fed into the LegIK solver.
+        """
+        Converts a desired position and orientation wrt Spot's
+        home position, with a desired body-to-foot Transform
+        into a body-to-hip Transform, of which the translational
+        component can be fed into the LegIK solver.
 
-            Finally, the resultant joint angles are returned
-            from the LegIK solver for each leg.
+        Finally, the resultant joint angles are returned
+        from the LegIK solver for each leg.
 
         :param orn: A 3x1 np.array([]) with Spot's Roll, Pitch, Yaw angles
         :param pos: A 3x1 np.array([]) with Spot's X, Y, Z coordinates
