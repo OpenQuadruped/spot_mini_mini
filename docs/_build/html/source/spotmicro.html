@@ -1,0 +1,1274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>spotmicro package &mdash; spot_mini_mini 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> spot_mini_mini
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rl.html">Reinforcement Learning Environment</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spot_mini_mini</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>spotmicro package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/spotmicro.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="spotmicro-package">
+<h1>spotmicro package<a class="headerlink" href="#spotmicro-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spotmicro.GaitGenerator.html">spotmicro.GaitGenerator package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.GaitGenerator.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.GaitGenerator.html#module-spotmicro.GaitGenerator.Bezier">spotmicro.GaitGenerator.Bezier module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.GaitGenerator.html#module-spotmicro.GaitGenerator.Raibert">spotmicro.GaitGenerator.Raibert module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.GaitGenerator.html#module-spotmicro.GaitGenerator">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spotmicro.GymEnvs.html">spotmicro.GymEnvs package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.GymEnvs.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.GymEnvs.html#module-spotmicro.GymEnvs.spot_bezier_env">spotmicro.GymEnvs.spot_bezier_env module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.GymEnvs.html#module-spotmicro.GymEnvs">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spotmicro.Kinematics.html">spotmicro.Kinematics package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.Kinematics.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.Kinematics.html#module-spotmicro.Kinematics.LegKinematics">spotmicro.Kinematics.LegKinematics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.Kinematics.html#module-spotmicro.Kinematics.LieAlgebra">spotmicro.Kinematics.LieAlgebra module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.Kinematics.html#module-spotmicro.Kinematics.SpotKinematics">spotmicro.Kinematics.SpotKinematics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.Kinematics.html#module-spotmicro.Kinematics">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spotmicro.OpenLoopSM.html">spotmicro.OpenLoopSM package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.OpenLoopSM.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.OpenLoopSM.html#module-spotmicro.OpenLoopSM.SpotOL">spotmicro.OpenLoopSM.SpotOL module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.OpenLoopSM.html#module-spotmicro.OpenLoopSM">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spotmicro.util.html">spotmicro.util package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.util.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spotmicro.util.pybullet_data.html">spotmicro.util.pybullet_data package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spotmicro.util.pybullet_data.html#module-spotmicro.util.pybullet_data">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.util.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.util.html#module-spotmicro.util.action_mapper">spotmicro.util.action_mapper module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.util.html#module-spotmicro.util.bullet_client">spotmicro.util.bullet_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.util.html#module-spotmicro.util.gui">spotmicro.util.gui module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spotmicro.util.html#module-spotmicro.util">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-spotmicro.env_randomizer_base">
+<span id="spotmicro-env-randomizer-base-module"></span><h2>spotmicro.env_randomizer_base module<a class="headerlink" href="#module-spotmicro.env_randomizer_base" title="Permalink to this headline">¶</a></h2>
+<p>Abstract base class for environment randomizer.</p>
+<dl class="class">
+<dt id="spotmicro.env_randomizer_base.EnvRandomizerBase">
+<em class="property">class </em><code class="descclassname">spotmicro.env_randomizer_base.</code><code class="descname">EnvRandomizerBase</code><a class="headerlink" href="#spotmicro.env_randomizer_base.EnvRandomizerBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract base class for environment randomizer.</p>
+<p>An EnvRandomizer is called in environment.reset(). It will
+randomize physical parameters of the objects in the simulation.
+The physical parameters will be fixed for that episode and be
+randomized again in the next environment.reset().</p>
+<dl class="method">
+<dt id="spotmicro.env_randomizer_base.EnvRandomizerBase.randomize_env">
+<code class="descname">randomize_env</code><span class="sig-paren">(</span><em>env</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.env_randomizer_base.EnvRandomizerBase.randomize_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomize the simulated_objects in the environment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>env</strong> – The environment to be randomized.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.heightfield">
+<span id="spotmicro-heightfield-module"></span><h2>spotmicro.heightfield module<a class="headerlink" href="#module-spotmicro.heightfield" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spotmicro.heightfield.HeightField">
+<em class="property">class </em><code class="descclassname">spotmicro.heightfield.</code><code class="descname">HeightField</code><a class="headerlink" href="#spotmicro.heightfield.HeightField" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="spotmicro.heightfield.HeightField.UpdateHeightField">
+<code class="descname">UpdateHeightField</code><span class="sig-paren">(</span><em>heightPerturbationRange=0.08</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.heightfield.HeightField.UpdateHeightField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.motor">
+<span id="spotmicro-motor-module"></span><h2>spotmicro.motor module<a class="headerlink" href="#module-spotmicro.motor" title="Permalink to this headline">¶</a></h2>
+<p>This file implements an accurate motor model.</p>
+<dl class="class">
+<dt id="spotmicro.motor.MotorModel">
+<em class="property">class </em><code class="descclassname">spotmicro.motor.</code><code class="descname">MotorModel</code><span class="sig-paren">(</span><em>torque_control_enabled=False</em>, <em>kp=1.2</em>, <em>kd=0</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.motor.MotorModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The accurate motor model, which is based on the physics of DC motors.</p>
+<p>The motor model support two types of control: position control and torque
+control. In position control mode, a desired motor angle is specified, and a
+torque is computed based on the internal motor model. When the torque control
+is specified, a pwm signal in the range of [-1.0, 1.0] is converted to the
+torque.</p>
+<p>The internal motor model takes the following factors into consideration:
+pd gains, viscous friction, back-EMF voltage and current-torque profile.</p>
+<dl class="method">
+<dt id="spotmicro.motor.MotorModel.convert_to_torque">
+<code class="descname">convert_to_torque</code><span class="sig-paren">(</span><em>motor_commands</em>, <em>current_motor_angle</em>, <em>current_motor_velocity</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.motor.MotorModel.convert_to_torque" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the commands (position control or torque control) to torque.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>motor_commands</strong> – The desired motor angle if the motor is in position
+control mode. The pwm signal if the motor is in torque control mode.</li>
+<li><strong>current_motor_angle</strong> – The motor angle at the current time step.</li>
+<li><strong>current_motor_velocity</strong> – The motor velocity at the current time step.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The torque that needs to be applied to the motor.
+observed_torque: The torque observed by the sensor.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">actual_torque</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.motor.MotorModel.get_viscous_dampling">
+<code class="descname">get_viscous_dampling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.motor.MotorModel.get_viscous_dampling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.motor.MotorModel.get_voltage">
+<code class="descname">get_voltage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.motor.MotorModel.get_voltage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.motor.MotorModel.set_viscous_damping">
+<code class="descname">set_viscous_damping</code><span class="sig-paren">(</span><em>viscous_damping</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.motor.MotorModel.set_viscous_damping" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.motor.MotorModel.set_voltage">
+<code class="descname">set_voltage</code><span class="sig-paren">(</span><em>voltage</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.motor.MotorModel.set_voltage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.spot">
+<span id="spotmicro-spot-module"></span><h2>spotmicro.spot module<a class="headerlink" href="#module-spotmicro.spot" title="Permalink to this headline">¶</a></h2>
+<p>This file models a spot using pybullet.</p>
+<dl class="function">
+<dt id="spotmicro.spot.MapToMinusPiToPi">
+<code class="descclassname">spotmicro.spot.</code><code class="descname">MapToMinusPiToPi</code><span class="sig-paren">(</span><em>angles</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.MapToMinusPiToPi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maps a list of angles to [-pi, pi].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>angles</strong> – A list of angles in rad.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of angle mapped to [-pi, pi].</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="spotmicro.spot.Spot">
+<em class="property">class </em><code class="descclassname">spotmicro.spot.</code><code class="descname">Spot</code><span class="sig-paren">(</span><em>pybullet_client</em>, <em>urdf_root='/home/mori/Projects/minitaur/src/main/spotmicro/util/pybullet_data'</em>, <em>time_step=0.01</em>, <em>action_repeat=1</em>, <em>self_collision_enabled=False</em>, <em>motor_velocity_limit=9.7</em>, <em>pd_control_enabled=False</em>, <em>accurate_motor_model_enabled=False</em>, <em>remove_default_joint_damping=False</em>, <em>max_force=100.0</em>, <em>motor_kp=1.0</em>, <em>motor_kd=0.02</em>, <em>pd_latency=0.0</em>, <em>control_latency=0.0</em>, <em>observation_noise_stdev=(0.0</em>, <em>0.0</em>, <em>0.0</em>, <em>0.0</em>, <em>0.0)</em>, <em>torque_control_enabled=False</em>, <em>motor_overheat_protection=False</em>, <em>on_rack=False</em>, <em>kd_for_pd_controllers=0.3</em>, <em>pose_id='stand'</em>, <em>np_random=&lt;module 'numpy.random' from '/home/mori/.local/lib/python2.7/site-packages/numpy/random/__init__.pyc'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The spot class that simulates a quadruped robot.</p>
+<dl class="method">
+<dt id="spotmicro.spot.Spot.ApplyAction">
+<code class="descname">ApplyAction</code><span class="sig-paren">(</span><em>motor_commands</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.ApplyAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the desired motor angles to the motors of the minitaur.
+The desired motor angles are clipped based on the maximum allowed velocity.
+If the pd_control_enabled is True, a torque is calculated according to
+the difference between current and desired joint angle, as well as the joint
+velocity. This torque is exerted to the motor. For more information about
+PD control, please refer to: <a class="reference external" href="https://en.wikipedia.org/wiki/PID_controller">https://en.wikipedia.org/wiki/PID_controller</a>.
+:param motor_commands: The eight desired motor angles.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.ApplyMotorLimits">
+<code class="descname">ApplyMotorLimits</code><span class="sig-paren">(</span><em>joint_angles</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.ApplyMotorLimits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.ConvertFromLegModel">
+<code class="descname">ConvertFromLegModel</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.ConvertFromLegModel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetActionDimension">
+<code class="descname">GetActionDimension</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetActionDimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the length of the action list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The length of the action list.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBaseInertiasFromURDF">
+<code class="descname">GetBaseInertiasFromURDF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBaseInertiasFromURDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the inertia of the base from the URDF file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBaseMassFromURDF">
+<code class="descname">GetBaseMassFromURDF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBaseMassFromURDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mass of the base from the URDF file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBaseMassesFromURDF">
+<code class="descname">GetBaseMassesFromURDF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBaseMassesFromURDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mass of the base from the URDF file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBaseOrientation">
+<code class="descname">GetBaseOrientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBaseOrientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the orientation of spot’s base, represented as quaternion.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The orientation of spot’s base.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBasePosition">
+<code class="descname">GetBasePosition</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBasePosition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the position of spot’s base.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The position of spot’s base.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBaseRollPitchYaw">
+<code class="descname">GetBaseRollPitchYaw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBaseRollPitchYaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rate of orientation change of the spot’s base in euler angle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">rate of (roll, pitch, yaw) change of the spot’s base.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBaseRollPitchYawRate">
+<code class="descname">GetBaseRollPitchYawRate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBaseRollPitchYawRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rate of orientation change of the spot’s base in euler angle.</p>
+<p>This function mimicks the noisy sensor reading and adds latency.
+:returns: rate of (roll, pitch, yaw) change of the spot’s base polluted by noise</p>
+<blockquote>
+<div>and latency.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetBaseTwist">
+<code class="descname">GetBaseTwist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetBaseTwist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Twist of minitaur’s base.
+:returns: The Twist of the minitaur’s base.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetControlInput">
+<code class="descname">GetControlInput</code><span class="sig-paren">(</span><em>controller</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetControlInput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store Control Input as Observation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetControlLatency">
+<code class="descname">GetControlLatency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetControlLatency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the control latency.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>The latency (in seconds) between when the motor command is sent and when</dt>
+<dd>the sensor measurements are reported back to the controller.</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetExternalObservations">
+<code class="descname">GetExternalObservations</code><span class="sig-paren">(</span><em>TrajectoryGenerator</em>, <em>controller</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetExternalObservations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Augment State Space</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetLegInertiasFromURDF">
+<code class="descname">GetLegInertiasFromURDF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetLegInertiasFromURDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the inertia of the legs from the URDF file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetLegMassesFromURDF">
+<code class="descname">GetLegMassesFromURDF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetLegMassesFromURDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mass of the legs from the URDF file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetLegPhases">
+<code class="descname">GetLegPhases</code><span class="sig-paren">(</span><em>TrajectoryGenerator</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetLegPhases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leg phases according to TG from 0-&gt;2
+0-&gt;1: Stance
+1-&gt;2 Swing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetMotorAngles">
+<code class="descname">GetMotorAngles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetMotorAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the eight motor angles at the current moment, mapped to [-pi, pi].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Motor angles, mapped to [-pi, pi].</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetMotorGains">
+<code class="descname">GetMotorGains</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetMotorGains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the gains of the motor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The proportional gain.
+The derivative gain.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetMotorTorques">
+<code class="descname">GetMotorTorques</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetMotorTorques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the amount of torque the motors are exerting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Motor torques of all eight motors.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetMotorVelocities">
+<code class="descname">GetMotorVelocities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetMotorVelocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the velocity of all eight motors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Velocities of all eight motors.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetNumKneeJoints">
+<code class="descname">GetNumKneeJoints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetNumKneeJoints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetObservation">
+<code class="descname">GetObservation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetObservation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the observations of minitaur.
+It includes the angles, velocities, torques and the orientation of the base.
+:returns: 8] are motor angles. observation[8:16]</p>
+<blockquote>
+<div><p>are motor velocities, observation[16:24] are motor torques.
+observation[24:28] is the orientation of the base, in quaternion form.
+NOTE: DIVERGES FROM STOCK MINITAUR ENV. WILL LEAVE ORIGINAL COMMENTED
+For my purpose, the observation space includes Roll and Pitch, as well as
+acceleration and gyroscopic rate along the x,y,z axes. All of this
+information can be collected from an onboard IMU. The reward function
+will contain a hidden velocity reward (fwd, bwd) which cannot be measured
+and so is not included. For spinning, the gyroscopic z rate will be used
+as the (explicit) velocity reward.
+This version operates without motor torques, angles and velocities. Erwin
+Coumans’ paper suggests a sparse observation space leads to higher reward</p>
+<p># NOTE: use True version for perfect data, or other for realistic data</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">The observation list. observation[0</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetObservationDimension">
+<code class="descname">GetObservationDimension</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetObservationDimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the length of the observation list.
+:returns: The length of the observation list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetObservationLowerBound">
+<code class="descname">GetObservationLowerBound</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetObservationLowerBound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the lower bound of the observation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetObservationUpperBound">
+<code class="descname">GetObservationUpperBound</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetObservationUpperBound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the upper bound of the observation.
+:returns:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>The upper bound of an observation. See GetObservation() for the details</dt>
+<dd>of each element of an observation.</dd>
+</dl>
+<p>NOTE: Changed just like GetObservation()</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.GetTimeSinceReset">
+<code class="descname">GetTimeSinceReset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.GetTimeSinceReset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spotmicro.spot.Spot.INIT_POSES">
+<code class="descname">INIT_POSES</code><em class="property"> = {'liedown': array([-0.4, -1.5,  6. ,  0.4, -1.5,  6. , -0.4, -1.5,  6. ,  0.4, -1.5,         6. ]), 'stand': array([-0.15192765, -0.7552236 ,  1.5104472 ,  0.15192765, -0.7552236 ,         1.5104472 , -0.15192765, -0.7552236 ,  1.5104472 ,  0.15192765,        -0.7552236 ,  1.5104472 ])}</em><a class="headerlink" href="#spotmicro.spot.Spot.INIT_POSES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.RealisticObservation">
+<code class="descname">RealisticObservation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.RealisticObservation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive the observation from sensors.</p>
+<p>This function is called once per step. The observations are only updated
+when this function is called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.Reset">
+<code class="descname">Reset</code><span class="sig-paren">(</span><em>reload_urdf=True</em>, <em>default_motor_angles=None</em>, <em>reset_time=3.0</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.Reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the spot to its initial states.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>reload_urdf</strong> – Whether to reload the urdf file. If not, Reset() just place
+the spot back to its starting position.</li>
+<li><strong>default_motor_angles</strong> – The default motor angles. If it is None, spot
+will hold a default pose for 100 steps. In
+torque control mode, the phase of holding the default pose is skipped.</li>
+<li><strong>reset_time</strong> – The duration (in seconds) to hold the default motor angles. If
+reset_time &lt;= 0 or in torque control mode, the phase of holding the
+default pose is skipped.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.ResetPose">
+<code class="descname">ResetPose</code><span class="sig-paren">(</span><em>add_constraint</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.ResetPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the pose of the spot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>add_constraint</strong> – Whether to add a constraint at the joints of two feet.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetBaseInertias">
+<code class="descname">SetBaseInertias</code><span class="sig-paren">(</span><em>base_inertias</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetBaseInertias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the inertias of spot’s base.
+:param base_inertias: A list of inertias of each body link in CHASIS_LINK_IDS.</p>
+<blockquote>
+<div>The length of this list should be the same as the length of
+CHASIS_LINK_IDS.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – It is raised when the length of base_inertias is not the same
+as the length of self._chassis_link_ids and base_inertias contains
+negative values.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetBaseMass">
+<code class="descname">SetBaseMass</code><span class="sig-paren">(</span><em>base_mass</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetBaseMass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetBaseMasses">
+<code class="descname">SetBaseMasses</code><span class="sig-paren">(</span><em>base_mass</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetBaseMasses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the mass of spot’s base.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>base_mass</strong> – A list of masses of each body link in CHASIS_LINK_IDS. The
+length of this list should be the same as the length of CHASIS_LINK_IDS.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – It is raised when the length of base_mass is not the same as
+the length of self._chassis_link_ids.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetBatteryVoltage">
+<code class="descname">SetBatteryVoltage</code><span class="sig-paren">(</span><em>voltage</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetBatteryVoltage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetControlLatency">
+<code class="descname">SetControlLatency</code><span class="sig-paren">(</span><em>latency</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetControlLatency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the latency of the control loop.</p>
+<p>It measures the duration between sending an action from Nvidia TX2 and
+receiving the observation from microcontroller.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>latency</strong> – The latency (in seconds) of the control loop.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetFootFriction">
+<code class="descname">SetFootFriction</code><span class="sig-paren">(</span><em>foot_friction=100.0</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetFootFriction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the lateral friction of the feet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>foot_friction</strong> – The lateral friction coefficient of the foot. This value is
+shared by all four feet.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetFootRestitution">
+<code class="descname">SetFootRestitution</code><span class="sig-paren">(</span><em>link_id</em>, <em>foot_restitution=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetFootRestitution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the coefficient of restitution at the feet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>foot_restitution</strong> – The coefficient of restitution (bounciness) of the feet.
+This value is shared by all four feet.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetJointFriction">
+<code class="descname">SetJointFriction</code><span class="sig-paren">(</span><em>joint_frictions</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetJointFriction" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetLegInertias">
+<code class="descname">SetLegInertias</code><span class="sig-paren">(</span><em>leg_inertias</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetLegInertias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the inertias of the legs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>leg_inertias</strong> – The leg and motor inertias for all the leg links and motors.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – It is raised when the length of inertias is not equal to</li>
+<li>the number of links + motors or leg_inertias contains negative values.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetLegMasses">
+<code class="descname">SetLegMasses</code><span class="sig-paren">(</span><em>leg_masses</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetLegMasses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the mass of the legs.
+:param leg_masses: The leg and motor masses for all the leg links and motors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – It is raised when the length of masses is not equal to number
+of links + motors.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetMotorGains">
+<code class="descname">SetMotorGains</code><span class="sig-paren">(</span><em>kp</em>, <em>kd</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetMotorGains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the gains of all motors.</p>
+<p>These gains are PD gains for motor positional control. kp is the
+proportional gain and kd is the derivative gain.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>kp</strong> – proportional gain of the motors.</li>
+<li><strong>kd</strong> – derivative gain of the motors.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetMotorStrengthRatio">
+<code class="descname">SetMotorStrengthRatio</code><span class="sig-paren">(</span><em>ratio</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetMotorStrengthRatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the strength of all motors relative to the default value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ratio</strong> – The relative strength. A scalar range from 0.0 to 1.0.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetMotorStrengthRatios">
+<code class="descname">SetMotorStrengthRatios</code><span class="sig-paren">(</span><em>ratios</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetMotorStrengthRatios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the strength of each motor relative to the default value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ratios</strong> – The relative strength. A numpy array ranging from 0.0 to 1.0.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetMotorViscousDamping">
+<code class="descname">SetMotorViscousDamping</code><span class="sig-paren">(</span><em>viscous_damping</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetMotorViscousDamping" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.SetTimeSteps">
+<code class="descname">SetTimeSteps</code><span class="sig-paren">(</span><em>action_repeat</em>, <em>simulation_step</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.SetTimeSteps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the time steps of the control and simulation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>action_repeat</strong> – The number of simulation steps that the same action is
+repeated.</li>
+<li><strong>simulation_step</strong> – The simulation time step.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot.Spot.Step">
+<code class="descname">Step</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot.Spot.Step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spotmicro.spot.Spot.chassis_link_ids">
+<code class="descname">chassis_link_ids</code><a class="headerlink" href="#spotmicro.spot.Spot.chassis_link_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.spot_env_randomizer">
+<span id="spotmicro-spot-env-randomizer-module"></span><h2>spotmicro.spot_env_randomizer module<a class="headerlink" href="#module-spotmicro.spot_env_randomizer" title="Permalink to this headline">¶</a></h2>
+<p>Randomize the spot_gym_env when reset() is called.</p>
+<dl class="class">
+<dt id="spotmicro.spot_env_randomizer.SpotEnvRandomizer">
+<em class="property">class </em><code class="descclassname">spotmicro.spot_env_randomizer.</code><code class="descname">SpotEnvRandomizer</code><span class="sig-paren">(</span><em>spot_base_mass_err_range=(-0.2</em>, <em>0.2)</em>, <em>spot_leg_mass_err_range=(-0.2</em>, <em>0.2)</em>, <em>battery_voltage_range=(14.8</em>, <em>16.8)</em>, <em>motor_viscous_damping_range=(0</em>, <em>0.01)</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_env_randomizer.SpotEnvRandomizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spotmicro.env_randomizer_base.EnvRandomizerBase" title="spotmicro.env_randomizer_base.EnvRandomizerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">spotmicro.env_randomizer_base.EnvRandomizerBase</span></code></a></p>
+<p>A randomizer that change the spot_gym_env during every reset.</p>
+<dl class="method">
+<dt id="spotmicro.spot_env_randomizer.SpotEnvRandomizer.randomize_env">
+<code class="descname">randomize_env</code><span class="sig-paren">(</span><em>env</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_env_randomizer.SpotEnvRandomizer.randomize_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomize the simulated_objects in the environment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>env</strong> – The environment to be randomized.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro.spot_gym_env">
+<span id="spotmicro-spot-gym-env-module"></span><h2>spotmicro.spot_gym_env module<a class="headerlink" href="#module-spotmicro.spot_gym_env" title="Permalink to this headline">¶</a></h2>
+<p>This file implements the gym environment of SpotMicro.</p>
+<dl class="function">
+<dt id="spotmicro.spot_gym_env.convert_to_list">
+<code class="descclassname">spotmicro.spot_gym_env.</code><code class="descname">convert_to_list</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.convert_to_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="spotmicro.spot_gym_env.spotGymEnv">
+<em class="property">class </em><code class="descclassname">spotmicro.spot_gym_env.</code><code class="descname">spotGymEnv</code><span class="sig-paren">(</span><em>distance_weight=1.0</em>, <em>rotation_weight=1.0</em>, <em>energy_weight=0.0005</em>, <em>shake_weight=0.005</em>, <em>drift_weight=2.0</em>, <em>rp_weight=0.1</em>, <em>rate_weight=0.1</em>, <em>urdf_root='/usr/local/lib/python2.7/dist-packages/pybullet_data'</em>, <em>urdf_version=None</em>, <em>distance_limit=inf</em>, <em>observation_noise_stdev=(0.0</em>, <em>0.0</em>, <em>0.0</em>, <em>0.0</em>, <em>0.0)</em>, <em>self_collision_enabled=True</em>, <em>motor_velocity_limit=inf</em>, <em>pd_control_enabled=False</em>, <em>leg_model_enabled=False</em>, <em>accurate_motor_model_enabled=False</em>, <em>remove_default_joint_damping=False</em>, <em>motor_kp=2.0</em>, <em>motor_kd=0.03</em>, <em>control_latency=0.0</em>, <em>pd_latency=0.0</em>, <em>torque_control_enabled=False</em>, <em>motor_overheat_protection=False</em>, <em>hard_reset=False</em>, <em>on_rack=False</em>, <em>render=True</em>, <em>num_steps_to_log=1000</em>, <em>action_repeat=1</em>, <em>control_time_step=None</em>, <em>env_randomizer=&lt;spotmicro.spot_env_randomizer.SpotEnvRandomizer object&gt;</em>, <em>forward_reward_cap=inf</em>, <em>reflection=True</em>, <em>log_path=None</em>, <em>desired_velocity=0.5</em>, <em>desired_rate=0.0</em>, <em>lateral=False</em>, <em>draw_foot_path=False</em>, <em>height_field=False</em>, <em>AutoStepper=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gym.core.Env</span></code></p>
+<p>The gym environment for spot.</p>
+<p>It simulates the locomotion of spot, a quadruped robot. The state space
+include the angles, velocities and torques for all the motors and the action
+space is the desired motor angle for each motor. The reward function is based
+on how far spot walks in 1000 steps and penalizes the energy
+expenditure.</p>
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.DrawFootPath">
+<code class="descname">DrawFootPath</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.DrawFootPath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.configure">
+<code class="descname">configure</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.configure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.env_step_counter">
+<code class="descname">env_step_counter</code><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.env_step_counter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.get_objectives">
+<code class="descname">get_objectives</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.get_objectives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.get_spot_base_orientation">
+<code class="descname">get_spot_base_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.get_spot_base_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the spot’s base orientation, represented by a quaternion.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A numpy array of spot’s orientation.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_angles">
+<code class="descname">get_spot_motor_angles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the spot’s motor angles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A numpy array of motor angles.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_torques">
+<code class="descname">get_spot_motor_torques</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_torques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the spot’s motor torques.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A numpy array of motor torques.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_velocities">
+<code class="descname">get_spot_motor_velocities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.get_spot_motor_velocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the spot’s motor velocities.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A numpy array of motor velocities.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.ground_id">
+<code class="descname">ground_id</code><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.ground_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.is_fallen">
+<code class="descname">is_fallen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.is_fallen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decide whether spot has fallen.</p>
+<p>If the up directions between the base and the world is larger (the dot
+product is smaller than 0.85) or the base is very low on the ground
+(the height is smaller than 0.13 meter), spot is considered fallen.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Boolean value that indicates whether spot has fallen.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.metadata">
+<code class="descname">metadata</code><em class="property"> = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}</em><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.metadata" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.objective_weights">
+<code class="descname">objective_weights</code><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.objective_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor for the weights for all the objectives.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of floating points that corresponds to weights for the objectives in
+the order that objectives are stored.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.pybullet_client">
+<code class="descname">pybullet_client</code><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.pybullet_client" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.render">
+<code class="descname">render</code><span class="sig-paren">(</span><em>mode='rgb_array'</em>, <em>close=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the environment.</p>
+<p>The set of supported modes varies per environment. (And some
+environments do not support rendering at all.) By convention,
+if mode is:</p>
+<ul class="simple">
+<li>human: render to the current display or terminal and
+return nothing. Usually for human consumption.</li>
+<li>rgb_array: Return an numpy.ndarray with shape (x, y, 3),
+representing RGB values for an x-by-y pixel image, suitable
+for turning into a video.</li>
+<li>ansi: Return a string (str) or StringIO.StringIO containing a
+terminal-style text representation. The text can include newlines
+and ANSI escape sequences (e.g. for colors).</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<dl class="last docutils">
+<dt>Make sure that your class’s metadata ‘render.modes’ key includes</dt>
+<dd>the list of supported modes. It’s recommended to call super()
+in implementations to use the functionality of this method.</dd>
+</dl>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mode</strong> (<em>str</em>) – the mode to render with</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<dl class="docutils">
+<dt>class MyEnv(Env):</dt>
+<dd><p class="first">metadata = {‘render.modes’: [‘human’, ‘rgb_array’]}</p>
+<dl class="last docutils">
+<dt>def render(self, mode=’human’):</dt>
+<dd><dl class="first last docutils">
+<dt>if mode == ‘rgb_array’:</dt>
+<dd>return np.array(…) # return RGB frame suitable for video</dd>
+<dt>elif mode == ‘human’:</dt>
+<dd>… # pop up a window and render</dd>
+<dt>else:</dt>
+<dd>super(MyEnv, self).render(mode=mode) # just raise an exception</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><em>initial_motor_angles=None</em>, <em>reset_duration=1.0</em>, <em>desired_velocity=None</em>, <em>desired_rate=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the state of the environment and returns an initial observation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the initial observation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">observation (object)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.seed">
+<code class="descname">seed</code><span class="sig-paren">(</span><em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the seed for this env’s random number generator(s).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Some environments use multiple pseudorandom number generators.
+We want to capture all such seeds used in order to ensure that
+there aren’t accidental correlations between multiple generators.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Returns the list of seeds used in this env’s random</dt>
+<dd>number generators. The first value in the list should be the
+“main” seed, or the value which a reproducer should pass to
+‘seed’. Often, the main seed equals the provided ‘seed’, but
+this won’t be true if seed=None, for example.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list&lt;bigint&gt;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.set_env_randomizer">
+<code class="descname">set_env_randomizer</code><span class="sig-paren">(</span><em>env_randomizer</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.set_env_randomizer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.set_time_step">
+<code class="descname">set_time_step</code><span class="sig-paren">(</span><em>control_step</em>, <em>simulation_step=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.set_time_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the time step of the environment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>control_step</strong> – The time period (in seconds) between two adjacent control
+actions are applied.</li>
+<li><strong>simulation_step</strong> – The simulation time step in PyBullet. By default, the
+simulation step is 0.001s, which is a good trade-off between simulation
+speed and accuracy.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If the control step is smaller than the simulation step.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spotmicro.spot_gym_env.spotGymEnv.step">
+<code class="descname">step</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#spotmicro.spot_gym_env.spotGymEnv.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step forward the simulation, given the action.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>action</strong> – A list of desired motor angles for eight motors.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The angles, velocities and torques of all motors.
+reward: The reward for the current state-action pair.
+done: Whether the episode has ended.
+info: A dictionary that stores diagnostic information.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">observations</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – The action dimension is not the same as the number of motors.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – The magnitude of actions is out of bounds.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spotmicro">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spotmicro" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Maurice Rahme
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
