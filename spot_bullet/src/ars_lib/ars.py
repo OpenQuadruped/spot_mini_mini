@@ -23,21 +23,15 @@ _EXPLORE = 3
 _EXPLORE_TG = 4
 
 # Params for TG
-SL_SCALE = 0.007
-SV_SCALE = 0.2
-LF_SCALE = 0.1
-Y_SCALE = 0.1
-CH_SCALE = 0.007
-PD_SCALE = 0.0025
-
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
-
 RESIDUALS_SCALE = 0.03
 Z_SCALE = 0.05
 
 # Filter actions
 alpha = 0.7
+
+# Added this to avoid filtering residuals
 # -1 for all
 actions_to_filter = 2
 
@@ -57,7 +51,10 @@ def butter_lowpass_filter(data, cutoff, fs, order=2):
 
 
 def ParallelWorker(childPipe, env, nb_states):
+    """ Function to deploy multiple ARS agents in parallel
+    """
     # nb_states = env.observation_space.shape[0]
+    # common normalizer
     normalizer = Normalizer(nb_states)
     max_action = float(env.action_space.high[0])
     _ = env.reset()
@@ -139,7 +136,7 @@ def ParallelWorker(childPipe, env, nb_states):
                 # Read UPDATED state based on controls and phase
                 state = env.return_state()
                 normalizer.observe(state)
-                # Don't normalize contacts
+                # NOTE: Don't normalize contacts - must stay 0/1
                 state[:-4] = normalizer.normalize(state)[:-4]
                 action = policy.evaluate(state, delta, direction)
 
@@ -152,13 +149,7 @@ def ParallelWorker(childPipe, env, nb_states):
                     1.0 - alpha) * action[:actions_to_filter]
                 old_act = action[:actions_to_filter]
 
-                # Bezier params specced by action
-                # StepLength += action[0] * CD_SCALE
-                # StepVelocity += action[1] * SLV_SCALE
-                # LateralFraction += action[2] * CD_SCALE
-                # YawRate = action[0]
                 ClearanceHeight += action[0] * CD_SCALE
-                # PenetrationDepth += action[1] * CD_SCALE
 
                 # CLIP EVERYTHING
                 StepLength = np.clip(StepLength, smach.StepLength_LIMITS[0],
@@ -199,12 +190,8 @@ def ParallelWorker(childPipe, env, nb_states):
                 T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
                 T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
                 T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
-                # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
-                # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
-                # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
-                # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
 
-                # Adjust Height!
+                # Adjust Body Height with action!
                 pos[2] += action[1] * Z_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf)
@@ -314,8 +301,6 @@ class Policy():
 class Normalizer():
     """ this ensures that the policy puts equal weight upon
         each state component.
-
-        squeezes states between 0 and 1
     """
 
     # Normalizes the states
@@ -451,21 +436,8 @@ class ARSAgent():
             action[:actions_to_filter] = alpha * old_act + (1.0 - alpha) * action[:actions_to_filter]
             old_act = action[:actions_to_filter]
 
-            # print("ACT: {}".format(action))
-
-            # Bezier params specced by action
-            # StepLength += action[0] * CD_SCALE
-            # sl.append(action[0] * CD_SCALE)
-            # StepVelocity += action[1] * SLV_SCALE
-            # sv.append(action[1] * SLV_SCALE)
-            # LateralFraction += action[2] * CD_SCALE
-            # lf.append(action[2] * CD_SCALE)
-            # YawRate = action[0]
-            # yr.append(YawRate)
             ClearanceHeight += action[0] * CD_SCALE
             ch.append(action[0] * CD_SCALE)
-            # PenetrationDepth += action[1] * CD_SCALE
-            # pd.append(action[5] * CD_SCALE)
 
             # CLIP EVERYTHING
             StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
@@ -509,19 +481,10 @@ class ARSAgent():
             T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
             T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
             T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
-            # T_bf["FL"][3, 2] += action[6] * RESIDUALS_SCALE
-            # T_bf["FR"][3, 2] += action[7] * RESIDUALS_SCALE
-            # T_bf["BL"][3, 2] += action[8] * RESIDUALS_SCALE
-            # T_bf["BR"][3, 2] += action[9] * RESIDUALS_SCALE
-
-            # print("ACTIONS: {}".format(action))
 
             # Adjust Height!
             pos[2] += action[1] * Z_SCALE
             heightmod.append(action[1] * Z_SCALE)
-
-            # print("ACT1: {}".format(action[1] * RESIDUALS_SCALE))
-            # print("Z: {}".format(pos[2]))
 
             joint_angles = self.spot.IK(orn, pos, T_bf)
             # Pass Joint Angles
@@ -531,19 +494,19 @@ class ARSAgent():
             next_state, reward, done, _ = self.env.step(action)
             sum_rewards += reward
             timesteps += 1
-        plt.plot()
+        # plt.plot()
         # plt.plot(sl, label="Step Len")
         # plt.plot(sv, label="Step Vel")
         # plt.plot(lf, label="Lat Frac")
         # plt.plot(yr, label="Yaw Rate")
-        plt.plot(ch, label="Clear Height")
-        plt.plot(heightmod, label="Z MOD")
-        # plt.plot(pd, label="Pen Depth")
-        plt.xlabel("dt")
-        plt.ylabel("value")
-        plt.title("TG Parameters by Policy")
-        plt.legend()
-        plt.show()
+        # plt.plot(ch, label="Clear Height")
+        # plt.plot(heightmod, label="Z MOD")
+        # # plt.plot(pd, label="Pen Depth")
+        # plt.xlabel("dt")
+        # plt.ylabel("value")
+        # plt.title("TG Parameters by Policy")
+        # plt.legend()
+        # plt.show()
         self.TGP.reset()
         self.smach.reshuffle()
         self.smach.PenetrationDepth = self.BasePenetrationDepth
@@ -676,12 +639,16 @@ class ARSAgent():
 
     def save(self, filename):
         """ Save the Policy
+
+        :param filename: the name of the file where the policy is saved
         """
         with open(filename + '_policy', 'wb') as filehandle:
             pickle.dump(self.policy, filehandle)
 
     def load(self, filename):
         """ Load the Policy
+
+        :param filename: the name of the file where the policy is saved
         """
         with open(filename + '_policy', 'rb') as filehandle:
             self.policy = pickle.load(filehandle)

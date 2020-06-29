@@ -21,6 +21,29 @@ import torch
 import time
 import os
 
+import argparse
+
+# ARGUMENTS
+descr = "Spot Mini Mini Environment Tester (No Joystick)."
+parser = argparse.ArgumentParser(description=descr)
+parser.add_argument("-hf",
+                    "--HeightField",
+                    help="Use HeightField",
+                    action='store_true')
+parser.add_argument("-r",
+                    "--DebugRack",
+                    help="Put Spot on an Elevated Rack",
+                    action='store_true')
+parser.add_argument("-p",
+                    "--DebugPath",
+                    help="Draw Spot's Foot Path",
+                    action='store_true')
+parser.add_argument("-ay",
+                    "--AutoYaw",
+                    help="Automatically Adjust Spot's Yaw",
+                    action='store_true')
+ARGS = parser.parse_args()
+
 
 def main():
     """ The main() function. """
@@ -28,7 +51,6 @@ def main():
     print("STARTING SPOT TEST ENV")
     seed = 0
     max_timesteps = 4e6
-    file_name = "spot_ars_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
@@ -41,10 +63,25 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
+    if ARGS.DebugRack:
+        on_rack = True
+    else:
+        on_rack = False
+
+    if ARGS.DebugPath:
+        draw_foot_path = True
+    else:
+        draw_foot_path = False
+
+    if ARGS.HeightField:
+        height_field = True
+    else:
+        height_field = False
+
     env = spotBezierEnv(render=True,
-                        on_rack=False,
-                        height_field=True,
-                        draw_foot_path=False)
+                        on_rack=on_rack,
+                        height_field=height_field,
+                        draw_foot_path=draw_foot_path)
 
     # Set seeds
     env.seed(seed)
@@ -93,7 +130,8 @@ def main():
 
         P_yaw = 5.0
 
-        YawRate += - yaw * P_yaw
+        if ARGS.AutoYaw:
+            YawRate += -yaw * P_yaw
 
         # print("YAW RATE: {}".format(YawRate))
 
