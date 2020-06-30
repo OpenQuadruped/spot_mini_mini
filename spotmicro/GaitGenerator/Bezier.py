@@ -63,7 +63,16 @@ class BezierGait():
         self.TD = False
 
     def GetPhase(self, index, Tstance, Tswing):
-        """Retrieves the phase of an individual leg
+        """Retrieves the phase of an individual leg.
+
+        NOTE modification
+        from original paper:
+
+        if ti < -Tswing:
+           ti += Tstride
+
+        This is to avoid a phase discontinuity if the user selects
+        a Step Length and Velocity combination that causes Tstance > Tswing.
 
         :param index: the leg's index, used to identify the required
                       phase lag
