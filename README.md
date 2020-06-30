@@ -28,7 +28,6 @@ Table of Contents
   * [How To Run](#how-to-run)
      * [Dependencies](#dependencies)
      * [Joystick Control with ROS](#joystick-control-with-ros)
-     * [Controls](#controls)
      * [Testing Environment (Non-Joystick)](#testing-environment-non-joystick)
      * [Reinforcement Learning Agent Evaluation](#reinforcement-learning-agent-evaluation)
      * [Using Different Terrain](#using-different-terrain)
@@ -105,7 +104,7 @@ Then simply: `roslaunch mini_ros spot_move.launch`
 
 You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!` It just means your controller is missing some functionality, but this package doesn't use it.
 
-### Controls
+**Controls:**
 Assuming you have a Logitech Gamepad F310:
 
 `A`: switch between stepping and RPY
