@@ -17,23 +17,21 @@ If you don't need a Gym environment, that's okay too! `env_tester.py` works with
 
 Read the [docs](https://spot-mini-mini.readthedocs.io/en/latest/index.html)!
 
-<!--ts-->
 Table of Contents
-=================
-      * [Motivation](#motivation)
-         * [Kinematics:](#kinematics)
-         * [Reinforcement Learning](#reinforcement-learning)
-            * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
-            * [Drift Correction](#drift-correction)
-         * [Gait:](#gait)
-      * [How To Run](#how-to-run)
-         * [Dependencies](#dependencies)
-         * [Joystick Control with ROS](#joystick-control-with-ros)
-         * [Controls](#controls)
-         * [Testing Environment (Non-Joystick)](#testing-environment-non-joystick)
-         * [Reinforcement Learning Agent Evaluation](#reinforcement-learning-agent-evaluation)
-         * [Using Different Terrain](#using-different-terrain)
-<!--te-->
+-----------------
+  * [Motivation](#motivation)
+     * [Kinematics:](#kinematics)
+     * [Reinforcement Learning](#reinforcement-learning)
+        * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
+        * [Drift Correction](#drift-correction)
+     * [Gait:](#gait)
+  * [How To Run](#how-to-run)
+     * [Dependencies](#dependencies)
+     * [Joystick Control with ROS](#joystick-control-with-ros)
+     * [Controls](#controls)
+     * [Testing Environment (Non-Joystick)](#testing-environment-non-joystick)
+     * [Reinforcement Learning Agent Evaluation](#reinforcement-learning-agent-evaluation)
+     * [Using Different Terrain](#using-different-terrain)
 
 ### Kinematics:
 
