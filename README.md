@@ -17,6 +17,7 @@ If you don't need a Gym environment, that's okay too! `env_tester.py` works with
 
 Read the [docs](https://spot-mini-mini.readthedocs.io/en/latest/index.html)!
 
+<!--ts-->
 Table of Contents
 =================
       * [Motivation](#motivation)
@@ -32,6 +33,7 @@ Table of Contents
          * [Testing Environment (Non-Joystick)](#testing-environment-non-joystick)
          * [Reinforcement Learning Agent Evaluation](#reinforcement-learning-agent-evaluation)
          * [Using Different Terrain](#using-different-terrain)
+<!--te-->
 
 ### Kinematics:
 
@@ -69,7 +71,7 @@ Here is the policy output for this demo. It's clearly biased on one end to accou
 
 ### Gait:
 
-Open-Loop Gait using 12-Point Bezier Curves based on: https://dspace.mit.edu/handle/1721.1/98270
+Open-Loop Gait using 12-Point Bezier Curves based on [MIT Cheetah Paper](https://dspace.mit.edu/handle/1721.1/98270) with [modifications](https://spot-mini-mini.readthedocs.io/en/latest/_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.Get_ti) for low step velocity discontinuity.
 
 Forward and Lateral Motion:
 
@@ -77,7 +79,7 @@ Forward and Lateral Motion:
 <!-- ![SLAT1](spot_bullet/media/spot_lat_demo.gif) -->
 
 
-Yaw logic based on 4-wheel steering car: http://www.inase.org/library/2014/santorini/bypaper/ROBCIRC/ROBCIRC-54.pdf
+Yaw logic based on [4-wheel steering car](http://www.inase.org/library/2014/santorini/bypaper/ROBCIRC/ROBCIRC-54.pdf).
 
 ![SYAW0](spot_bullet/media/spot_yaw_logic.gif)
 <!-- ![SYAW1](spot_bullet/media/spot_yaw_demo.gif) -->
