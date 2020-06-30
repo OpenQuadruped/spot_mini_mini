@@ -96,6 +96,7 @@ Yaw logic based on [4-wheel steering car](http://www.inase.org/library/2014/sant
 First, you're going to need a joystick (okay, not really, but it's more fun if you have one).
 
 **Setting Up The Joystick:**
+
 * Get Number (you will see something like jsX): `ls /dev/input/`
 * Make available to ROS: `sudo chmod a+rw /dev/input/jsX`
 * Make sure `<param name="dev" type="string" value="/dev/input/jsX"/>` matches your setup in the launchfile
@@ -105,6 +106,7 @@ Then simply: `roslaunch mini_ros spot_move.launch`
 You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!` It just means your controller is missing some functionality, but this package doesn't use it.
 
 **Controls:**
+
 Assuming you have a Logitech Gamepad F310:
 
 `A`: switch between stepping and RPY
