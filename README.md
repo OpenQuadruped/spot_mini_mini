@@ -17,9 +17,25 @@ If you don't need a Gym environment, that's okay too! `env_tester.py` works with
 
 Read the [docs](https://spot-mini-mini.readthedocs.io/en/latest/index.html)!
 
+Table of Contents
+=================
+      * [Motivation](#motivation)
+         * [Kinematics:](#kinematics)
+         * [Reinforcement Learning](#reinforcement-learning)
+            * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
+            * [Drift Correction](#drift-correction)
+         * [Gait:](#gait)
+      * [How To Run](#how-to-run)
+         * [Dependencies](#dependencies)
+         * [Joystick Control with ROS](#joystick-control-with-ros)
+         * [Controls](#controls)
+         * [Testing Environment (Non-Joystick)](#testing-environment-non-joystick)
+         * [Reinforcement Learning Agent Evaluation](#reinforcement-learning-agent-evaluation)
+         * [Using Different Terrain](#using-different-terrain)
+
 ### Kinematics:
 
-Pybullet Environment and body manipulation with leg IK from: https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot
+Body manipulation with [leg IK](https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot) and [body IK](https://moribots.github.io/project/spot-mini-mini) descriptions.
 
 ![SIK](spot_bullet/media/spot_rpy.gif)
 
@@ -67,6 +83,28 @@ Yaw logic based on 4-wheel steering car: http://www.inase.org/library/2014/santo
 <!-- ![SYAW1](spot_bullet/media/spot_yaw_demo.gif) -->
 
 
+## How To Run
+
+### Dependencies
+* ROS Melodic
+* Gazebo
+* Pytorch
+* Pybullet
+* Gym
+* OpenCV
+
+### Joystick Control with ROS
+First, you're going to need a joystick (okay, not really, but it's more fun if you have one).
+
+**Setting Up The Joystick:**
+* Get Number (you will see something like jsX): `ls /dev/input/`
+* Make available to ROS: `sudo chmod a+rw /dev/input/jsX`
+* Make sure `<param name="dev" type="string" value="/dev/input/jsX"/>` matches your setup in the launchfile
+
+Then simply: `roslaunch mini_ros spot_move.launch`
+
+You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!` It just means your controller is missing some functionality, but this package doesn't use it.
+
 ### Controls
 Assuming you have a Logitech Gamepad F310:
 
@@ -104,30 +142,7 @@ Yaw In Place: Slightly push the `Right Stick` forward while pushing the `Left St
 
 ![SVMOD](mini_ros/media/yaw_in_place.gif)
 
-
-## How To Run
-
-### Dependencies
-* ROS Melodic
-* Gazebo
-* Pytorch
-* Pybullet
-* Gym
-* OpenCV
-
-### Control:
-First, you're going to need a joystick (okay, not really, but it's more fun if you have one).
-
-**Setting Up The Joystick:**
-* Get Number (you will see something like jsX): `ls /dev/input/`
-* Make available to ROS: `sudo chmod a+rw /dev/input/jsX`
-* Make sure `<param name="dev" type="string" value="/dev/input/jsX"/>` matches your setup in the launchfile
-
-Then simply: `roslaunch mini_ros spot_move.launch`
-
-You can ignore this msg: `[ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!` It just means your controller is missing some functionality, but this package doesn't use it.
-
-**Non-Joystick Use**
+### Testing Environment (Non-Joystick)
 
 If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. A Pybullet sim will open up for you with the same controls you would have on the joystick, except each is on its own scrollbar. You may also use the following optional arguments:
 
@@ -140,7 +155,7 @@ If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. 
 -ar, --AutoReset    Automatically Reset Environment When Spot Falls
 ```
 
-**Reinforcement Learning Agent Evaluation**
+### Reinforcement Learning Agent Evaluation
 
 Go to `spot_bullet/src` and do `./spot_ars_eval.py`. You may also use the following optional arguments. Note that if you don't use the `-a` argument, no agent will be loaded, so you will be using the open-loop policy. For example, if you enter `149` after `-a`, you will see the first successful policy, but if you enter `2229`, you will see a much more aggressive policy.
 
@@ -152,7 +167,7 @@ Go to `spot_bullet/src` and do `./spot_ars_eval.py`. You may also use the follow
 -a, --AgentNum      Agent Number To Load
 ```
 
-**Using Different Terrain**
+### Using Different Terrain
 
 Navigate to `spotmicro/heightfield.py` and take a look at `useProgrammatic` and `useTerrainFromPNG` (you can play around with the mesh scales for each) to experiment with different terrains. Make sure that the `spotBezierEnv` instance has `height_field=True` in `env_tester.py` and `spot_pybullet_interface` depending on whether you're using the joystick/ROS version. The same goes for the RL environments. Note: these were adapted from the [pybullet](https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/examples/heightfield.py) source code.
 
