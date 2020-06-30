@@ -1,4 +1,3 @@
-actionlib==1.12.0
 alabaster==0.7.8
 angles==1.9.12
 apturl==0.5.2
