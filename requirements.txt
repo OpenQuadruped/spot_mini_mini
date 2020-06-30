@@ -158,7 +158,7 @@ python-xapp==1.6.0
 python-xlib==0.20
 pytz==2019.3
 pyudev==0.22.0
-pyxdg==0.25
+pyxdg==0.26
 PyYAML==3.12
 pyzmq==19.0.0
 qt-dotgraph==0.4.0
