@@ -319,7 +319,15 @@ Sine portion of the trajectory depending on the retrieved phase</p>
 <dl class="method">
 <dt id="spotmicro.GaitGenerator.Bezier.BezierGait.GetPhase">
 <code class="descname">GetPhase</code><span class="sig-paren">(</span><em>index</em>, <em>Tstance</em>, <em>Tswing</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spotmicro/GaitGenerator/Bezier.html#BezierGait.GetPhase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spotmicro.GaitGenerator.Bezier.BezierGait.GetPhase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves the phase of an individual leg</p>
+<dd><p>Retrieves the phase of an individual leg.</p>
+<p>NOTE modification
+from original paper:</p>
+<dl class="docutils">
+<dt>if ti &lt; -Tswing:</dt>
+<dd>ti += Tstride</dd>
+</dl>
+<p>This is to avoid a phase discontinuity if the user selects
+a Step Length and Velocity combination that causes Tstance &gt; Tswing.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
