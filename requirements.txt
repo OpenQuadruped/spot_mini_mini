@@ -173,7 +173,7 @@ requests==2.21.0
 requests-unixsocket==0.1.5
 resource-retriever==1.12.6
 roman==2.0.0
-rope==0.10.5
+rope==0.11.0
 rosbag==1.14.5
 rosboost-cfg==1.14.8
 rosclean==1.14.8
