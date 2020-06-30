@@ -1,8 +1,8 @@
-/venv/
-/.idea/
+venv/
+.idea/
 *.egg-info
 *.DS_Store
-/dist/
-/build/
-/_build/
+dist/
+build/
+_build/
 *.pyc
