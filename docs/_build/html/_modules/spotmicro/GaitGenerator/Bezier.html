@@ -214,7 +214,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">TD</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="BezierGait.GetPhase"><a class="viewcode-back" href="../../../source/spotmicro.GaitGenerator.html#spotmicro.GaitGenerator.Bezier.BezierGait.GetPhase">[docs]</a>    <span class="k">def</span> <span class="nf">GetPhase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">Tstance</span><span class="p">,</span> <span class="n">Tswing</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Retrieves the phase of an individual leg</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves the phase of an individual leg.</span>
+
+<span class="sd">        NOTE modification</span>
+<span class="sd">        from original paper:</span>
+
+<span class="sd">        if ti &lt; -Tswing:</span>
+<span class="sd">           ti += Tstride</span>
+
+<span class="sd">        This is to avoid a phase discontinuity if the user selects</span>
+<span class="sd">        a Step Length and Velocity combination that causes Tstance &gt; Tswing.</span>
 
 <span class="sd">        :param index: the leg&#39;s index, used to identify the required</span>
 <span class="sd">                      phase lag</span>
