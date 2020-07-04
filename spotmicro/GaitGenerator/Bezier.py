@@ -137,7 +137,7 @@ class BezierGait():
         return self.time_since_last_TD - self.dSref[index] * Tstride
 
     def Increment(self, dt, Tstride):
-        """Increments the Bezier gait generator's internal clock
+        """Increments the Bezier gait generator's internal clock (self.time)
 
         :param dt: the time step
                       phase lag
@@ -265,7 +265,7 @@ class BezierGait():
         return stepX, stepY, stepZ
 
     def SineStance(self, phase, L, LateralFraction, penetration_depth=0.00):
-        """Calculates the step coordinates for the Bezier (swing) period
+        """Calculates the step coordinates for the Sinusoidal stance period
 
            :param phase: current trajectory phase
            :param L: step length
