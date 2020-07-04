@@ -29,6 +29,7 @@ Table of Contents
      * [Dependencies](#dependencies)
      * [Joystick Control with ROS](#joystick-control-with-ros)
      * [Testing Environment (Non-Joystick)](#testing-environment-non-joystick)
+     * [Reinforcement Learning Agent Training](#reinforcement-learning-agent-training)
      * [Reinforcement Learning Agent Evaluation](#reinforcement-learning-agent-evaluation)
      * [Using Different Terrain](#using-different-terrain)
 
