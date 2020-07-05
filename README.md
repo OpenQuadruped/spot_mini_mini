@@ -190,8 +190,11 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 ![RANDENV](spot_bullet/media/spot_random_terrain.gif)
 
 ## Credits
-Spot Micro AI community: https://spotmicroai.readthedocs.io/en/latest/
 
-Rex URDF: https://github.com/nicrusso7/rex-gym
+* Original idea and CAD files: [Spot Micro AI Community](https://spotmicroai.readthedocs.io/en/latest/)
 
-Pybullet's Minitaur Environment: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py
+* URDF: [Rex Gym](https://github.com/nicrusso7/rex-gym)
+
+* OpenAI Gym Interface: [Minitaur Environment](https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py)
+
+* Modified CAD files and excellent collaborator for system design, Teensy interface, and PCB design: [Adham Elarabawy](https://github.com/adham-elarabawy/OpenQuadruped)
