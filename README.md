@@ -157,7 +157,7 @@ If you don't have a joystick, go to `spot_bullet/src` and do `./env_tester.py`. 
 -ar, --AutoReset    Automatically Reset Environment When Spot Falls
 ```
 
-### Reinformcement Learning Agent Training
+### Reinforcement Learning Agent Training
 
 Go to `spot_bullet/src` and do `./spot_ars.py`. Models will be saved every `9th` episode to `spot_bullet/models/`. I will add some more arguments in the future to give you finer control of the heightfield mesh from the command line.
 
