@@ -197,4 +197,4 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 
 * OpenAI Gym Interface: [Minitaur Environment](https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py)
 
-* Modified CAD files and excellent collaborator for system design, Teensy interface, and PCB design: [Adham Elarabawy](https://github.com/adham-elarabawy/OpenQuadruped)
+* Modified CAD files and excellent collaborator for Teensy interface, and PCB design: [Adham Elarabawy](https://github.com/adham-elarabawy/OpenQuadruped)
