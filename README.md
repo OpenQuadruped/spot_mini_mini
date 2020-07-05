@@ -191,5 +191,7 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 
 ## Credits
 Spot Micro AI community: https://spotmicroai.readthedocs.io/en/latest/
+
 Rex URDF: https://github.com/nicrusso7/rex-gym
+
 Pybullet's Minitaur Environment: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py
