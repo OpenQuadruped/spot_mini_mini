@@ -9,6 +9,7 @@ from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import TransToRp
 import copy
 from scipy.signal import savgol_filter as sv_filt
+from spotmicro.util.gui import GUI
 
 np.random.seed(0)
 
@@ -171,7 +172,7 @@ def ParallelWorker(childPipe, env, nb_states):
 
                 # For auto yaw control
                 yaw = env.return_yaw()
-                YawRate += - yaw * P_yaw
+                YawRate += -yaw * P_yaw
 
                 # Get Desired Foot Poses
                 if timesteps > 20:
@@ -365,6 +366,7 @@ class ARSAgent():
             self.BasePenetrationDepth = self.smach.PenetrationDepth
         self.TGP = TGP
         self.spot = spot
+        self.g_u_i = GUI(self.env.spot.quadruped)
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
@@ -396,7 +398,7 @@ class ARSAgent():
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
-    def deployTG(self, direction=None, delta=None):
+    def deployTG(self, direction=None, delta=None, gui=False):
         state = self.env.reset()
         sum_rewards = 0.0
         timesteps = 0
@@ -423,6 +425,10 @@ class ARSAgent():
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
 
+            if gui:
+                pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.g_u_i.UserInput(
+                )
+
             self.env.spot.GetExternalObservations(self.TGP, self.smach)
 
             # Read UPDATED state based on controls and phase
@@ -433,7 +439,8 @@ class ARSAgent():
             action = self.policy.evaluate(state, delta, direction)
             action = np.tanh(action)
             # EXP FILTER
-            action[:actions_to_filter] = alpha * old_act + (1.0 - alpha) * action[:actions_to_filter]
+            action[:actions_to_filter] = alpha * old_act + (
+                1.0 - alpha) * action[:actions_to_filter]
             old_act = action[:actions_to_filter]
 
             ClearanceHeight += action[0] * CD_SCALE
@@ -462,7 +469,8 @@ class ARSAgent():
             # print("CONTACTS: {}".format(contacts))
 
             yaw = self.env.return_yaw()
-            YawRate += - yaw * P_yaw
+            if not gui:
+                YawRate += -yaw * P_yaw
 
             # Get Desired Foot Poses
             if timesteps > 20:
