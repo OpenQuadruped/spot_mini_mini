@@ -170,7 +170,8 @@ Go to `spot_bullet/src` and do `./spot_ars_eval.py`. You may also use the follow
 -hf, --HeightField  Use HeightField
 -r, --DebugRack     Put Spot on an Elevated Rack
 -p, --DebugPath     Draw Spot's Foot Path
--a, --AgentNum      Agent Number To Load
+-gui, --GUI         Control The Robot Yourself With a GUI
+-a, --AgentNum      Agent Number To Load (followed by number)
 ```
 
 ### Using Different Terrain
