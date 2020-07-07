@@ -109,8 +109,14 @@ def main():
     # Initialize Policy
     policy = Policy(state_dim, action_dim)
 
+    # to GUI or not to GUI
+    if ARGS.GUI:
+        gui = True
+    else:
+        gui = False
+
     # Initialize Agent with normalizer, policy and gym env
-    agent = ARSAgent(normalizer, policy, env, bz_step, bzg, spot)
+    agent = ARSAgent(normalizer, policy, env, bz_step, bzg, spot, gui)
     agent_num = 0
     if ARGS.AgentNum:
         agent_num = ARGS.AgentNum
@@ -134,14 +140,7 @@ def main():
     t = 0
     while t < (int(max_timesteps)):
 
-        # Maximum timesteps per rollout
-
-        if ARGS.GUI:
-            gui = True
-        else:
-            gui = False
-
-        episode_reward, episode_timesteps = agent.deployTG(gui=gui)
+        episode_reward, episode_timesteps = agent.deployTG()
 
         t += episode_timesteps
         # episode_reward = agent.train()
