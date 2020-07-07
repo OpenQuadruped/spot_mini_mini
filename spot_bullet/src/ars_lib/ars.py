@@ -345,7 +345,8 @@ class ARSAgent():
                  env,
                  smach=None,
                  TGP=None,
-                 spot=None):
+                 spot=None,
+                 gui=False):
         self.normalizer = normalizer
         self.policy = policy
         self.state_dim = self.policy.state_dim
@@ -366,7 +367,10 @@ class ARSAgent():
             self.BasePenetrationDepth = self.smach.PenetrationDepth
         self.TGP = TGP
         self.spot = spot
-        self.g_u_i = GUI(self.env.spot.quadruped)
+        if gui:
+            self.g_u_i = GUI(self.env.spot.quadruped)
+        else:
+            self.g_u_i = None
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
@@ -398,7 +402,7 @@ class ARSAgent():
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
-    def deployTG(self, direction=None, delta=None, gui=False):
+    def deployTG(self, direction=None, delta=None):
         state = self.env.reset()
         sum_rewards = 0.0
         timesteps = 0
@@ -425,7 +429,7 @@ class ARSAgent():
             pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.smach.StateMachine(
             )
 
-            if gui:
+            if self.g_u_i:
                 pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.g_u_i.UserInput(
                 )
 
@@ -469,7 +473,7 @@ class ARSAgent():
             # print("CONTACTS: {}".format(contacts))
 
             yaw = self.env.return_yaw()
-            if not gui:
+            if not self.g_u_i:
                 YawRate += -yaw * P_yaw
 
             # Get Desired Foot Poses
