@@ -33,6 +33,10 @@ parser.add_argument("-p",
                     "--DebugPath",
                     help="Draw Spot's Foot Path",
                     action='store_true')
+parser.add_argument("-gui",
+                    "--GUI",
+                    help="Control The Robot Yourself With a GUI",
+                    action='store_true')
 parser.add_argument("-a",
                     "--AgentNum",
                     help="Agent Number To Load")
@@ -132,7 +136,12 @@ def main():
 
         # Maximum timesteps per rollout
 
-        episode_reward, episode_timesteps = agent.deployTG()
+        if ARGS.GUI:
+            gui = True
+        else:
+            gui = False
+
+        episode_reward, episode_timesteps = agent.deployTG(gui=gui)
 
         t += episode_timesteps
         # episode_reward = agent.train()
