@@ -52,7 +52,11 @@ Before training, the robot falls almost immediately:
 
 After training, the robot successfully navigates the terrain:
 
-![FALL](spot_bullet/media/spot_rough_ARS.gif)
+![NO_FALL](spot_bullet/media/spot_rough_ARS.gif)
+
+What's even better, is that the same agent `#149` is able to adapt to unseen commands, making high-level system integration straightforward. Here it is being teleoperated using `Forward`, `Lateral`, and `Yaw` commands.
+
+![UNIVERSAL](spot_bullet/media/spot_universal.gif)
 
 #### Drift Correction
 I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
