@@ -15,6 +15,8 @@ As part of the [Spot Micro](https://spotmicroai.readthedocs.io/en/latest/) commu
 
 If you don't need a Gym environment, that's okay too! `env_tester.py` works without RL or Gym, is designed to accept any gait implementation, and provides a GUI for testing it out! In my case, I've implemented a 12-point Bezier gait.
 
+Featured in [Robotics Weekly](https://weeklyrobotics.com/weekly-robotics-98)!
+
 Read the [docs](https://spot-mini-mini.readthedocs.io/en/latest/index.html)!
 
 Table of Contents
