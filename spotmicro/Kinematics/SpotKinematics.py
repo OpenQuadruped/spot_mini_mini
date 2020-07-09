@@ -102,11 +102,8 @@ class SpotModel:
         """
         Converts a desired position and orientation wrt Spot's
         home position, with a desired body-to-foot Transform
-        into a body-to-hip Transform, of which the translational
-        component can be fed into the LegIK solver.
-
-        Finally, the resultant joint angles are returned
-        from the LegIK solver for each leg.
+        into a body-to-hip Transform, which is used to extract
+        and return the Hip To Foot Vector.
 
         :param orn: A 3x1 np.array([]) with Spot's Roll, Pitch, Yaw angles
         :param pos: A 3x1 np.array([]) with Spot's X, Y, Z coordinates
@@ -155,10 +152,9 @@ class SpotModel:
 
     def IK(self, orn, pos, T_bf):
         """
-        Converts a desired position and orientation wrt Spot's
-        home position, with a desired body-to-foot Transform
-        into a body-to-hip Transform, of which the translational
-        component can be fed into the LegIK solver.
+        Uses HipToFoot() to convert a desired position
+        and orientation wrt Spot's home position into a
+        Hip To Foot Vector, which is fed into the LegIK solver.
 
         Finally, the resultant joint angles are returned
         from the LegIK solver for each leg.
