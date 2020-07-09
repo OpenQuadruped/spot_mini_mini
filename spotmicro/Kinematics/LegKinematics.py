@@ -33,7 +33,7 @@ class LegIK():
         if D > 1 or D < -1:
             # DOMAIN BREACHED
             print("---------DOMAIN BREACH---------")
-            D = np.clip(D, -0.99, 0.99)
+            D = np.clip(D, -1.0, 1.0)
             return D
         else:
             return D
@@ -62,17 +62,17 @@ class LegIK():
         :param D: leg domain
         :return: Joint Angles required for desired position
         """
-        leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
+        wrist_angle = np.arctan2(-np.sqrt(1 - D**2), D)
         sqrt_component = y**2 + (-z)**2 - self.shoulder_length**2
         if sqrt_component < 0.0:
             print("NEGATIVE SQRT")
             sqrt_component = 0.0
-        hip_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component),
-                                                   -self.shoulder_length)
-        shoulder_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
-            self.wrist_length * np.sin(leg_angle),
-            self.elbow_length + self.wrist_length * np.cos(leg_angle))
-        joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
+        shoulder_angle = -np.arctan2(z, y) - np.arctan2(
+            np.sqrt(sqrt_component), -self.shoulder_length)
+        elbow_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
+            self.wrist_length * np.sin(wrist_angle),
+            self.elbow_length + self.wrist_length * np.cos(wrist_angle))
+        joint_angles = np.array([shoulder_angle, -elbow_angle, -wrist_angle])
         return joint_angles
 
     def LeftIK(self, x, y, z, D):
@@ -83,15 +83,15 @@ class LegIK():
         :param D: leg domain
         :return: Joint Angles required for desired position
         """
-        leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
+        wrist_angle = np.arctan2(-np.sqrt(1 - D**2), D)
         sqrt_component = y**2 + (-z)**2 - self.shoulder_length**2
         if sqrt_component < 0.0:
             print("NEGATIVE SQRT")
             sqrt_component = 0.0
-        hip_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component),
-                                                   self.shoulder_length)
-        shoulder_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
-            self.wrist_length * np.sin(leg_angle),
-            self.elbow_length + self.wrist_length * np.cos(leg_angle))
-        joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
+        shoulder_angle = -np.arctan2(z, y) - np.arctan2(
+            np.sqrt(sqrt_component), self.shoulder_length)
+        elbow_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
+            self.wrist_length * np.sin(wrist_angle),
+            self.elbow_length + self.wrist_length * np.cos(wrist_angle))
+        joint_angles = np.array([shoulder_angle, -elbow_angle, -wrist_angle])
         return joint_angles
