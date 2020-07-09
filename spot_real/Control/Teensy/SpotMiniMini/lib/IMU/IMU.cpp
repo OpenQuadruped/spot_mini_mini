@@ -15,17 +15,17 @@ void IMU::Initialize()
 	bno.setExtCrystalUse(true);
 }
 
-imu::Vector<3> GetEuler()
+imu::Vector<3> IMU::GetEuler()
 {
-	eul = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+	return bno.getVector(Adafruit_BNO055::VECTOR_EULER);
 }
 
-imu::Vector<3> GetAcc()
+imu::Vector<3> IMU::GetAcc()
 {
 	return bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
 }
 
-imu::Vector<3> GetGyro()
+imu::Vector<3> IMU::GetGyro()
 {
 	return bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
 }

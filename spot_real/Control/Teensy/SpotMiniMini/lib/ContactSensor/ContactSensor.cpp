@@ -1,7 +1,7 @@
 #include "ContactSensor.hpp"
 #include <Arduino.h>
 
-void ContactSensor::init(int in_sensor_pin, int in_led_pin) {
+void ContactSensor::Initialize(const int & in_sensor_pin, const int & in_led_pin) {
   sensor_pin = in_sensor_pin;
   led_pin = in_led_pin;
 

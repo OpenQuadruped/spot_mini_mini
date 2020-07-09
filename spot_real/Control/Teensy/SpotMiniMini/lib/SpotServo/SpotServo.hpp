@@ -22,12 +22,12 @@ public:
     /// \param offset_: motor position offset (due to mechanical fit issues)
     /// \param leg_type_: Front Left, Front Right, Back Left, or Back Right leg (see enum)
     /// \param joint_type_: Shoulder, Elbow or Wrist (see enum)
-    void Initialize(int & servo_pin, double & home_angle_, double & offset_, LegType & leg_type_, JointType & joint_type_);
+    void Initialize(const int & servo_pin, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_);
 
     /// \brief Commands a motor to move to a certain goal at a certain speed
     /// \param goal_pose_: the desired motor position in degrees
     /// \param desired_speed_: the desired motor speed (deg/sec) while reaching this goal
-    void SetGoal(double & goal_pose_, double & desired_speed_);
+    void SetGoal(const double & goal_pose_, const double & desired_speed_);
 
     /// \brief Return the interpolated position (time-step is small enough that this is mostly accurate)
     /// \returns: motor_pose_est

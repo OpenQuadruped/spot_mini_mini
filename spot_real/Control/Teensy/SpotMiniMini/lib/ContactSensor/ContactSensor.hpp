@@ -14,7 +14,7 @@ class ContactSensor {
   double alpha = 0.999;
 
   public:
-  void init(int in_sensor_pin, int in_led_pin);
+  void Initialize(const int & in_sensor_pin, const int & in_led_pin);
   bool isTriggered();
   void update_clk();
 };

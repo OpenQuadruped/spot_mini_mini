@@ -4,7 +4,7 @@
 /// \brief Leg Kinematics Library.
 #include <Arduino.h>
 
-enum LegType {Right, Left};
+enum LegQuadrant {Right, Left};
 
 class Kinematics {
 	private:		
@@ -19,14 +19,14 @@ class Kinematics {
 		/// \param elbow_length_: length of elbow link
 		/// \param wrist_length_: length of wrist link
 		/// \param leg_type_: right or left legs
-		void Initialize(double & shoulder_length_, double & elbow_length_, double & wrist_length_);
+		void Initialize(const double & shoulder_length_, const double & elbow_length_, const double & wrist_length_);
 
 		/// \brief Calculates the leg's Domain and caps it in case of a breach
 		/// \param x: x coordinate of Hip To Foot Vector 
 		/// \param y: y coordinate of Hip To Foot Vector 
 		/// \param z: z coordinate of Hip To Foot Vector 
 		/// \returns: Leg Domain D
-		double GetDomain(double & x, double & y, double & z);
+		double GetDomain(const double & x, const double & y, const double & z);
 
 		/// \brief Right Leg Inverse Kinematics Solver
 		/// \param x: x coordinate of Hip To Foot Vector 
@@ -34,7 +34,7 @@ class Kinematics {
 		/// \param z: z coordinate of Hip To Foot Vector
 		/// \param D: the leg domain
 		/// \returns: pointer to beginning of array containing joint angles for this leg
-		double * RightIK(double & x, double & y, double & z, double & D);
+		double * RightIK(const double & x, const double & y, const double & z, const double & D);
 
 		/// \brief Left Leg Inverse Kinematics Solver
 		/// \param x: x coordinate of Hip To Foot Vector 
@@ -42,14 +42,15 @@ class Kinematics {
 		/// \param z: z coordinate of Hip To Foot Vector
 		/// \param D: the leg domain
 		/// \returns: pointer to beginning of array containing joint angles for this leg
-		double * LeftIK(double & x, double & y, double & z, double & D);
+		double * LeftIK(const double & x, const double & y, const double & z, const double & D);
 
 		/// \brief Retrives Joint Angles using a Hip To Foot Vector (x, y, z)
 		/// \param x: x coordinate of Hip To Foot Vector 
 		/// \param y: y coordinate of Hip To Foot Vector 
-		/// \param z: z coordinate of Hip To Foot Vector 
+		/// \param z: z coordinate of Hip To Foot Vector
+		/// \param legquad: Leg quadrant (left or right)
 		/// \returns: pointer to beginning of array containing joint angles for this leg
-		double * GetJointAngles(double & x, double & y, double & z);
+		double * GetJointAngles(const double & x, const double & y, const double & z,  const LegQuadrant & legquad);
 
 
 };
