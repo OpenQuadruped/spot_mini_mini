@@ -1,13 +1,13 @@
 #include "Kinematics.hpp"
 
-void Kinematics::Initialize(double & shoulder_length_, double & elbow_length_, double & wrist_length_)
+void Kinematics::Initialize(const double & shoulder_length_, const double & elbow_length_, const double & wrist_length_)
 {
 	shoulder_length = shoulder_length_;
     elbow_length = elbow_length_;
     wrist_length = wrist_length_;
 }
 
-double Kinematics::GetDomain(double & x, double & y, double & z)
+double Kinematics::GetDomain(const double & x, const double & y, const double & z)
 {
 	double D = (pow(y, 2) + pow(-z, 2) - pow(shoulder_length, 2) +
              	pow(-x, 2) - pow(elbow_length, 2) - pow(wrist_length, 2)) / (
@@ -17,7 +17,7 @@ double Kinematics::GetDomain(double & x, double & y, double & z)
     return D;
 }
 
-double * Kinematics::RightIK(double & x, double & y, double & z, double & D)
+double * Kinematics::RightIK(const double & x, const double & y, const double & z, const double & D)
 {
 	double wrist_angle = atan2(-sqrt(1.0 - pow(D, 2)), D);
 	double sqrt_component = pow(y, 2) + pow(-z, 2) - pow(shoulder_length, 2);
@@ -39,7 +39,7 @@ double * Kinematics::RightIK(double & x, double & y, double & z, double & D)
 	return joint_angles;
 }
 
-double * Kinematics::LeftIK(double & x, double & y, double & z, double & D)
+double * Kinematics::LeftIK(const double & x, const double & y, const double & z, const double & D)
 {
 	double wrist_angle = atan2(-sqrt(1.0 - pow(D, 2)), D);
 	double sqrt_component = pow(y, 2) + pow(-z, 2) - pow(shoulder_length, 2);
@@ -61,10 +61,10 @@ double * Kinematics::LeftIK(double & x, double & y, double & z, double & D)
 	return joint_angles;
 }
 
-double * Kinematics::GetJointAngles(double & x, double & y, double & z, LegType & legtype)
+double * Kinematics::GetJointAngles(const double & x, const double & y, const double & z, const LegQuadrant & legquad)
 {
 	double D = GetDomain(x, y, z);
-	if (legtype == Right)
+	if (legquad == Right)
 	{
 		return RightIK(x, y, z, D);
 	} else

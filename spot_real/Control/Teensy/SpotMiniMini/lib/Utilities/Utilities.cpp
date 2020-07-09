@@ -20,36 +20,37 @@ double Utilities::max(double a0, double a1, double a2) {
 }
 
 double Utilities::toDegrees(double radianVal) {
-  return radianVal * 57296 / 1000;
+  return radianVal * 57296 / 1000.0;
 }
 
 double Utilities::angleConversion(int leg, int joint, double angle) {
-  if(joint == 0){
-    if(leg == 0 || leg == 1) {
-      angle = -angle;
-    }
-    angle = angle + 135;
-  }
+  // if(joint == 0){
+  //   if(leg == 0 || leg == 1) {
+  //     angle = -angle;
+  //   }
+  //   angle = angle + 135;
+  // }
 
-  if(joint == 1) {
-    if(leg == 0 || leg == 2) {
-      angle = 90 + angle;
-    }
-    if(leg == 1 || leg == 3) {
-      angle = 180 - angle;
-    }
-  }
+  // if(joint == 1) {
+  //   if(leg == 0 || leg == 2) {
+  //     angle = 90 + angle;
+  //   }
+  //   if(leg == 1 || leg == 3) {
+  //     angle = 180 - angle;
+  //   }
+  // }
 
-  if(joint == 2) {
-    double weird_offset = 50;
-    if(leg == 0 || leg == 2) {
-      angle = angle - weird_offset;
-    }
-    if(leg == 1 || leg == 3) {
-      angle = (270 + weird_offset) - angle;
-    }
-  }
-  return angle;
+  // if(joint == 2) {
+  //   double weird_offset = 50;
+  //   if(leg == 0 || leg == 2) {
+  //     angle = angle - weird_offset;
+  //   }
+  //   if(leg == 1 || leg == 3) {
+  //     angle = (270 + weird_offset) - angle;
+  //   }
+  // }
+  // return angle;
+  return angle + 135
 }
 
 int Utilities::inverse_angleConversion(int leg, int joint, double angle) {

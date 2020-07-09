@@ -28,7 +28,7 @@ SpotServo * Elbows[4] = {&FL_Elbow, &FR_Elbow, &BL_Elbow, &BR_Elbow};
 SpotServo * Wrists[4] = {&FL_Wrist, &FR_Wrist, &BL_Wrist, &BR_Wrist};
 Utilities util;
 Kinematics ik;
-IMU imu;
+IMU imu_sensor;
 
 void detach_servos()
 {
@@ -111,7 +111,7 @@ void setup() {
   BR_sensor.Initialize(A6, 14);
 
   // IMU
-  imu.Initialize();
+  imu_sensor.Initialize();
 
   last_estop = millis();
 
@@ -184,24 +184,24 @@ void loop() {
       Serial.println("complete message");
       double *angles;
 
-      LegType legtype;
+      LegQuadrant legquad;
       if (leg == 0 or leg == 2)
       {
-        legtype = Left;
+        legquad = Left;
       } else
       {
-        legtype = Right;
+        legquad = Right;
       }
 
-      angles = ik.run(x, y, z, legtype);
+      angles = ik.GetJointAngles(x, y, z, legquad);
 
       double Shoulder_angle = util.angleConversion(leg, 0, util.toDegrees(*angles));
       double Elbow_angle = util.angleConversion(leg, 1, util.toDegrees(*(angles+1)));
       double wrist_angle = util.angleConversion(leg, 2, util.toDegrees(*(angles+2)));
 
-      double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).getPosition());
-      double s_dist = abs(Elbow_angle - (*Elbows[leg]).getPosition());
-      double w_dist = abs(wrist_angle - (*Wrists[leg]).getPosition());
+      double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
+      double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
+      double w_dist = abs(wrist_angle - (*Wrists[leg]).GetPoseEstimate());
 
       double scaling_factor = util.max(h_dist, s_dist, w_dist);
 
@@ -209,9 +209,9 @@ void loop() {
       s_dist /= scaling_factor;
       w_dist /= scaling_factor;
 
-      (*Shoulders[leg]).setPosition(Shoulder_angle, max_speed * h_dist);
-      (*Elbows[leg]).setPosition(Elbow_angle, max_speed * s_dist);
-      (*Wrists[leg]).setPosition(wrist_angle, max_speed * w_dist);
+      (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist);
+      (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist);
+      (*Wrists[leg]).SetGoal(wrist_angle, max_speed * w_dist);
     }
   }
 }
