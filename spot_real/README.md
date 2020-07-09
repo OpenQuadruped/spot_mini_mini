@@ -1,12 +1,15 @@
-## Spot Micro Interface
+# Spot Micro Interface
 
-### Hardware
-#### Power Distribution Board: `PDB`
+## Hardware
+### Power Distribution Board: `PDB`
 
-### Software
-#### Raspberry Pi High Level Controller: `HLC`
-#### Teensy Low Level Speed Controller: `LLC`
+## Software `Control`
+### Raspberry Pi High Level Controller: `RPi`
+### Teensy Low Level Speed Controller: `Teensy`
+#### Installation Instructions:
+Install `PlatformIO`
 
 
-### Custom/Modified Printed Parts Parts
+
+## Custom/Modified Printed Parts Parts
 (None Yet)

@@ -98,7 +98,7 @@ class SpotModel:
             [-self.foot_x / 2.0, -self.foot_y / 2.0, -self.height])
         self.WorldToFoot["BR"] = RpToTrans(Rwb, self.pf_BR)
 
-    def IK(self, orn, pos, T_bf):
+    def HipToFoot(self, orn, pos, T_bf):
         """
         Converts a desired position and orientation wrt Spot's
         home position, with a desired body-to-foot Transform
@@ -111,22 +111,19 @@ class SpotModel:
         :param orn: A 3x1 np.array([]) with Spot's Roll, Pitch, Yaw angles
         :param pos: A 3x1 np.array([]) with Spot's X, Y, Z coordinates
         :param T_bf: Dictionary of desired body-to-foot Transforms.
-        :return: Joint angles for each of Spot's joints.
+        :return: Hip To Foot Vector for each of Spot's Legs.
         """
 
         # Following steps in attached document: SpotBodyIK.
         # TODO: LINK DOC
 
-        # 4 legs, 3 joints per leg
-        joint_angles = np.zeros((4, 3))
-
         # Only get Rot component
         Rb, _ = TransToRp(RPY(orn[0], orn[1], orn[2]))
-        # print("Rb: ", Rb)
         pb = pos
-        # print("pb:", pb)
         T_wb = RpToTrans(Rb, pb)
-        # print("T_wb: ", T_wb)
+
+        # Dictionary to store vectors
+        HipToFoot_List = OrderedDict()
 
         for i, (key, T_wh) in enumerate(self.WorldToHip.items()):
             # ORDER: FL, FR, FR, BL, BR
@@ -151,6 +148,38 @@ class SpotModel:
                 print("NOT EQUAL")
 
             p_hf = p_hf1
+
+            HipToFoot_List[key] = p_hf
+
+        return HipToFoot_List
+
+    def IK(self, orn, pos, T_bf):
+        """
+        Converts a desired position and orientation wrt Spot's
+        home position, with a desired body-to-foot Transform
+        into a body-to-hip Transform, of which the translational
+        component can be fed into the LegIK solver.
+
+        Finally, the resultant joint angles are returned
+        from the LegIK solver for each leg.
+
+        :param orn: A 3x1 np.array([]) with Spot's Roll, Pitch, Yaw angles
+        :param pos: A 3x1 np.array([]) with Spot's X, Y, Z coordinates
+        :param T_bf: Dictionary of desired body-to-foot Transforms.
+        :return: Joint angles for each of Spot's joints.
+        """
+
+        # Following steps in attached document: SpotBodyIK.
+        # TODO: LINK DOC
+
+        # 4 legs, 3 joints per leg
+        joint_angles = np.zeros((4, 3))
+
+        # Steps 1 and 2 of pipeline here
+        HipToFoot = self.HipToFoot(orn, pos, T_bf)
+
+        for i, (key, p_hf) in enumerate(HipToFoot.items()):
+            # ORDER: FL, FR, FR, BL, BR
 
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)
