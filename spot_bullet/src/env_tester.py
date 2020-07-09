@@ -16,7 +16,6 @@ from spotmicro.GaitGenerator.Bezier import BezierGait
 
 # TESTING
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
-import torch
 
 import time
 import os
@@ -89,7 +88,6 @@ def main():
 
     # Set seeds
     env.seed(seed)
-    torch.manual_seed(seed)
     np.random.seed(seed)
 
     state_dim = env.observation_space.shape[0]

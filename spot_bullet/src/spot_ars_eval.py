@@ -13,7 +13,6 @@ from spotmicro.GaitGenerator.Bezier import BezierGait
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
-import torch
 import os
 
 import argparse
@@ -87,7 +86,6 @@ def main():
 
     # Set seeds
     env.seed(seed)
-    torch.manual_seed(seed)
     np.random.seed(seed)
 
     state_dim = env.observation_space.shape[0]
