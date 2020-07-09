@@ -6,8 +6,7 @@ void IMU::Initialize()
 	if(!bno.begin())
 	{
 		/* There was a problem detecting the BNO055 ... check your connections */
-		Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-		while(1);
+		Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!\n");
 	}
 
 	delay(1000);

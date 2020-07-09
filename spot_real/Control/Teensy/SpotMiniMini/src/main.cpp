@@ -83,7 +83,11 @@ void update_sensors()
 
 // THIS ONLY RUNS ONCE
 void setup() {
+  // HARDWARE - PI COMM
   Serial1.begin(500000);
+  // DEBUG - USB
+  Serial.begin(9600);
+  Serial.print("INITIALIZING!\n");
 
   ik.Initialize(0.04, 0.1, 0.1);
 
@@ -116,18 +120,26 @@ void setup() {
 
   last_estop = millis();
 
+  Serial.print("READY!\n");
+
   delay(1000);
 }
 
 // THIS LOOPS FOREVER
-void loop() {
+void loop()
+{
+  // Serial.print("Looping!\n");
+  // Serial.print("----------------------------------\n");
+
   if(!ESTOPPED){
     update_servos();
   } else {
     detach_servos();
   }
   update_sensors();
-  if (Serial1.available()) {
+  if (Serial1.available())
+  {
+    Serial.println("SERIAL1 OK\n");
     serialResponse = Serial1.readStringUntil('\r\n');
     // Convert from String Object to String.
     char buf[sizeof(msg0)];
@@ -150,7 +162,8 @@ void loop() {
       }
 
       // Read Desired Leg
-      if(message_string_index == 0) {
+      if(message_string_index == 0)
+      {
         util.upper(str);
         if(strcmp(str, "0") == 0)
         {
@@ -215,6 +228,7 @@ void loop() {
       if (servo_num == -1)
       // NORMAL OPERATION
       {
+        Serial.println("SERVO ACT\n");
         double *angles;
 
         LegQuadrant legquad;
@@ -248,8 +262,12 @@ void loop() {
       } else
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY
+        Serial.println("SERVO CALIB\n");
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }
+  } else
+  {
+    Serial.println("SERIAL1 NOT AVAILABLE\n");
   }
 }
