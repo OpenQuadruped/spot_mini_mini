@@ -17,6 +17,7 @@ char msg0[] = "0,-999.9,-999.9,-999.9"; // structure for position command
 // char msg1[] = "0,-999.9,-999.9,-999.9,-999.9,-999.9,-999.9"; // structure for position/speed command
 bool ESTOPPED = false;
 int max_speed = 500; // deg/sec
+double last_estop = millis();
 
 
 SpotServo FL_Shoulder, FL_Elbow, FL_Wrist, FR_Shoulder, FR_Elbow, FR_Wrist, BL_Shoulder, BL_Elbow, BL_Wrist, BR_Shoulder, BR_Elbow, BR_Wrist;
@@ -77,6 +78,7 @@ void update_sensors()
     BR_sensor.update_clk();
 }
 
+// THIS ONLY RUNS ONCE
 void setup() {
   Serial1.begin(500000);
 
@@ -99,14 +101,18 @@ void setup() {
   BL_Wrist.Initialize(6, 135, 0, BL, Wrist);
   BR_Wrist.Initialize(9, 135, 0, BR, Wrist);
 
+  // Contact Sensors
   FL_sensor.Initialize(A9, 17);
   FR_sensor.Initialize(A8, 16);
   BL_sensor.Initialize(A7, 15);
   BR_sensor.Initialize(A6, 14);
 
+  last_estop = millis();
+
   delay(1000);
 }
 
+// THIS LOOPS FOREVER
 void loop() {
   if(!ESTOPPED){
     update_servos();
@@ -127,9 +133,10 @@ void loop() {
     double y = -9999;
     double z = -9999;
     while ((str = strtok_r(ptr, ",", &ptr)) != NULL) { // delimiter is the dash
-      if(strcmp(str, "e") == 0 || strcmp(str, "E") == 0) {
+      if((strcmp(str, "e") == 0 or strcmp(str, "E") == 0) and last_estop > 200) {
         // TRIGGER
         ESTOPPED = !ESTOPPED;
+        last_estop = millis();
       }
 
       // Read Desired Leg
