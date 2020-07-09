@@ -9,16 +9,16 @@ class TeensyInterface:
         self.buffer = []
 
     def __construct_string(self, i, x, y, z):
-        return f'{i},{x},{y},{z}\n'
+        return "{},{},{},{}\n".format(i, x, y, z)
 
     def add_to_buffer(self, i, x, y, z):
         self.buffer.append(self.__construct_string(i, x, y, z))
 
     def add_calib_to_buffer(self, i, x):
-        self.buffer.append(f'{i},{x}\n')
+        self.buffer.append("{},{}\n".format(i, x))
 
     def add_raw(self, val):
-        self.buffer.append(f'{val}\n')
+        self.buffer.append("{}\n".format(val))
 
     def send_buffer(self):
         for message in self.buffer:
