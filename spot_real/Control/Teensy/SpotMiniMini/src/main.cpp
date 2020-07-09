@@ -26,6 +26,7 @@ ContactSensor FL_sensor, FR_sensor, BL_sensor, BR_sensor;
 SpotServo * Shoulders[4] = {&FL_Shoulder, &FR_Shoulder, &BL_Shoulder, &BR_Shoulder};
 SpotServo * Elbows[4] = {&FL_Elbow, &FR_Elbow, &BL_Elbow, &BR_Elbow};
 SpotServo * Wrists[4] = {&FL_Wrist, &FR_Wrist, &BL_Wrist, &BR_Wrist};
+SpotServo * AllServos[12] = {&FL_Shoulder, &FR_Shoulder, &BL_Shoulder, &BR_Shoulder, &FL_Elbow, &FR_Elbow, &BL_Elbow, &BR_Elbow, &FL_Wrist, &FR_Wrist, &BL_Wrist, &BR_Wrist};
 Utilities util;
 Kinematics ik;
 IMU imu_sensor;
@@ -87,22 +88,22 @@ void setup() {
   ik.Initialize(0.04, 0.1, 0.1);
 
   // Shoulders
-  FL_Shoulder.Initialize(4, 135, 0, FL, Shoulder);
-  FR_Shoulder.Initialize(11, 135, 0, FR, Shoulder);
-  BL_Shoulder.Initialize(7, 135, 0, BL, Shoulder);
-  BR_Shoulder.Initialize(8, 135, 0, BR, Shoulder);
+  FL_Shoulder.Initialize(4, 135, 0, FL, Shoulder); // 0
+  FR_Shoulder.Initialize(11, 135, 0, FR, Shoulder); // 1
+  BL_Shoulder.Initialize(7, 135, 0, BL, Shoulder); // 2
+  BR_Shoulder.Initialize(8, 135, 0, BR, Shoulder); // 3
 
   //Elbows
-  FL_Elbow.Initialize(2, 135, 0, FL, Elbow);
-  FR_Elbow.Initialize(13, 135, 0, FR, Elbow);
-  BL_Elbow.Initialize(5, 135, 0, BL, Elbow);
-  BR_Elbow.Initialize(10, 135, 0, BR, Elbow);
+  FL_Elbow.Initialize(2, 135, 0, FL, Elbow); // 4
+  FR_Elbow.Initialize(13, 135, 0, FR, Elbow); // 5
+  BL_Elbow.Initialize(5, 135, 0, BL, Elbow); // 6
+  BR_Elbow.Initialize(10, 135, 0, BR, Elbow); // 7
 
   //Wrists
-  FL_Wrist.Initialize(3, 135, 0, FL, Wrist);
-  FR_Wrist.Initialize(12, 135, 0, FR, Wrist);
-  BL_Wrist.Initialize(6, 135, 0, BL, Wrist);
-  BR_Wrist.Initialize(9, 135, 0, BR, Wrist);
+  FL_Wrist.Initialize(3, 135, 0, FL, Wrist); // 8
+  FR_Wrist.Initialize(12, 135, 0, FR, Wrist); // 9
+  BL_Wrist.Initialize(6, 135, 0, BL, Wrist); // 10
+  BR_Wrist.Initialize(9, 135, 0, BR, Wrist); // 11
 
   // Contact Sensors
   FL_sensor.Initialize(A9, 17);
@@ -138,7 +139,10 @@ void loop() {
     double x = -9999;
     double y = -9999;
     double z = -9999;
-    while ((str = strtok_r(ptr, ",", &ptr)) != NULL) { // delimiter is the dash
+    // For Servo Calibration Request
+    int servo_num = -1;
+    double servo_calib_angle = 135.0;
+    while ((str = strtok_r(ptr, ",", &ptr)) != NULL) { // delimiter is the comma
       if((strcmp(str, "e") == 0 or strcmp(str, "E") == 0) and last_estop > 200) {
         // TRIGGER
         ESTOPPED = !ESTOPPED;
@@ -148,31 +152,56 @@ void loop() {
       // Read Desired Leg
       if(message_string_index == 0) {
         util.upper(str);
-        if(strcmp(str, "0") == 0){
+        if(strcmp(str, "0") == 0)
+        {
           leg = 0;
-        }
-        if(strcmp(str, "1") == 0){
+        } else if(strcmp(str, "1") == 0)
+        {
           leg = 1;
-        }
-        if(strcmp(str, "2") == 0){
+        } else if(strcmp(str, "2") == 0)
+        {
           leg = 2;
-        }
-        if(strcmp(str, "3") == 0){
+        } else if(strcmp(str, "3") == 0)
+        {
           leg = 3;
+        } else if(strcmp(str, "4") == 0)
+        {
+          // NO SPECIFIC LEG GIVEN, CALIBRATION REQUEST.
+          // SET SERVO TO POSITION DIRECTLY!
+          leg = 4;
         }
       }
 
-      // Read Desired Foot x pos
-      if(message_string_index == 1) {
-        x = atof(str);
-      }
-      // Read Desired Foot y pos
-      if(message_string_index == 2) {
-        y = atof(str);
-      }
-      // Read Desired Foot z pos
-      if(message_string_index == 3) {
-        z = atof(str);
+      if (leg >= 0 and leg <=3)
+      {
+        // Read Desired Foot x pos
+        if (message_string_index == 1)
+        {
+          x = atof(str);
+        } else if (message_string_index == 2)
+        {
+          // Read Desired Foot y pos
+          y = atof(str);
+        } else if (message_string_index == 3)
+        {
+          // Read Desired Foot z pos
+          z = atof(str);
+        }
+      } else if (leg == 4)
+      {
+        // CALIBRATION REQUEST
+        if(message_string_index == 1)
+        {
+          servo_num = atoi(str);
+          // only one of 12 servos
+          x = 0;
+          y = 0;
+          z = 0;
+        }  else if (message_string_index == 2)
+        {
+          // Read Desired Foot y pos
+          servo_calib_angle = atof(str);
+        }
       }
 
       // Increment message message_string_index
@@ -181,37 +210,46 @@ void loop() {
 
     //COMPLETE MESSAGE CHECK
     if(leg != -9999 || x != -9999 || y != -9999 || z != -9999){
-      Serial.println("complete message");
-      double *angles;
+      // Serial.println("complete message");
 
-      LegQuadrant legquad;
-      if (leg == 0 or leg == 2)
+      if (servo_num == -1)
+      // NORMAL OPERATION
       {
-        legquad = Left;
+        double *angles;
+
+        LegQuadrant legquad;
+        if (leg == 0 or leg == 2)
+        {
+          legquad = Left;
+        } else
+        {
+          legquad = Right;
+        }
+
+        angles = ik.GetJointAngles(x, y, z, legquad);
+
+        double Shoulder_angle = util.angleConversion(leg, 0, util.toDegrees(*angles));
+        double Elbow_angle = util.angleConversion(leg, 1, util.toDegrees(*(angles+1)));
+        double wrist_angle = util.angleConversion(leg, 2, util.toDegrees(*(angles+2)));
+
+        double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
+        double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
+        double w_dist = abs(wrist_angle - (*Wrists[leg]).GetPoseEstimate());
+
+        double scaling_factor = util.max(h_dist, s_dist, w_dist);
+
+        h_dist /= scaling_factor;
+        s_dist /= scaling_factor;
+        w_dist /= scaling_factor;
+
+        (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist);
+        (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist);
+        (*Wrists[leg]).SetGoal(wrist_angle, max_speed * w_dist);
       } else
       {
-        legquad = Right;
+        // SERVO CALIBRATION - SEND ANGLE DIRECTLY
+        (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
-
-      angles = ik.GetJointAngles(x, y, z, legquad);
-
-      double Shoulder_angle = util.angleConversion(leg, 0, util.toDegrees(*angles));
-      double Elbow_angle = util.angleConversion(leg, 1, util.toDegrees(*(angles+1)));
-      double wrist_angle = util.angleConversion(leg, 2, util.toDegrees(*(angles+2)));
-
-      double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
-      double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
-      double w_dist = abs(wrist_angle - (*Wrists[leg]).GetPoseEstimate());
-
-      double scaling_factor = util.max(h_dist, s_dist, w_dist);
-
-      h_dist /= scaling_factor;
-      s_dist /= scaling_factor;
-      w_dist /= scaling_factor;
-
-      (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist);
-      (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist);
-      (*Wrists[leg]).SetGoal(wrist_angle, max_speed * w_dist);
     }
   }
 }
