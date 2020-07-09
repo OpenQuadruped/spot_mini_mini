@@ -68,11 +68,10 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  CalibServo.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -191,6 +190,7 @@ ${catkin_LIBRARIES}
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
   src/spot_pybullet_interface
+  src/servo_calibration
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
