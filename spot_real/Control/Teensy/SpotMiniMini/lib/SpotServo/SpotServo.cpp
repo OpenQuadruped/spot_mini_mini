@@ -2,13 +2,8 @@
 
 using namespace std;
 
-// Spot Constructor
-Spot::Spot()
-{
-}
-
 // Spot Full Constructor
-void Spot::Initialize(int & servo_pin, double & home_angle_, double & offset_, LegType & leg_type_, JointType & joint_type_)
+void SpotServo::Initialize(const int & servo_pin, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_)
 {
 	servo.attach(servo_pin, 500, 2500);
 	offset = offset_;
@@ -21,23 +16,23 @@ void Spot::Initialize(int & servo_pin, double & home_angle_, double & offset_, L
 	last_actuated = millis();
 }
 
-void Spot::SetGoal(double & goal_pose_, double & desired_speed_)
+void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_)
 {
-	goal_pose_ += offset;
+	goal_pose = goal_pose_;
+	goal_pose += offset;
 	
 	// cpp would be std::clamp() with include cmath
-	constrain(goal_pose_, 0.0, control_range);
+	constrain(goal_pose, 0.0, control_range);
 
-	goal_pose = goal_pose_;
 	desired_speed = desired_speed_;
 }
 
-double Spot::GetPoseEstimate()
+double SpotServo::GetPoseEstimate()
 {
 	return current_pose - offset;
 }
 
-void Spot::update_clk()
+void SpotServo::update_clk()
 {
 	// Only perform update if loop rate is met
 	if(millis() - last_actuated > wait_time)
@@ -47,7 +42,7 @@ void Spot::update_clk()
 		{
 			// returns 1.0 * sign of goal_pose - current_pose
 			double direction = copysign(1.0, goal_pose - current_pose);
-			current_pose += direction * (wait_time / 1000.0) * spd;
+			current_pose += direction * (wait_time / 1000.0) * desired_speed;
 			servo.write(current_pose * 180.0 / control_range);
 			last_actuated = millis();
 		}

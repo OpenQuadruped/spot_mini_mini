@@ -12,7 +12,7 @@ class IMU {
 	private:
 		Adafruit_BNO055 bno = Adafruit_BNO055(55);
 	public:
-	double Initialize(int leg, int joint, double angle);
+	void Initialize();
 	imu::Vector<3> GetEuler();
 	imu::Vector<3> GetAcc();
 	imu::Vector<3> GetGyro();
