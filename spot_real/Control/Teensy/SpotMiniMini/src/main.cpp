@@ -84,7 +84,8 @@ void update_sensors()
 void setup() {
   Serial1.begin(500000);
 
-  ik.Initialize(8.7, 59, 107, 130); // Shoulder offset 0, Shoulder_offset 1, Elbow length, wrist length
+  ik.Initialize(0.04, 0.1, 0.1);
+
   // Shoulders
   FL_Shoulder.Initialize(4, 135, 0, FL, Shoulder);
   FR_Shoulder.Initialize(11, 135, 0, FR, Shoulder);
@@ -181,18 +182,22 @@ void loop() {
     //COMPLETE MESSAGE CHECK
     if(leg != -9999 || x != -9999 || y != -9999 || z != -9999){
       Serial.println("complete message");
-      double *p;
-      p = ik.run(leg, x, y, z);
+      double *angles;
 
-      double temp_Shoulder = util.toDegrees(*p);
-
-      if(leg == 1 || leg == 2){
-        temp_Shoulder *= -1;
+      LegType legtype;
+      if (leg == 0 or leg == 2)
+      {
+        legtype = Left;
+      } else
+      {
+        legtype = Right;
       }
 
-      double Shoulder_angle = util.angleConversion(leg, 0, temp_Shoulder);
-      double Elbow_angle = util.angleConversion(leg, 1, util.toDegrees(*(p+1)));
-      double wrist_angle = util.angleConversion(leg, 2, util.toDegrees(*(p+2)));
+      angles = ik.run(x, y, z, legtype);
+
+      double Shoulder_angle = util.angleConversion(leg, 0, util.toDegrees(*angles));
+      double Elbow_angle = util.angleConversion(leg, 1, util.toDegrees(*(angles+1)));
+      double wrist_angle = util.angleConversion(leg, 2, util.toDegrees(*(angles+2)));
 
       double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).getPosition());
       double s_dist = abs(Elbow_angle - (*Elbows[leg]).getPosition());
