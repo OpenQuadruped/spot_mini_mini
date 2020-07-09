@@ -6,7 +6,6 @@ SUBSCRIBERS:
 """
 
 from __future__ import division
-import torch
 import os
 import rospy
 import numpy as np
@@ -82,7 +81,6 @@ class SpotCommander():
         seed = 0
         # Set seeds
         self.env.seed(seed)
-        torch.manual_seed(seed)
         np.random.seed(seed)
 
         state_dim = self.env.observation_space.shape[0]
