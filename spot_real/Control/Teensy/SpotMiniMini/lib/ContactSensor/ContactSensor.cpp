@@ -1,7 +1,7 @@
 #include "ContactSensor.hpp"
 #include <Arduino.h>
 
-void FootSensor::init(int in_sensor_pin, int in_led_pin) {
+void ContactSensor::init(int in_sensor_pin, int in_led_pin) {
   sensor_pin = in_sensor_pin;
   led_pin = in_led_pin;
 
@@ -15,7 +15,7 @@ void FootSensor::init(int in_sensor_pin, int in_led_pin) {
   center = av / numSamples;
 }
 
-void FootSensor::update_clk() {
+void ContactSensor::update_clk() {
   val = alpha * prev_val + (1 - alpha) * abs(analogRead(sensor_pin) - center);  // read the input pin
   if(val > thresh) {
     digitalWrite(led_pin, HIGH);
@@ -25,7 +25,7 @@ void FootSensor::update_clk() {
   prev_val = val;
 }
 
-bool FootSensor::isTriggered() {
+bool ContactSensor::isTriggered() {
   if(val > thresh) {
     return true;
   }

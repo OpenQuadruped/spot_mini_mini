@@ -6,6 +6,7 @@
 #include "ContactSensor.hpp"
 #include "Kinematics.hpp"
 #include "Utilities.hpp"
+#include "IMU.hpp"
 #include <Servo.h>
 
 using namespace std;
@@ -27,6 +28,7 @@ SpotServo * Elbows[4] = {&FL_Elbow, &FR_Elbow, &BL_Elbow, &BR_Elbow};
 SpotServo * Wrists[4] = {&FL_Wrist, &FR_Wrist, &BL_Wrist, &BR_Wrist};
 Utilities util;
 Kinematics ik;
+IMU imu;
 
 void detach_servos()
 {
@@ -106,6 +108,9 @@ void setup() {
   FR_sensor.Initialize(A8, 16);
   BL_sensor.Initialize(A7, 15);
   BR_sensor.Initialize(A6, 14);
+
+  // IMU
+  imu.Initialize();
 
   last_estop = millis();
 
