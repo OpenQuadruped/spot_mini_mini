@@ -21,7 +21,6 @@ from ars_lib.ars import ARSAgent, Normalizer, Policy, ParallelWorker
 import multiprocessing as mp
 from multiprocessing import Pipe
 
-import torch
 import os
 
 # Messages for Pipe
@@ -60,7 +59,6 @@ def main():
 
     # Set seeds
     env.seed(seed)
-    torch.manual_seed(seed)
     np.random.seed(seed)
 
     state_dim = env.observation_space.shape[0]
