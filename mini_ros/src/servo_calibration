@@ -22,14 +22,14 @@ sys.path.append(rospack.get_path('mini_ros') + '/../')
 
 sys.path.append('../../')
 
-from spot_real.Control.RPi.lib.Teensy_Interface import Teensy_Interface
+from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
 
 
 class ServoCalibrator():
     def __init__(self):
 
         rospy.init_node('ServoCalibrator', anonymous=True)
-        self.TI = Teensy_Interface()
+        self.TI = TeensyInterface()
         print("READY TO GO!")
 
         self.serv = rospy.Service('servo_calibrator', CalibServo,
