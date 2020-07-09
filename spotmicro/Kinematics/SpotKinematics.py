@@ -8,19 +8,19 @@ from collections import OrderedDict
 
 class SpotModel:
     def __init__(self,
-                 hip_length=0.04,
-                 shoulder_length=0.1,
-                 leg_length=0.1,
-                 hip_lim=[-0.548, 0.548],
-                 shoulder_lim=[-2.17, 0.97],
-                 leg_lim=[-0.1, 2.59]):
+                 shoulder_length=0.04,
+                 elbow_length=0.1,
+                 wrist_length=0.1,
+                 shoulder_lim=[-0.548, 0.548],
+                 elbow_lim=[-2.17, 0.97],
+                 wrist_lim=[-0.1, 2.59]):
         """
         Spot Micro Kinematics
         """
         # Leg Parameters
-        self.hip_length = hip_length
         self.shoulder_length = shoulder_length
-        self.leg_length = leg_length
+        self.elbow_length = elbow_length
+        self.wrist_length = wrist_length
 
         # Leg Vector desired_positions
 
@@ -40,24 +40,28 @@ class SpotModel:
         self.height = 0.135
 
         # Joint Parameters
-        self.hip_lim = hip_lim
         self.shoulder_lim = shoulder_lim
-        self.leg_lim = leg_lim
+        self.elbow_lim = elbow_lim
+        self.wrist_lim = wrist_lim
 
         # Dictionary to store Leg IK Solvers
         self.Legs = OrderedDict()
-        self.Legs["FL"] = LegIK("LEFT", self.hip_length, self.shoulder_length,
-                                self.leg_length, self.hip_lim,
-                                self.shoulder_lim, self.leg_lim)
-        self.Legs["FR"] = LegIK("RIGHT", self.hip_length, self.shoulder_length,
-                                self.leg_length, self.hip_lim,
-                                self.shoulder_lim, self.leg_lim)
-        self.Legs["BL"] = LegIK("LEFT", self.hip_length, self.shoulder_length,
-                                self.leg_length, self.hip_lim,
-                                self.shoulder_lim, self.leg_lim)
-        self.Legs["BR"] = LegIK("RIGHT", self.hip_length, self.shoulder_length,
-                                self.leg_length, self.hip_lim,
-                                self.shoulder_lim, self.leg_lim)
+        self.Legs["FL"] = LegIK("LEFT", self.shoulder_length,
+                                self.elbow_length, self.wrist_length,
+                                self.shoulder_lim, self.elbow_lim,
+                                self.wrist_lim)
+        self.Legs["FR"] = LegIK("RIGHT", self.shoulder_length,
+                                self.elbow_length, self.wrist_length,
+                                self.shoulder_lim, self.elbow_lim,
+                                self.wrist_lim)
+        self.Legs["BL"] = LegIK("LEFT", self.shoulder_length,
+                                self.elbow_length, self.wrist_length,
+                                self.shoulder_lim, self.elbow_lim,
+                                self.wrist_lim)
+        self.Legs["BR"] = LegIK("RIGHT", self.shoulder_length,
+                                self.elbow_length, self.wrist_length,
+                                self.shoulder_lim, self.elbow_lim,
+                                self.wrist_lim)
 
         # Dictionary to store Hip and Foot Transforms
 
@@ -137,10 +141,11 @@ class SpotModel:
             _, p_bh = TransToRp(T_bh)
             p_hf0 = p_bf - p_bh
 
-            # TRANSFORM METHOD - UNCOMMENT TO USE
+            # TRANSFORM METHOD
             T_hf = np.dot(TransInv(T_bh), T_bf[key])
             _, p_hf1 = TransToRp(T_hf)
 
+            # They should yield the same result
             if p_hf1.all() != p_hf0.all():
                 print("NOT EQUAL")
 

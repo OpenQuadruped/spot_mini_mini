@@ -6,16 +6,16 @@ import numpy as np
 class LegIK():
     def __init__(self,
                  legtype="RIGHT",
-                 hip_length=0.04,
-                 shoulder_length=0.1,
-                 leg_length=0.1,
+                 shoulder_length=0.04,
+                 elbow_length=0.1,
+                 wrist_length=0.1,
                  hip_lim=[-0.548, 0.548],
                  shoulder_lim=[-2.17, 0.97],
                  leg_lim=[-0.1, 2.59]):
         self.legtype = legtype
-        self.hip_length = hip_length
         self.shoulder_length = shoulder_length
-        self.leg_length = leg_length
+        self.elbow_length = elbow_length
+        self.wrist_length = wrist_length
         self.hip_lim = hip_lim
         self.shoulder_lim = shoulder_lim
         self.leg_lim = leg_lim
@@ -27,9 +27,9 @@ class LegIK():
         :param x,y,z: hip-to-foot distances in each dimension
         :return: Leg Domain D
         """
-        D = (y**2 + (-z)**2 - self.hip_length**2 +
-             (-x)**2 - self.shoulder_length**2 -
-             self.leg_length**2) / (2 * self.leg_length * self.shoulder_length)
+        D = (y**2 + (-z)**2 - self.shoulder_length**2 +
+             (-x)**2 - self.elbow_length**2 - self.wrist_length**2) / (
+                 2 * self.wrist_length * self.elbow_length)
         if D > 1 or D < -1:
             # DOMAIN BREACHED
             print("---------DOMAIN BREACH---------")
@@ -63,15 +63,15 @@ class LegIK():
         :return: Joint Angles required for desired position
         """
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
-        sqrt_component = y**2 + (-z)**2 - self.hip_length**2
+        sqrt_component = y**2 + (-z)**2 - self.shoulder_length**2
         if sqrt_component < 0.0:
             print("NEGATIVE SQRT")
             sqrt_component = 0.0
         hip_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component),
-                                                   -self.hip_length)
+                                                   -self.shoulder_length)
         shoulder_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
-            self.leg_length * np.sin(leg_angle),
-            self.shoulder_length + self.leg_length * np.cos(leg_angle))
+            self.wrist_length * np.sin(leg_angle),
+            self.elbow_length + self.wrist_length * np.cos(leg_angle))
         joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles
 
@@ -84,14 +84,14 @@ class LegIK():
         :return: Joint Angles required for desired position
         """
         leg_angle = np.arctan2(-np.sqrt(1 - D**2), D)
-        sqrt_component = y**2 + (-z)**2 - self.hip_length**2
+        sqrt_component = y**2 + (-z)**2 - self.shoulder_length**2
         if sqrt_component < 0.0:
             print("NEGATIVE SQRT")
             sqrt_component = 0.0
         hip_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component),
-                                                   self.hip_length)
+                                                   self.shoulder_length)
         shoulder_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
-            self.leg_length * np.sin(leg_angle),
-            self.shoulder_length + self.leg_length * np.cos(leg_angle))
+            self.wrist_length * np.sin(leg_angle),
+            self.elbow_length + self.wrist_length * np.cos(leg_angle))
         joint_angles = np.array([hip_angle, -shoulder_angle, -leg_angle])
         return joint_angles
