@@ -50,7 +50,7 @@ double Utilities::angleConversion(int leg, int joint, double angle) {
   //   }
   // }
   // return angle;
-  return angle + 135
+  return angle + 135;
 }
 
 int Utilities::inverse_angleConversion(int leg, int joint, double angle) {

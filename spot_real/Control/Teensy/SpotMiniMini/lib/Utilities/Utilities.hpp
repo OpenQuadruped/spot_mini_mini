@@ -4,7 +4,7 @@
 /// \brief Utilities Library. Adapted from https://github.com/adham-elarabawy/OpenQuadruped
 class Utilities {
   public:
-  void Utilities::upper(char* s);
+  void upper(char* s);
   double angleConversion(int leg, int joint, double angle);
   int inverse_angleConversion(int leg, int joint, double angle);
   double toDegrees(double radianVal);
