@@ -2,9 +2,9 @@
 #define UTILITIES_INCLUDE_GUARD_HPP
 /// \file
 /// \brief Utilities Library. Adapted from https://github.com/adham-elarabawy/OpenQuadruped
-class Util {
+class Utilities {
   public:
-  void Util::upper(char* s);
+  void Utilities::upper(char* s);
   double angleConversion(int leg, int joint, double angle);
   int inverse_angleConversion(int leg, int joint, double angle);
   double toDegrees(double radianVal);

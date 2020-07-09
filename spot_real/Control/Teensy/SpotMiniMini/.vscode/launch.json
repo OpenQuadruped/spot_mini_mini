@@ -1,0 +1,32 @@
+// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
+
+// PIO Unified Debugger
+//
+// Documentation: https://docs.platformio.org/page/plus/debugging.html
+// Configuration: https://docs.platformio.org/page/projectconf/section_env_debug.html
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug",
+            "executable": "/home/mori/Projects/minitaur/src/main/spot_real/Control/Teensy/SpotMiniMini/.pio/build/teensy40/firmware.elf",
+            "toolchainBinDir": "/home/mori/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug"
+            },
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (skip Pre-Debug)",
+            "executable": "/home/mori/Projects/minitaur/src/main/spot_real/Control/Teensy/SpotMiniMini/.pio/build/teensy40/firmware.elf",
+            "toolchainBinDir": "/home/mori/.platformio/packages/toolchain-gccarmnoneeabi/bin",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}
