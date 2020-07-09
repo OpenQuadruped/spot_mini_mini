@@ -2,6 +2,7 @@
 #define IMU_INCLUDE_GUARD_HPP
 /// \file
 /// \brief IMU Library.
+#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
