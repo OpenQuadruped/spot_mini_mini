@@ -1,13 +1,13 @@
-#include "Util.h"
+#include "Utilities.hpp"
 #include <Arduino.h>
 
-void Util::upper(char* s) {
+void Utilities::upper(char* s) {
   for(int i = 0; i < strlen(s); i++){
     s[i] = toupper(s[i]);
   }
 }
 
-double Util::max(double a0, double a1, double a2) {
+double Utilities::max(double a0, double a1, double a2) {
   if(a0 >= a1 && a0 >= a2) {
     return a0;
   }
@@ -19,11 +19,11 @@ double Util::max(double a0, double a1, double a2) {
   }
 }
 
-double Util::toDegrees(double radianVal) {
+double Utilities::toDegrees(double radianVal) {
   return radianVal * 57296 / 1000;
 }
 
-double Util::angleConversion(int leg, int joint, double angle) {
+double Utilities::angleConversion(int leg, int joint, double angle) {
   if(joint == 0){
     if(leg == 0 || leg == 1) {
       angle = -angle;
@@ -52,7 +52,7 @@ double Util::angleConversion(int leg, int joint, double angle) {
   return angle;
 }
 
-int Util::inverse_angleConversion(int leg, int joint, double angle) {
+int Utilities::inverse_angleConversion(int leg, int joint, double angle) {
   if(joint == 0){
     if (leg == 0 || leg == 1) {
       angle = 135 - angle;
