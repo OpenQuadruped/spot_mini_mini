@@ -1,5 +1,7 @@
 #ifndef CONTACTSENSOR_INCLUDE_GUARD_HPP
 #define CONTACTSENSOR_INCLUDE_GUARD_HPP
+/// \file
+/// \brief Foot Sensor Library. Adapted from https://github.com/adham-elarabawy/OpenQuadruped
 class FootSensor {
   private:
   int led_pin;

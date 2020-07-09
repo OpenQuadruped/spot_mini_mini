@@ -1,5 +1,7 @@
 #ifndef UTILITIES_INCLUDE_GUARD_HPP
 #define UTILITIES_INCLUDE_GUARD_HPP
+/// \file
+/// \brief Utilities Library. Adapted from https://github.com/adham-elarabawy/OpenQuadruped
 class Util {
   public:
   void Util::upper(char* s);
