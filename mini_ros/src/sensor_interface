@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+"""
+DESCRIPTION:
+
+SUBSCRIBERS:
+"""
+
+from __future__ import division
+import rospy
+import numpy as np
+from mini_ros.msg import IMUdata, ContactData
+
+import sys
+
+import rospkg
+rospack = rospkg.RosPack()
+
+sys.path.append(rospack.get_path('mini_ros') + '/../')
+
+sys.path.append('../../')
+
+from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
+
+
+class SensorInterface():
+    def __init__(self):
+
+        rospy.init_node('SensorInterface', anonymous=True)
+        self.TI = TeensyInterface()
+        self.imu_pub = rospy.Publisher('spot/imu', IMUdata, queue_size=1)
+        self.cnt_pub = rospy.Publisher('spot/contact',
+                                       ContactData,
+                                       queue_size=1)
+
+    def read_sensors(self):
+        """ Reads IMU and Contact Sensor data from Teensy 4.0
+            and publishes to respective topics
+        """
+        data = self.TI.ser.readlines()
+
+        imu_dat = IMUdata
+        imu_read = False
+        cnt_dat = ContactData
+        cnt_read = False
+
+        for item in data:
+            string = item.split(",")
+            if len(string) > 4:
+                # IMU
+                imu_dat.roll = float(string[0])
+                imu_dat.pitch = float(string[1])
+                imu_dat.acc_x = float(string[2])
+                imu_dat.acc_y = float(string[3])
+                imu_dat.acc_z = float(string[4])
+                imu_dat.gyro_x = float(string[5])
+                imu_dat.gyro_y = float(string[6])
+                imu_dat.gyro_z = float(string[7])
+                imu_read = True
+
+            elif len(string) == 4:
+                # Contact Sensor
+                cnt_dat.FL = bool(string[0])
+                cnt_dat.FR = bool(string[1])
+                cnt_dat.BL = bool(string[2])
+                cnt_dat.BR = bool(string[3])
+                cnt_read = True
+
+        if imu_read:
+            self.imu_pub(imu_dat)
+        if cnt_read:
+            self.cnt_pub(cnt_dat)
+
+
+def main():
+    """ The main() function. """
+    si = SensorInterface()
+    while not rospy.is_shutdown():
+        si.read_sensors()
+        rospy.spin()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

@@ -22,11 +22,11 @@ Read the [docs](https://spot-mini-mini.readthedocs.io/en/latest/index.html)!
 Table of Contents
 -----------------
   * [Motivation](#motivation)
-     * [Kinematics:](#kinematics)
+     * [Kinematics](#kinematics)
      * [Reinforcement Learning](#reinforcement-learning)
         * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
         * [Drift Correction](#drift-correction)
-     * [Gait:](#gait)
+     * [Gait](#gait)
   * [How To Run](#how-to-run)
      * [Dependencies](#dependencies)
      * [Joystick Control with ROS](#joystick-control-with-ros)
@@ -37,7 +37,7 @@ Table of Contents
   * [Citing Spot Mini Mini](#citing-spot-mini-mini)
   * [Credits](#credits)
 
-### Kinematics:
+### Kinematics
 
 Body manipulation with [leg IK](https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot) and [body IK](https://moribots.github.io/project/spot-mini-mini) descriptions.
 
@@ -75,7 +75,7 @@ Here is the policy output for this demo. It's clearly biased on one end to accou
 
 ![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png)
 
-### Gait:
+### Gait
 
 Open-Loop Gait using 12-Point Bezier Curves based on [MIT Cheetah Paper](https://dspace.mit.edu/handle/1721.1/98270) with [modifications](https://spot-mini-mini.readthedocs.io/en/latest/source/spotmicro.GaitGenerator.html#spotmicro.GaitGenerator.Bezier.BezierGait.GetPhase) for low step velocity discontinuity.
 

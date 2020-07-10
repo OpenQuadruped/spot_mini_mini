@@ -6,12 +6,8 @@ SUBSCRIBERS:
 """
 
 from __future__ import division
-import os
 import rospy
-import numpy as np
-from mini_ros.msg import MiniCmd, JoyButtons
 from mini_ros.srv import CalibServo, CalibServoResponse
-import copy
 
 import sys
 
