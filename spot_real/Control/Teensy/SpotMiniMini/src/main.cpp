@@ -119,7 +119,7 @@ void setup() {
 
   last_estop = millis();
 
-  Serial.print("READY!\n");
+  Serial1.print("READY!\n");
 
   delay(1000);
 }
@@ -134,9 +134,9 @@ void loop()
     detach_servos();
   }
   update_sensors();
-  if (Serial.available())
+  if (Serial1.available())
   {
-    Serial.println("SERIAL1 OK\n");
+    Serial1.println("SERIAL1 OK\n");
     serialResponse = Serial1.readStringUntil('\n');
     // serialResponse = Serial1.readStringUntil('\r\n');
     // Convert from String Object to String.
@@ -202,14 +202,14 @@ void loop()
         }
       }
 
-      Serial.println("------------");
-      Serial.println(atoi(str));
+      Serial1.println("------------");
+      Serial1.println(atoi(str));
 
       // Increment message message_string_index
       message_string_index++;
     }
 
-    Serial.println("------------------------");
+    Serial1.println("------------------------");
 
     //COMPLETE MESSAGE CHECK
     if(leg != -9999 || x != -9999 || y != -9999 || z != -9999){
@@ -218,7 +218,7 @@ void loop()
       if (servo_num == -1)
       // NORMAL OPERATION
       {
-        Serial.println("SERVO ACT\n");
+        Serial1.println("SERVO ACT\n");
         double *angles;
 
         LegQuadrant legquad;
@@ -252,7 +252,7 @@ void loop()
       } else
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY
-        Serial.println("SERVO CALIB\n");
+        Serial1.println("SERVO CALIB\n");
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }
