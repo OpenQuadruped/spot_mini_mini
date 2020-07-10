@@ -7,11 +7,17 @@ void IMU::Initialize()
 	{
 		/* There was a problem detecting the BNO055 ... check your connections */
 		// Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!\n");
+		ok = false;
 	}
 
 	// delay(1000);
 
 	bno.setExtCrystalUse(true);
+}
+
+bool IMU::available()
+{
+	return ok;
 }
 
 imu::Vector<3> IMU::GetEuler()
