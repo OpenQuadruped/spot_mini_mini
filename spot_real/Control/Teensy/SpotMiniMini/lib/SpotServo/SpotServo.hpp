@@ -63,6 +63,14 @@ private:
     double goal_pose = 0.0; // deg
     double current_pose = 0.0; // deg
     double desired_speed = 0.0; // deg/sec
+
+    // Servo's PWM range (usec)
+    int min_pwm = 600;
+    int max_pwm = 2800;
+
+    // Interpolation to convert from deg to usec
+    double conv_slope = 0.0;
+    double conv_intcpt = 0.0;
 };
     
 
