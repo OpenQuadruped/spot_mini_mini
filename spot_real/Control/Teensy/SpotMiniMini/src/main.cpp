@@ -137,7 +137,7 @@ void loop()
     detach_servos();
   }
   update_sensors();
-  if (Serial1.available() > 0)
+  if (Serial1.available())
   {
     Serial.println("SERIAL1 OK\n");
     serialResponse = Serial1.readStringUntil('\r\n');
