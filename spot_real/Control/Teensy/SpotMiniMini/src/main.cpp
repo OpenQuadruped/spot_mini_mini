@@ -84,7 +84,7 @@ void update_sensors()
 // THIS ONLY RUNS ONCE
 void setup() {
   // HARDWARE - PI COMM
-  Serial1.begin(9600);
+  Serial1.begin(500000);
   // DEBUG - USB
   Serial.begin(9600);
   Serial.print("INITIALIZING!\n");
