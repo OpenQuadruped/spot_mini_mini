@@ -139,7 +139,7 @@ void loop()
   if (Serial.available())
   {
     Serial.println("SERIAL1 OK\n");
-    serialResponse = Serial.readStringUntil('\n');
+    serialResponse = Serial1.readStringUntil('\n');
     // serialResponse = Serial1.readStringUntil('\r\n');
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
