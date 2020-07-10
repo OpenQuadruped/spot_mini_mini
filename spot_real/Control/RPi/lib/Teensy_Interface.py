@@ -18,7 +18,6 @@ class TeensyInterface:
         self.buffer.append("{}\n".format(val))
 
     def send_buffer(self):
-        self.ser.flush()
         for message in self.buffer:
             self.ser.write(message.encode('utf-8'))
         self.buffer = []
