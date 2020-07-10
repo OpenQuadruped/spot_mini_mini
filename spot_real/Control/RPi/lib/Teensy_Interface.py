@@ -21,3 +21,6 @@ class TeensyInterface:
         for message in self.buffer:
             self.ser.write(message.encode('utf-8'))
         self.buffer = []
+
+    def read_buffer(self):
+        return self.ser.readline()
