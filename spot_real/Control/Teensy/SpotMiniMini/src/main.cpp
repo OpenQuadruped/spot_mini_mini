@@ -31,6 +31,81 @@ Utilities util;
 Kinematics ik;
 IMU imu_sensor;
 
+
+// Example 5 - Receive with start- and end-markers combined with parsing
+
+const byte numChars = 64;
+char receivedChars[numChars];
+char tempChars[numChars];        // temporary array for use when parsing
+
+      // variables to hold the parsed data
+char messageFromPC[numChars] = {0};
+
+boolean newData = false;
+
+//============
+
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char startMarker = '<';
+    char endMarker = '>';
+    char rc;
+
+    while (Serial1.available() > 0 && newData == false) {
+        rc = Serial1.read();
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
+        }
+
+        else if (rc == startMarker) {
+            recvInProgress = true;
+        }
+    }
+}
+
+//============
+
+void parseData(int & leg, double & x, double & y, double & z, int & servo_num, double & servo_calib_angle) {      // split the data into its parts
+
+    char * strtokIndx; // this is used by strtok() as an index
+
+    strtokIndx = strtok(tempChars,",");      // get the first part - the string
+    leg = atoi(strtokIndx);     // convert this part to an integer
+
+    if (leg == 4)
+    {
+      strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
+      servo_num = atoi(strtokIndx);     // convert this part to an integer
+      strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
+      servo_calib_angle = atof(strtokIndx);     // convert this part to an integer
+
+      Serial.println(servo_num);
+      Serial.println(servo_calib_angle);
+    } else
+    {
+      strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
+      x = atof(strtokIndx);     // convert this part to an integer
+      strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
+      y = atof(strtokIndx);     // convert this part to an integer
+      strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
+      z = atof(strtokIndx);     // convert this part to an integer
+    }
+}
+
 void detach_servos()
 {
     // Shoulders
@@ -86,7 +161,7 @@ void setup() {
   // HARDWARE - PI COMM
   Serial1.begin(500000);
   // DEBUG - USB
-  // Serial.begin(9600);
+  Serial.begin(9600);
 
   ik.Initialize(0.04, 0.1, 0.1);
 
@@ -119,7 +194,7 @@ void setup() {
 
   last_estop = millis();
 
-  Serial1.print("READY!\n");
+  Serial.print("READY!\n");
 
   delay(1000);
 }
@@ -136,16 +211,16 @@ void loop()
   update_sensors();
   if (Serial1.available())
   {
-    Serial1.println("SERIAL1 OK\n");
-    serialResponse = Serial1.readStringUntil('\n');
-    // serialResponse = Serial1.readStringUntil('\r\n');
+    Serial.println("Serial OK\n");
+    // serialResponse = Serial.readStringUntil('\n');
+    // serialResponse = Serial.readStringUntil('\r\n');
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
-    char buf[sizeof(msg0)];
-    serialResponse.toCharArray(buf, sizeof(buf));
-    char *ptr = buf;
-    char *str;
-    int message_string_index = 0;
+    // char buf[sizeof(msg0)];
+    // serialResponse.toCharArray(buf, sizeof(buf));
+    // char *ptr = buf;
+    // char *str;
+    // int message_string_index = 0;
     int leg = -1; //0=FL, 1=FR, 2=BL, 3=BR
     double x = -9999;
     double y = -9999;
@@ -153,72 +228,25 @@ void loop()
     // For Servo Calibration Request
     int servo_num = -1;
     double servo_calib_angle = 135.0;
-    while ((str = strtok_r(ptr, ",", &ptr)) != NULL) // delimiter is the comma
-    {
-      if((strcmp(str, "e") == 0 or strcmp(str, "E") == 0) and last_estop > 200)
-      {
-        // TRIGGER
-        ESTOPPED = !ESTOPPED;
-        last_estop = millis();
-      }
 
-      // Read Desired Leg
-      if(message_string_index == 0)
-      {
-        // between 0 and 4
-        leg = atoi(str);
-        constrain(leg, 0, 4);
-      }
-
-      if (leg >= 0 and leg <=3)
-      {
-        // Read Desired Foot x pos
-        if (message_string_index == 1)
-        {
-          x = atof(str);
-        } else if (message_string_index == 2)
-        {
-          // Read Desired Foot y pos
-          y = atof(str);
-        } else if (message_string_index == 3)
-        {
-          // Read Desired Foot z pos
-          z = atof(str);
-        }
-      } else if (leg == 4)
-      {
-        // CALIBRATION REQUEST
-        if(message_string_index == 1)
-        {
-          servo_num = atoi(str);
-          // only one of 12 servos
-          x = 0;
-          y = 0;
-          z = 0;
-        }  else if (message_string_index == 2)
-        {
-          // Read Desired Foot y pos
-          servo_calib_angle = atof(str);
-        }
-      }
-
-      Serial1.println("------------");
-      Serial1.println(atoi(str));
-
-      // Increment message message_string_index
-      message_string_index++;
+    // NOTE: PARSE DATA!
+    recvWithStartEndMarkers();
+    if (newData == true) {
+        strcpy(tempChars, receivedChars);
+            // this temporary copy is necessary to protect the original data
+            //   because strtok() used in parseData() replaces the commas with \0
+        parseData(leg, x, y, z, servo_num, servo_calib_angle);
+        newData = false;
     }
-
-    Serial1.println("------------------------");
 
     //COMPLETE MESSAGE CHECK
     if(leg != -9999 || x != -9999 || y != -9999 || z != -9999){
       // Serial.println("complete message");
 
-      if (servo_num == -1)
+      if (servo_num == -1 and leg != -1)
       // NORMAL OPERATION
       {
-        Serial1.println("SERVO ACT\n");
+        Serial.println("SERVO ACT\n");
         double *angles;
 
         LegQuadrant legquad;
@@ -249,16 +277,16 @@ void loop()
         (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist);
         (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist);
         (*Wrists[leg]).SetGoal(wrist_angle, max_speed * w_dist);
-      } else
+      } else if (servo_num != -1)
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY
-        Serial1.println("SERVO CALIB\n");
+        Serial.println("SERVO CALIB\n");
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }
   }
   //  else
   // {
-  //   Serial.println("SERIAL1 NOT AVAILABLE\n");
+  //   Serial.println("Serial NOT AVAILABLE\n");
   // }
 }
