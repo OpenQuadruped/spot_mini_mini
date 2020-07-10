@@ -140,15 +140,15 @@ void loop()
     detach_servos();
   }
   update_sensors();
-  if (Serial1.available())
+  if (Serial1.available() > 0)
   {
     Serial.println("SERIAL1 OK\n");
-    serialResponse = Serial1.readStringUntil('\r\n');
+    serialResponse = Serial1.readStringUntil('\n');
     Serial.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
-    serialResponse.toCharArray(buf, 512);
+    serialResponse.toCharArray(buf, sizeof(buf));
     char *ptr = buf;
     char *str;
     int message_string_index = 0;
