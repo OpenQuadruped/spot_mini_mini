@@ -93,8 +93,8 @@ void parseData(int & leg, double & x, double & y, double & z, int & servo_num, d
       strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
       servo_calib_angle = atof(strtokIndx);     // convert this part to an integer
 
-      Serial1.println(servo_num);
-      Serial1.println(servo_calib_angle);
+      Serial.println(servo_num);
+      Serial.println(servo_calib_angle);
     } else
     {
       strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
@@ -194,7 +194,7 @@ void setup() {
 
   last_estop = millis();
 
-  Serial1.print("READY!\n");
+  Serial.print("READY!\n");
 
   delay(1000);
 }
@@ -211,7 +211,7 @@ void loop()
   update_sensors();
   if (Serial1.available())
   {
-    Serial1.println("Serial OK\n");
+    Serial.println("Serial OK\n");
     // serialResponse = Serial.readStringUntil('\n');
     // serialResponse = Serial.readStringUntil('\r\n');
     // Convert from String Object to String.
@@ -246,7 +246,7 @@ void loop()
       if (servo_num == -1 and leg != -1)
       // NORMAL OPERATION
       {
-        Serial1.println("SERVO ACT\n");
+        Serial.println("SERVO ACT\n");
         double *angles;
 
         LegQuadrant legquad;
@@ -280,7 +280,7 @@ void loop()
       } else if (servo_num != -1)
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY
-        Serial1.println("SERVO CALIB\n");
+        Serial.println("SERVO CALIB\n");
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }
