@@ -56,7 +56,7 @@ def main():
     srv_calib = ServoCalibrator()
     rospy.loginfo("Use The servo_calibrator service.")
     while not rospy.is_shutdown():
-        print(srv_calib.TI.read_buffer())
+        # print(srv_calib.TI.read_buffer())
         rospy.spin()
 
 
