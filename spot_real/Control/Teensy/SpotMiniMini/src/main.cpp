@@ -183,7 +183,7 @@ void loop()
   sprintf_P(contact_sensor_buf, PSTR("%s,%s,%s,%s\n"), FL_sensor_buf, FR_sensor_buf, BL_sensor_buf, BR_sensor_buf);
 
   // Send to RPI
-  Serial.println(contact_sensor_buf);
+  Serial1.println(contact_sensor_buf);
 
   //IMU
   if (imu_sensor.available())
@@ -196,6 +196,7 @@ void loop()
     char gyro_x_buf[20];
     char gyro_y_buf[20];
     char gyro_z_buf[20];
+    // just in case we get some big values
     char imu_buf[512];
 
     imu::Vector<3> eul = imu_sensor.GetEuler();
