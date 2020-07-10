@@ -87,7 +87,6 @@ void setup() {
   Serial1.begin(500000);
   // DEBUG - USB
   Serial.begin(9600);
-  Serial.print("INITIALIZING!\n");
 
   ik.Initialize(0.04, 0.1, 0.1);
 
@@ -137,10 +136,11 @@ void loop()
     detach_servos();
   }
   update_sensors();
-  if (Serial1.available())
+  if (Serial.available())
   {
     Serial.println("SERIAL1 OK\n");
-    serialResponse = Serial1.readStringUntil('\r\n');
+    serialResponse = Serial.readStringUntil('\n');
+    // serialResponse = Serial1.readStringUntil('\r\n');
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
@@ -167,25 +167,9 @@ void loop()
       // Read Desired Leg
       if(message_string_index == 0)
       {
-        util.upper(str);
-        if(strcmp(str, "0") == 0)
-        {
-          leg = 0;
-        } else if(strcmp(str, "1") == 0)
-        {
-          leg = 1;
-        } else if(strcmp(str, "2") == 0)
-        {
-          leg = 2;
-        } else if(strcmp(str, "3") == 0)
-        {
-          leg = 3;
-        } else if(strcmp(str, "4") == 0)
-        {
-          // NO SPECIFIC LEG GIVEN, CALIBRATION REQUEST.
-          // SET SERVO TO POSITION DIRECTLY!
-          leg = 4;
-        }
+        // between 0 and 4
+        leg = atoi(str);
+        constrain(leg, 0, 4);
       }
 
       if (leg >= 0 and leg <=3)
@@ -220,12 +204,14 @@ void loop()
         }
       }
 
-      Serial.println(leg);
+      Serial.println("------------");
       Serial.println(atoi(str));
 
       // Increment message message_string_index
       message_string_index++;
     }
+
+    Serial.println("------------------------");
 
     //COMPLETE MESSAGE CHECK
     if(leg != -9999 || x != -9999 || y != -9999 || z != -9999){
