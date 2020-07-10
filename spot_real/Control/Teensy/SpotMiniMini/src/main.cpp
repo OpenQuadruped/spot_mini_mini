@@ -85,9 +85,12 @@ void update_sensors()
 void setup() {
   // HARDWARE - PI COMM
   Serial1.begin(500000);
+  while (!Serial1);
   // DEBUG - USB
   Serial.begin(9600);
-  Serial.print("INITIALIZING!\n");
+  while (!Serial);
+
+  // above code waits until serial1 and serial ready
 
   ik.Initialize(0.04, 0.1, 0.1);
 
@@ -145,7 +148,7 @@ void loop()
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
-    serialResponse.toCharArray(buf, sizeof(buf));
+    serialResponse.toCharArray(buf, 512);
     char *ptr = buf;
     char *str;
     int message_string_index = 0;
@@ -170,7 +173,10 @@ void loop()
       {
         // between 0 and 4
         leg = atoi(str);
-        constrain(leg, 0, 4);
+        if (leg < 0 or leg > 4)
+        {
+          leg = -1;
+        }
       }
 
       if (leg >= 0 and leg <=3)
