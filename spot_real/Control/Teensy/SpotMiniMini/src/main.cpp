@@ -141,7 +141,83 @@ void setup() {
 void loop()
 {
   // CHECK SENSORS AND SEND INFO
-  FL_sensor.isTriggered();
+  // CONTACT
+  char FL_sensor_buf[2];
+  char FR_sensor_buf[2];
+  char BL_sensor_buf[2];
+  char BR_sensor_buf[2];
+  char contact_sensor_buf[9];
+
+  if (FL_sensor.isTriggered())
+  {
+    // integer, buffer, base
+    itoa(1, FL_sensor_buf, 10);
+  } else
+  {
+    itoa(0, FL_sensor_buf, 10);
+  }
+
+  if (FR_sensor.isTriggered())
+  {
+    itoa(1, FR_sensor_buf, 10);
+  } else
+  {
+    itoa(0, FR_sensor_buf, 10);
+  }
+  if (BL_sensor.isTriggered())
+  {
+    itoa(1, BL_sensor_buf, 10);
+  } else
+  {
+    itoa(0, BL_sensor_buf, 10);
+  }
+  if (BR_sensor.isTriggered())
+  {
+    itoa(1, BR_sensor_buf, 10);
+  } else
+  {
+    itoa(0, BR_sensor_buf, 10);
+  }
+
+  // convert all to string
+  sprintf_P(contact_sensor_buf, PSTR("%s,%s,%s,%s\n"), FL_sensor_buf, FR_sensor_buf, BL_sensor_buf, BR_sensor_buf);
+
+  // Send to RPI
+  Serial.println(contact_sensor_buf);
+
+  //IMU
+  if (imu_sensor.available())
+  {
+    char roll_buf[20];
+    char pitch_buf[20];
+    char acc_x_buf[20];
+    char acc_y_buf[20];
+    char acc_z_buf[20];
+    char gyro_x_buf[20];
+    char gyro_y_buf[20];
+    char gyro_z_buf[20];
+    char imu_buf[512];
+
+    imu::Vector<3> eul = imu_sensor.GetEuler();
+    // val, width, precision, buff
+    dtostrf(eul.x(), 0, 4, roll_buf);
+    dtostrf(eul.y(), 0, 4, pitch_buf);
+    imu::Vector<3> acc = imu_sensor.GetAcc();
+    dtostrf(acc.x(), 0, 4, acc_x_buf);
+    dtostrf(acc.y(), 0, 4, acc_y_buf);
+    dtostrf(acc.z(), 0, 4, acc_z_buf);
+    imu::Vector<3> gyro = imu_sensor.GetGyro();
+    dtostrf(gyro.x(), 0, 4, gyro_x_buf);
+    dtostrf(gyro.y(), 0, 4, gyro_y_buf);
+    dtostrf(gyro.z(), 0, 4, gyro_z_buf);
+
+    // convert all to string
+    sprintf_P(imu_buf, PSTR("%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
+
+    // Send to RPI
+    Serial1.println(imu_buf);
+
+  }
 
   if(!ESTOPPED){
     update_servos();
@@ -151,9 +227,8 @@ void loop()
   update_sensors();
   if (Serial1.available() > 0)
   {
-    DEBUGSERIAL.println("SERIAL1 OK\n");
     serialResponse = Serial1.readStringUntil('\n');
-    DEBUGSERIAL.println(serialResponse);
+    // DEBUGSERIAL.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
@@ -231,7 +306,7 @@ void loop()
       if (servo_num == -1 and leg != -1)
       // NORMAL OPERATION
       {
-        DEBUGSERIAL.println("SERVO ACT\n");
+        // DEBUGSERIAL.println("SERVO ACT\n");
         double *angles;
 
         LegQuadrant legquad;
@@ -265,7 +340,7 @@ void loop()
       } else if (servo_num != -1)
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY
-        DEBUGSERIAL.println("SERVO CALIB\n");
+        // DEBUGSERIAL.println("SERVO CALIB\n");
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }

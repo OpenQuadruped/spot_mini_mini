@@ -45,7 +45,7 @@ class SensorInterface():
 
         for item in data:
             string = item.split(",")
-            if len(string) > 4:
+            if len(string) == 8:
                 # IMU
                 imu_dat.roll = float(string[0])
                 imu_dat.pitch = float(string[1])

@@ -26,7 +26,7 @@ void ContactSensor::update_clk() {
 }
 
 bool ContactSensor::isTriggered() {
-  Serial.println(val);
+  // Serial.println(val);
   if(val > thresh) {
     return true;
   }
