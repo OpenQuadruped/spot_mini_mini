@@ -86,7 +86,7 @@ void setup() {
   // HARDWARE - PI COMM
   Serial1.begin(500000);
   // DEBUG - USB
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
   ik.Initialize(0.04, 0.1, 0.1);
 
@@ -127,8 +127,6 @@ void setup() {
 // THIS LOOPS FOREVER
 void loop()
 {
-  // Serial.print("Looping!\n");
-  // Serial.print("----------------------------------\n");
 
   if(!ESTOPPED){
     update_servos();
