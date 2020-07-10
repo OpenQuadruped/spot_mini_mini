@@ -42,7 +42,8 @@ class ServoCalibrator():
             Returns: response
         """
         try:
-            self.TI.add_calib_to_buffer(req.servo_num, req.servo_angle)
+            # 4 will indicate calibration request, 100 is servo speed
+            self.TI.add_to_buffer(4, req.servo_num, req.servo_angle, 100)
             self.TI.send_buffer()
             response = "Servo Command Sent."
         except rospy.ROSInterruptException:
