@@ -84,7 +84,7 @@ void update_sensors()
 // THIS ONLY RUNS ONCE
 void setup() {
   // HARDWARE - PI COMM
-  Serial1.begin(500000);
+  Serial1.begin(57600);
   // DEBUG - USB
   Serial.begin(9600);
   Serial.print("INITIALIZING!\n");
@@ -137,10 +137,11 @@ void loop()
     detach_servos();
   }
   update_sensors();
-  if (Serial1.available())
+  if (Serial1.available() > 0)
   {
     Serial.println("SERIAL1 OK\n");
     serialResponse = Serial1.readStringUntil('\r\n');
+    Serial.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
