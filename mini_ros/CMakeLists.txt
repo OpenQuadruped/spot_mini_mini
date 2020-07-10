@@ -191,6 +191,7 @@ ${catkin_LIBRARIES}
 install(PROGRAMS
   src/spot_pybullet_interface
   src/servo_calibration
+  src/sensor_interface
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
