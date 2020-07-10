@@ -140,8 +140,8 @@ void setup() {
 // THIS LOOPS FOREVER
 void loop()
 {
-  // Serial.print("Looping!\n");
-  // Serial.print("----------------------------------\n");
+  // CHECK SENSORS AND SEND INFO
+  FL_sensor.isTriggered();
 
   if(!ESTOPPED){
     update_servos();
@@ -270,8 +270,4 @@ void loop()
       }
     }
   }
-  //  else
-  // {
-  //   Serial.println("SERIAL1 NOT AVAILABLE\n");
-  // }
 }
