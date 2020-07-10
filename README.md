@@ -34,6 +34,8 @@ Table of Contents
      * [Reinforcement Learning Agent Training](#reinforcement-learning-agent-training)
      * [Reinforcement Learning Agent Evaluation](#reinforcement-learning-agent-evaluation)
      * [Using Different Terrain](#using-different-terrain)
+  * [Citing Spot Mini Mini](#citing-spot-mini-mini)
+  * [Credits](#credits)
 
 ### Kinematics:
 
@@ -195,6 +197,18 @@ Navigate to `spotmicro/heightfield.py` and take a look at `useProgrammatic` and 
 With this terrain type, I programmed in a randomizer that triggers upon reset. This, along with the body randomizer from `Pybullet's Minitaur` increases your RL Policy's robustness.
 
 ![RANDENV](spot_bullet/media/spot_random_terrain.gif)
+
+
+## Citing Spot Mini Mini
+```
+@software{spotminimini2018github,
+  author = {Maurice Rahme and Ian Abraham and Matthew Elwin and Todd Murphey},
+  title = {{SpotMiniMini}: Pybullet Gym Environment for Gait Modulation with Bezier Curves,
+  url = {https://github.com/moribots/spot_mini_mini},
+  version = {1.0.0},
+  year = {2020},
+}
+```
 
 ## Credits
 
