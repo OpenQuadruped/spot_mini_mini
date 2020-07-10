@@ -2,7 +2,7 @@ import serial
 
 
 class TeensyInterface:
-    def __init__(self, port='/dev/ttyS0', baud=57600):
+    def __init__(self, port='/dev/ttyS0', baud=9600):
         self.ser = serial.Serial(port, baud)
         self.ser.flush()
 
