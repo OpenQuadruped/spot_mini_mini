@@ -14,8 +14,8 @@ class TeensyInterface:
     def add_to_buffer(self, i, x, y, z):
         self.buffer.append(self.__construct_string(i, x, y, z))
 
-    def add_calib_to_buffer(self, i, x):
-        self.buffer.append("{},{},{}\n".format(4, i, x))
+    def add_calib_to_buffer(self, i, x, spd=100):
+        self.buffer.append("{},{},{},{}\n".format(4, i, x, spd))
 
     def add_raw(self, val):
         self.buffer.append("{}\n".format(val))
