@@ -142,6 +142,7 @@ void loop()
     Serial.println("SERIAL1 OK\n");
     serialResponse = Serial1.readStringUntil('\r\n');
     // Convert from String Object to String.
+    // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
     serialResponse.toCharArray(buf, sizeof(buf));
     char *ptr = buf;
@@ -154,8 +155,10 @@ void loop()
     // For Servo Calibration Request
     int servo_num = -1;
     double servo_calib_angle = 135.0;
-    while ((str = strtok_r(ptr, ",", &ptr)) != NULL) { // delimiter is the comma
-      if((strcmp(str, "e") == 0 or strcmp(str, "E") == 0) and last_estop > 200) {
+    while ((str = strtok_r(ptr, ",", &ptr)) != NULL) // delimiter is the comma
+    {
+      if((strcmp(str, "e") == 0 or strcmp(str, "E") == 0) and last_estop > 200)
+      {
         // TRIGGER
         ESTOPPED = !ESTOPPED;
         last_estop = millis();
@@ -217,6 +220,9 @@ void loop()
         }
       }
 
+      Serial.println(leg);
+      Serial.println(atoi(str));
+
       // Increment message message_string_index
       message_string_index++;
     }
@@ -266,8 +272,9 @@ void loop()
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }
-  } else
-  {
-    Serial.println("SERIAL1 NOT AVAILABLE\n");
   }
+  //  else
+  // {
+  //   Serial.println("SERIAL1 NOT AVAILABLE\n");
+  // }
 }
