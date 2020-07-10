@@ -201,7 +201,7 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 
 ## Citing Spot Mini Mini
 ```
-@software{spotminimini2018github,
+@software{spotminimini2020github,
   author = {Maurice Rahme and Ian Abraham and Matthew Elwin and Todd Murphey},
   title = {{SpotMiniMini}: Pybullet Gym Environment for Gait Modulation with Bezier Curves,
   url = {https://github.com/moribots/spot_mini_mini},
