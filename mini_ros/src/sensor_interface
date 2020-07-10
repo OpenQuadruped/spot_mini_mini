@@ -38,6 +38,8 @@ class SensorInterface():
         """
         data = self.TI.ser.readlines()
 
+        rospy.loginfo(data)
+
         imu_dat = IMUdata
         imu_read = False
         cnt_dat = ContactData
