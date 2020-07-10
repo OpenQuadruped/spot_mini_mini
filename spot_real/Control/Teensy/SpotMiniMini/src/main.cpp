@@ -9,6 +9,8 @@
 #include "IMU.hpp"
 #include <Servo.h>
 
+#define DEBUGSERIAL Serial
+
 using namespace std;
 
 String serialResponse = "";
@@ -19,6 +21,7 @@ char msg0[] = "0,-999.9,-999.9,-999.9"; // structure for position command
 bool ESTOPPED = false;
 int max_speed = 500; // deg/sec
 double last_estop = millis();
+const int ledPin = 13;
 
 
 SpotServo FL_Shoulder, FL_Elbow, FL_Wrist, FR_Shoulder, FR_Elbow, FR_Wrist, BL_Shoulder, BL_Elbow, BL_Wrist, BR_Shoulder, BR_Elbow, BR_Wrist;
@@ -92,6 +95,8 @@ void setup() {
 
   // above code waits until serial1 and serial ready
 
+  pinMode(ledPin, OUTPUT);
+
   ik.Initialize(0.04, 0.1, 0.1);
 
   // Shoulders
@@ -125,7 +130,11 @@ void setup() {
 
   Serial.print("READY!\n");
 
+  digitalWrite(ledPin, LOW);
+
   delay(1000);
+
+  digitalWrite(ledPin, HIGH);
 }
 
 // THIS LOOPS FOREVER
@@ -142,9 +151,9 @@ void loop()
   update_sensors();
   if (Serial1.available() > 0)
   {
-    Serial.println("SERIAL1 OK\n");
+    DEBUGSERIAL.println("SERIAL1 OK\n");
     serialResponse = Serial1.readStringUntil('\n');
-    Serial.println(serialResponse);
+    DEBUGSERIAL.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
@@ -211,14 +220,9 @@ void loop()
         }
       }
 
-      Serial.println("------------");
-      Serial.println(atoi(str));
-
       // Increment message message_string_index
       message_string_index++;
     }
-
-    Serial.println("------------");
 
     //COMPLETE MESSAGE CHECK
     if(leg != -9999 || x != -9999 || y != -9999 || z != -9999){
@@ -227,7 +231,7 @@ void loop()
       if (servo_num == -1 and leg != -1)
       // NORMAL OPERATION
       {
-        Serial.println("SERVO ACT\n");
+        DEBUGSERIAL.println("SERVO ACT\n");
         double *angles;
 
         LegQuadrant legquad;
@@ -261,7 +265,7 @@ void loop()
       } else if (servo_num != -1)
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY
-        Serial.println("SERVO CALIB\n");
+        DEBUGSERIAL.println("SERVO CALIB\n");
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }
