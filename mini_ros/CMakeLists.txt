@@ -65,6 +65,8 @@ add_message_files(
   FILES
   MiniCmd.msg
   JoyButtons.msg
+  IMUdata.msg
+  ContactData.msg
 )
 
 ## Generate services in the 'srv' folder
