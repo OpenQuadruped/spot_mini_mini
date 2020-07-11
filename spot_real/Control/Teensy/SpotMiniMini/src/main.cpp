@@ -142,7 +142,7 @@ void loop()
   char BR_sensor_buf[2];
   char contact_sensor_buf[9];
 
-  if (FL_sensor.isTriggered())
+  if (!FL_sensor.isTriggered())
   {
     // integer, buffer, base
     itoa(1, FL_sensor_buf, 10);
@@ -151,21 +151,21 @@ void loop()
     itoa(0, FL_sensor_buf, 10);
   }
 
-  if (FR_sensor.isTriggered())
+  if (!FR_sensor.isTriggered())
   {
     itoa(1, FR_sensor_buf, 10);
   } else
   {
     itoa(0, FR_sensor_buf, 10);
   }
-  if (BL_sensor.isTriggered())
+  if (!BL_sensor.isTriggered())
   {
     itoa(1, BL_sensor_buf, 10);
   } else
   {
     itoa(0, BL_sensor_buf, 10);
   }
-  if (BR_sensor.isTriggered())
+  if (!BR_sensor.isTriggered())
   {
     itoa(1, BR_sensor_buf, 10);
   } else

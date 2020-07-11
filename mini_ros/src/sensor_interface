@@ -63,7 +63,6 @@ class SensorInterface():
                 imu_read = True
 
             elif len(msg) == 4:
-                rospy.loginfo(msg)
                 cnt_msg = [bool(x) for x in msg]
                 rospy.loginfo(cnt_msg)
                 # Contact Sensor
