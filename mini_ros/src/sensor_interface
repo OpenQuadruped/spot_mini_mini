@@ -47,6 +47,7 @@ class SensorInterface():
 
             msg = data.split(",")
             if len(msg) == 8:
+                rospy.loginfo(msg)
                 # IMU
                 imu_dat.roll = float(msg[0])
                 imu_dat.pitch = float(msg[1])
@@ -59,6 +60,7 @@ class SensorInterface():
                 imu_read = True
 
             elif len(msg) == 4:
+                rospy.loginfo(msg)
                 # Contact Sensor
                 cnt_dat.FL = bool(msg[0])
                 cnt_dat.FR = bool(msg[1])

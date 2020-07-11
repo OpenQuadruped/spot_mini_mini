@@ -17,6 +17,7 @@ class ContactSensor {
   void Initialize(const int & in_sensor_pin, const int & in_led_pin);
   bool isTriggered();
   void update_clk();
+  double ReturnVal();
 };
 
 #endif
