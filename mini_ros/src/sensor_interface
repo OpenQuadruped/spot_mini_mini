@@ -36,41 +36,50 @@ class SensorInterface():
         """ Reads IMU and Contact Sensor data from Teensy 4.0
             and publishes to respective topics
         """
-        data = self.TI.ser.readlines()
+        data = []
+        if (self.TI.ser.inWaiting() > 0):
+            # Foot Contact
+            data.append(self.TI.read_buffer())
+            # Newline
+            data.append(self.TI.read_buffer())
+            # IMU
+            data.append(self.TI.read_buffer())
 
-        rospy.loginfo(data)
+            rospy.loginfo(data)
 
-        imu_dat = IMUdata
-        imu_read = False
-        cnt_dat = ContactData
-        cnt_read = False
+            imu_dat = IMUdata
+            imu_read = False
+            cnt_dat = ContactData
+            cnt_read = False
 
-        for item in data:
-            string = item.split(",")
-            if len(string) == 8:
-                # IMU
-                imu_dat.roll = float(string[0])
-                imu_dat.pitch = float(string[1])
-                imu_dat.acc_x = float(string[2])
-                imu_dat.acc_y = float(string[3])
-                imu_dat.acc_z = float(string[4])
-                imu_dat.gyro_x = float(string[5])
-                imu_dat.gyro_y = float(string[6])
-                imu_dat.gyro_z = float(string[7])
-                imu_read = True
+            for item in data:
+                string = item.split(",")
+                if len(string) == 8:
+                    # IMU
+                    imu_dat.roll = float(string[0])
+                    imu_dat.pitch = float(string[1])
+                    imu_dat.acc_x = float(string[2])
+                    imu_dat.acc_y = float(string[3])
+                    imu_dat.acc_z = float(string[4])
+                    imu_dat.gyro_x = float(string[5])
+                    imu_dat.gyro_y = float(string[6])
+                    imu_dat.gyro_z = float(string[7])
+                    imu_read = True
 
-            elif len(string) == 4:
-                # Contact Sensor
-                cnt_dat.FL = bool(string[0])
-                cnt_dat.FR = bool(string[1])
-                cnt_dat.BL = bool(string[2])
-                cnt_dat.BR = bool(string[3])
-                cnt_read = True
+                elif len(string) == 4:
+                    # Contact Sensor
+                    cnt_dat.FL = bool(string[0])
+                    cnt_dat.FR = bool(string[1])
+                    cnt_dat.BL = bool(string[2])
+                    cnt_dat.BR = bool(string[3])
+                    cnt_read = True
 
-        if imu_read:
-            self.imu_pub(imu_dat)
-        if cnt_read:
-            self.cnt_pub(cnt_dat)
+            if imu_read:
+                self.imu_pub(imu_dat)
+            if cnt_read:
+                self.cnt_pub(cnt_dat)
+        else:
+            rospy.loginfo("NO DATA")
 
 
 def main():
