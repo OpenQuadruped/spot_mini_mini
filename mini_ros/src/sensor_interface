@@ -69,8 +69,10 @@ class SensorInterface():
 
             if imu_read:
                 self.imu_pub.publish(imu_dat)
+                rospy.loginfo("IMU")
             if cnt_read:
                 self.cnt_pub.publish(cnt_dat)
+                rospy.loginfo("CONTACT")
         else:
             rospy.loginfo("NO DATA")
 
