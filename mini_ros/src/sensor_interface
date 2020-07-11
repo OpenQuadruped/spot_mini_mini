@@ -51,7 +51,7 @@ class SensorInterface():
             if msg[0] == "IMU":
                 msg[:] = msg[1:]
                 imu_msg = [float(x) for x in msg]
-                rospy.loginfo(imu_msg)
+                # rospy.loginfo(imu_msg)
                 # IMU
                 imu_dat.roll = imu_msg[0]
                 imu_dat.pitch = imu_msg[1]
@@ -66,7 +66,7 @@ class SensorInterface():
             elif msg[0] == "CONTACT":
                 msg[:] = msg[1:]
                 cnt_msg = [bool(x) for x in msg]
-                rospy.loginfo(cnt_msg)
+                # rospy.loginfo(cnt_msg)
                 # Contact Sensor
                 cnt_dat.FL = cnt_msg[0]
                 cnt_dat.FR = cnt_msg[1]
@@ -76,10 +76,10 @@ class SensorInterface():
 
             if imu_read:
                 self.imu_pub.publish(imu_dat)
-                rospy.logdebug("IMU")
+                # rospy.logdebug("IMU")
             if cnt_read:
                 self.cnt_pub.publish(cnt_dat)
-                rospy.logdebug("CONTACT")
+                # rospy.logdebug("CONTACT")
 
 
 def main():
