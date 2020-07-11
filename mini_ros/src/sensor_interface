@@ -7,7 +7,6 @@ SUBSCRIBERS:
 
 from __future__ import division
 import rospy
-import numpy as np
 from mini_ros.msg import IMUdata, ContactData
 
 import sys
