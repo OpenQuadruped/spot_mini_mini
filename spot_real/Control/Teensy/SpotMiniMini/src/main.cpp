@@ -184,6 +184,7 @@ void loop()
 
   // Send to RPI
   Serial1.println(contact_sensor_buf);
+  Serial.println(contact_sensor_buf);
 
   //IMU
   if (imu_sensor.available())
@@ -229,7 +230,7 @@ void loop()
   if (Serial1.available() > 0)
   {
     serialResponse = Serial1.readStringUntil('\n');
-    // DEBUGSERIAL.println(serialResponse);
+    DEBUGSERIAL.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
