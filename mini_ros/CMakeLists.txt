@@ -192,6 +192,7 @@ ${catkin_LIBRARIES}
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
   src/spot_pybullet_interface
+  src/spot_real_interface
   src/servo_calibration
   src/sensor_interface
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
