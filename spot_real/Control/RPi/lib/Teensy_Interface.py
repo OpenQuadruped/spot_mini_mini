@@ -23,4 +23,4 @@ class TeensyInterface:
         self.buffer = []
 
     def read_buffer(self):
-        return self.ser.readline()
+        return self.ser.read_until(b'\n')
