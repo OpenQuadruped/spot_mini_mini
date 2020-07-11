@@ -47,7 +47,7 @@ class SensorInterface():
 
             msg = data.split(",")
             # REMOVE NEWLINE
-            msg[-1].rstrip()
+            msg[-1].rstrip('\r\n')
             if len(msg) == 8:
                 rospy.loginfo(msg)
                 # IMU
