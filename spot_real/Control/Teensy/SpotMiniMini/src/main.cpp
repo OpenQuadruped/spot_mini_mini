@@ -203,7 +203,7 @@ void loop()
     // just in case we get some big values
     char imu_buf[512];
 
-    imu::Vector<3> quat = imu_sensor.GetQuat();
+    imu::Quaternion quat = imu_sensor.GetQuat();
     // convert quat to eul
     imu::Vector<3> eul = quat.toEuler();
     // val, width, precision, buff

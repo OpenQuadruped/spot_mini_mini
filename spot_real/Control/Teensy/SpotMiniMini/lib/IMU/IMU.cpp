@@ -240,7 +240,7 @@ imu::Vector<3> IMU::GetEuler()
 	return bno.getVector(Adafruit_BNO055::VECTOR_EULER);
 }
 
-imu::Vector<3> IMU::GetQuat()
+imu::Quaternion IMU::GetQuat()
 {
 	return bno.getQuat();
 }

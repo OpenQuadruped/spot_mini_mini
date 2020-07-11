@@ -21,7 +21,7 @@ class IMU {
 	void Initialize();
 	bool available();
 	imu::Vector<3> GetEuler();
-	imu::Vector<3> GetQuat();
+	imu::Quaternion GetQuat();
 	imu::Vector<3> GetAcc();
 	imu::Vector<3> GetGyro();
 
