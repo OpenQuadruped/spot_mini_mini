@@ -1,0 +1,203 @@
+#!/usr/bin/env python
+"""
+DESCRIPTION:
+
+SUBSCRIBERS:
+"""
+
+from __future__ import division
+import os
+import rospy
+import numpy as np
+from mini_ros.msg import MiniCmd, JoyButtons
+import copy
+
+import sys
+
+import rospkg 
+rospack = rospkg.RosPack()
+
+
+sys.path.append(rospack.get_path('mini_ros') + '/../')
+
+sys.path.append('../../')
+
+from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
+from spotmicro.Kinematics.SpotKinematics import SpotModel
+from spotmicro.GaitGenerator.Bezier import BezierGait
+from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
+
+STEPLENGTH_SCALE = 0.05
+Z_SCALE = 0.08
+RPY_SCALE = 0.5
+SV_SCALE = 1.0
+CHPD_SCALE = 0.0005
+YAW_SCALE = 2.0
+
+
+class SpotCommander():
+    def __init__(self):
+
+        rospy.init_node('Policies', anonymous=True)
+        self.agents = {}
+        # self.movetypes = [
+        #     "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
+        # ]
+        self.movetypes = ["Stop"]
+        self.mini_cmd = MiniCmd()
+        self.jb = JoyButtons()
+        self.mini_cmd.x_velocity = 0.0
+        self.mini_cmd.y_velocity = 0.0
+        self.mini_cmd.rate = 0.0
+        self.mini_cmd.roll = 0.0
+        self.mini_cmd.pitch = 0.0
+        self.mini_cmd.yaw = 0.0
+        self.mini_cmd.z = 0.0
+        self.mini_cmd.motion = "Stop"
+        self.mini_cmd.movement = "Stepping"
+        # Stock, use bumper btns to change
+        self.BaseStepVelocity = 0.8
+        self.StepVelocity = 0.8
+        # Stock, use arrow pads to change
+        self.BaseClearanceHeight = 0.02
+        self.BasePenetrationDepth = 0.005
+        self.ClearanceHeight = 0.02
+        self.PenetrationDepth = 0.005
+
+        # Serial Talker
+        self.TI = TeensyInterface()
+
+        self.load_spot()
+        # mini_cmd_cb from mini_cmd topic
+        self.sub_cmd = rospy.Subscriber('mini_cmd', MiniCmd, self.mini_cmd_cb)
+        self.sub_cmd = rospy.Subscriber('joybuttons', JoyButtons, self.jb_cb)
+        print("READY TO GO!")
+
+    def load_spot(self):
+        data = "NOTREADY"
+        while data != "READY!":
+            data = self.TI.read_buffer()
+            data = data.rstrip('\r\n')
+        rospy.loginfo("Spot is Ready!")
+
+    def mini_cmd_cb(self, mini_cmd):
+        """ Reads the desired Minitaur command and passes it for execution
+
+            Args: mini_cmd
+        """
+        try:
+            # Update mini_cmd
+            self.mini_cmd = mini_cmd
+            # log input data as debug-level message
+            rospy.logdebug(mini_cmd)
+        except rospy.ROSInterruptException:
+            pass
+
+    def jb_cb(self, jb):
+        """ Reads the desired additional joystick buttons
+
+            Args: jb
+        """
+        try:
+            # Update jb
+            self.jb = jb
+            # log input data as debug-level message
+            rospy.logdebug(jb)
+        except rospy.ROSInterruptException:
+            pass
+
+    def move(self):
+        """ Turn joystick inputs into commands
+        """
+
+        if self.mini_cmd.motion != "Stop":
+            self.StepVelocity = np.clip(
+                self.BaseStepVelocity +
+                (self.mini_cmd.faster + self.mini_cmd.slower) * SV_SCALE, 0.1,
+                1.5)
+            if self.mini_cmd.movement == "Stepping":
+                StepLength = self.mini_cmd.x_velocity + abs(
+                    self.mini_cmd.y_velocity * 0.66)
+                StepLength = np.clip(StepLength, -1.0, 1.0)
+                StepLength *= STEPLENGTH_SCALE
+                if StepLength < 0.0:
+                    self.mini_cmd.z = 0.5
+                LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
+                YawRate = self.mini_cmd.rate * YAW_SCALE
+                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
+                orn = np.array([0.0, 0.0, 0.0])
+            else:
+                StepLength = 0.0
+                LateralFraction = 0.0
+                YawRate = 0.0
+                # RESET
+                self.ClearanceHeight = self.BaseClearanceHeight
+                self.PenetrationDepth = self.BasePenetrationDepth
+                self.StepVelocity = self.BaseStepVelocity
+                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
+                orn = np.array([
+                    self.mini_cmd.roll * RPY_SCALE,
+                    self.mini_cmd.pitch * RPY_SCALE,
+                    self.mini_cmd.yaw * RPY_SCALE
+                ])
+        else:
+            StepLength = 0.0
+            LateralFraction = 0.0
+            YawRate = 0.0
+            # RESET
+            self.ClearanceHeight = self.BaseClearanceHeight
+            self.PenetrationDepth = self.BasePenetrationDepth
+            self.StepVelocity = self.BaseStepVelocity
+            pos = np.array([0.0, 0.0, 0.0])
+            orn = np.array([0.0, 0.0, 0.0])
+
+        # TODO: integrate into controller
+        self.ClearanceHeight += self.jb.updown * CHPD_SCALE
+        self.PenetrationDepth += self.jb.leftright * CHPD_SCALE
+
+        # Manual Reset
+        if self.jb.left_bump or self.jb.right_bump:
+            self.ClearanceHeight = self.BaseClearanceHeight
+            self.PenetrationDepth = self.BasePenetrationDepth
+            self.StepVelocity = self.BaseStepVelocity
+
+        contacts = self.state[-4:]
+
+        self.T_bf = self.bzg.GenerateTrajectory(StepLength, LateralFraction,
+                                                YawRate, self.StepVelocity,
+                                                self.T_bf0, self.T_bf,
+                                                self.ClearanceHeight,
+                                                self.PenetrationDepth,
+                                                contacts)
+
+        HipToFoot = self.HipToFoot(orn, pos, self.T_bf)
+
+        # Now send HipToFoot to Teensy
+        # NOTE: sending one joint at a time, may be better to send all combined
+        for i, (key, p_hf) in enumerate(HipToFoot.items()):
+            x = p_hf[0]
+            y = p_hf[1]
+            z = p_hf[2]
+
+            self.TI.add_to_buffer(i, x, y, z)
+        self.TI.send_buffer()
+
+        # TODO: increment using elapsed ROS time!!!
+
+
+def main():
+    """ The main() function. """
+    mini_commander = SpotCommander()
+    rate = rospy.Rate(1.0 / mini_commander.dt)
+    while not rospy.is_shutdown():
+        # This is called continuously. Has timeout functionality too
+        mini_commander.move()
+        rate.sleep()
+        # rospy.spin()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

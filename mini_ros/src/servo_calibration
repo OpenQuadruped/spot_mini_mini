@@ -26,7 +26,6 @@ class ServoCalibrator():
 
         rospy.init_node('ServoCalibrator', anonymous=True)
         self.TI = TeensyInterface()
-        print("READY TO GO!")
 
         self.serv = rospy.Service('servo_calibrator', CalibServo,
                                   self.calib_service_cb)
