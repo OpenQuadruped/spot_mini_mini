@@ -49,25 +49,28 @@ class SensorInterface():
             # REMOVE NEWLINE
             msg[-1] = msg[-1].rstrip('\r\n')
             if len(msg) == 8:
-                rospy.loginfo(msg)
+                imu_msg = [float(x) for x in msg]
+                rospy.loginfo(imu_msg)
                 # IMU
-                imu_dat.roll = float(msg[0])
-                imu_dat.pitch = float(msg[1])
-                imu_dat.acc_x = float(msg[2])
-                imu_dat.acc_y = float(msg[3])
-                imu_dat.acc_z = float(msg[4])
-                imu_dat.gyro_x = float(msg[5])
-                imu_dat.gyro_y = float(msg[6])
-                imu_dat.gyro_z = float(msg[7])
+                imu_dat.roll = imu_msg[0]
+                imu_dat.pitch = imu_msg[1]
+                imu_dat.acc_x = imu_msg[2]
+                imu_dat.acc_y = imu_msg[3]
+                imu_dat.acc_z = imu_msg[4]
+                imu_dat.gyro_x = imu_msg[5]
+                imu_dat.gyro_y = imu_msg[6]
+                imu_dat.gyro_z = imu_msg[7]
                 imu_read = True
 
             elif len(msg) == 4:
                 rospy.loginfo(msg)
+                cnt_msg = [bool(x) for x in msg]
+                rospy.loginfo(cnt_msg)
                 # Contact Sensor
-                cnt_dat.FL = bool(msg[0])
-                cnt_dat.FR = bool(msg[1])
-                cnt_dat.BL = bool(msg[2])
-                cnt_dat.BR = bool(msg[3])
+                cnt_dat.FL = cnt_msg[0]
+                cnt_dat.FR = cnt_msg[1]
+                cnt_dat.BL = cnt_msg[2]
+                cnt_dat.BR = cnt_msg[3]
                 cnt_read = True
 
             if imu_read:
