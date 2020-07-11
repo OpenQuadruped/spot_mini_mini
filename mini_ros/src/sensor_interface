@@ -8,6 +8,8 @@ SUBSCRIBERS:
 from __future__ import division
 import rospy
 from mini_ros.msg import IMUdata, ContactData
+# Used for str(Boolean) --> Boolean
+from distutils.util import strtobool
 
 import sys
 
@@ -65,7 +67,7 @@ class SensorInterface():
 
             elif msg[0] == "CONTACT":
                 msg[:] = msg[1:]
-                cnt_msg = [bool(x) for x in msg]
+                cnt_msg = [strtobool(x) for x in msg]
                 # rospy.loginfo(cnt_msg)
                 # Contact Sensor
                 cnt_dat.FL = cnt_msg[0]
