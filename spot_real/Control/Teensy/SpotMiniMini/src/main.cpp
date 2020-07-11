@@ -203,7 +203,9 @@ void loop()
     // just in case we get some big values
     char imu_buf[512];
 
-    imu::Vector<3> eul = imu_sensor.GetEuler();
+    imu::Vector<3> quat = imu_sensor.GetQuat();
+    // convert quat to eul
+    imu::Vector<3> eul = quat.toEuler();
     // val, width, precision, buff
     dtostrf(eul.x(), 0, 4, roll_buf);
     dtostrf(eul.y(), 0, 4, pitch_buf);
