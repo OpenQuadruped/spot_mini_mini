@@ -174,7 +174,7 @@ void loop()
   }
 
   // convert all to string
-  sprintf_P(contact_sensor_buf, PSTR("%s,%s,%s,%s\n"), FL_sensor_buf, FR_sensor_buf, BL_sensor_buf, BR_sensor_buf);
+  sprintf_P(contact_sensor_buf, PSTR("CONTACT,%s,%s,%s,%s\n"), FL_sensor_buf, FR_sensor_buf, BL_sensor_buf, BR_sensor_buf);
 
   // Send to RPI
   Serial1.println(contact_sensor_buf);
@@ -213,7 +213,7 @@ void loop()
     dtostrf(gyro.z(), 0, 4, gyro_z_buf);
 
     // convert all to string
-    sprintf_P(imu_buf, PSTR("%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
+    sprintf_P(imu_buf, PSTR("IMU,%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
 
     // sprintf_P(imu_buf, PSTR("Roll: %s,\tPitch: %s,\tYaw: %s\n"), roll_buf, pitch_buf, yaw_buf);
 

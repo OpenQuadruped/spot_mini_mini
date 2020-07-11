@@ -48,7 +48,8 @@ class SensorInterface():
             msg = data.split(",")
             # REMOVE NEWLINE
             msg[-1] = msg[-1].rstrip('\r\n')
-            if len(msg) == 8:
+            if msg[0] == "IMU":
+                msg[:] = msg[1:]
                 imu_msg = [float(x) for x in msg]
                 rospy.loginfo(imu_msg)
                 # IMU
@@ -62,7 +63,8 @@ class SensorInterface():
                 imu_dat.gyro_z = imu_msg[7]
                 imu_read = True
 
-            elif len(msg) == 4:
+            elif msg[0] == "CONTACT":
+                msg[:] = msg[1:]
                 cnt_msg = [bool(x) for x in msg]
                 rospy.loginfo(cnt_msg)
                 # Contact Sensor
