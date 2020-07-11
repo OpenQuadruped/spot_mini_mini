@@ -90,8 +90,8 @@ void setup() {
   Serial1.begin(500000);
   while (!Serial1);
   // DEBUG - USB
-  Serial.begin(9600);
-  while (!Serial);
+  // Serial.begin(9600);
+  // while (!Serial);
 
   // above code waits until serial1 and serial ready
 
@@ -128,13 +128,7 @@ void setup() {
 
   last_estop = millis();
 
-  Serial.print("READY!\n");
-
-  digitalWrite(ledPin, LOW);
-
-  delay(1000);
-
-  digitalWrite(ledPin, HIGH);
+  Serial1.print("READY!\n");
 }
 
 // THIS LOOPS FOREVER
@@ -203,13 +197,12 @@ void loop()
     // just in case we get some big values
     char imu_buf[512];
 
-    imu::Quaternion quat = imu_sensor.GetQuat();
-    // convert quat to eul
-    imu::Vector<3> eul = quat.toEuler();
+    imu::Vector<3> eul = imu_sensor.GetEuler();
     // val, width, precision, buff
-    dtostrf(eul.x(), 0, 4, roll_buf);
+    // NOTE: switching eul.x and eul.x because Bosch is weird..
+    dtostrf(eul.z(), 0, 4, roll_buf);
     dtostrf(eul.y(), 0, 4, pitch_buf);
-    dtostrf(eul.z(), 0, 4, yaw_buf);
+    dtostrf(eul.x(), 0, 4, yaw_buf);
     imu::Vector<3> acc = imu_sensor.GetAcc();
     dtostrf(acc.x(), 0, 4, acc_x_buf);
     dtostrf(acc.y(), 0, 4, acc_y_buf);
@@ -220,13 +213,16 @@ void loop()
     dtostrf(gyro.z(), 0, 4, gyro_z_buf);
 
     // convert all to string
-    sprintf_P(imu_buf, PSTR("%s,%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, yaw_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
+    sprintf_P(imu_buf, PSTR("%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
+
+    // sprintf_P(imu_buf, PSTR("Roll: %s,\tPitch: %s,\tYaw: %s\n"), roll_buf, pitch_buf, yaw_buf);
+
 
     // Send to RPI
     Serial1.println(imu_buf);
 
     // DEBUG
-    DEBUGSERIAL.println(imu_buf);
+    // DEBUGSERIAL.println(imu_buf);
 
   }
 
@@ -239,7 +235,7 @@ void loop()
   if (Serial1.available() > 0)
   {
     serialResponse = Serial1.readStringUntil('\n');
-    DEBUGSERIAL.println(serialResponse);
+    // DEBUGSERIAL.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
