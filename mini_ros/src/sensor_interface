@@ -85,6 +85,7 @@ class SensorInterface():
 def main():
     """ The main() function. """
     si = SensorInterface()
+    rospy.loginfo("Ready To Log Data!")
     # rate = rospy.Rate(1.0 / 60.0)
     while not rospy.is_shutdown():
         si.read_sensors()
