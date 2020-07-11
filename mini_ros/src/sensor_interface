@@ -37,10 +37,9 @@ class SensorInterface():
             and publishes to respective topics
         """
         while not rospy.is_shutdown():
-            rospy.loginfo("TRYING")
             data = self.TI.read_buffer()
 
-            rospy.loginfo(data)
+            rospy.logdebug(data)
 
             imu_dat = IMUdata
             imu_read = False
@@ -70,10 +69,10 @@ class SensorInterface():
 
             if imu_read:
                 self.imu_pub.publish(imu_dat)
-                rospy.loginfo("IMU")
+                rospy.logdebug("IMU")
             if cnt_read:
                 self.cnt_pub.publish(cnt_dat)
-                rospy.loginfo("CONTACT")
+                rospy.logdebug("CONTACT")
 
 
 def main():
