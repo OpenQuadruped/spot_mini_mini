@@ -234,9 +234,15 @@ bool IMU::available()
 	return ok;
 }
 
+// NOTE: not really useful, use GetQuat()
 imu::Vector<3> IMU::GetEuler()
 {
 	return bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+}
+
+imu::Vector<3> IMU::GetQuat()
+{
+	return bno.getQuat();
 }
 
 imu::Vector<3> IMU::GetAcc()
