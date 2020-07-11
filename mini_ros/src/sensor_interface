@@ -36,6 +36,7 @@ class SensorInterface():
         """ Reads IMU and Contact Sensor data from Teensy 4.0
             and publishes to respective topics
         """
+        rospy.loginfo("TRYING")
         if (self.TI.ser.inWaiting() > 0):
             data = self.TI.read_buffer()
 
