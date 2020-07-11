@@ -184,13 +184,16 @@ void loop()
 
   // Send to RPI
   Serial1.println(contact_sensor_buf);
-  Serial.println(contact_sensor_buf);
+
+  // DEBUG
+  // DEBUGSERIAL.println(contact_sensor_buf);
 
   //IMU
   if (imu_sensor.available())
   {
     char roll_buf[20];
     char pitch_buf[20];
+    char yaw_buf[20];
     char acc_x_buf[20];
     char acc_y_buf[20];
     char acc_z_buf[20];
@@ -204,6 +207,7 @@ void loop()
     // val, width, precision, buff
     dtostrf(eul.x(), 0, 4, roll_buf);
     dtostrf(eul.y(), 0, 4, pitch_buf);
+    dtostrf(eul.z(), 0, 4, yaw_buf);
     imu::Vector<3> acc = imu_sensor.GetAcc();
     dtostrf(acc.x(), 0, 4, acc_x_buf);
     dtostrf(acc.y(), 0, 4, acc_y_buf);
@@ -214,10 +218,13 @@ void loop()
     dtostrf(gyro.z(), 0, 4, gyro_z_buf);
 
     // convert all to string
-    sprintf_P(imu_buf, PSTR("%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
+    sprintf_P(imu_buf, PSTR("%s,%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, yaw_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
 
     // Send to RPI
     Serial1.println(imu_buf);
+
+    // DEBUG
+    DEBUGSERIAL.println(imu_buf);
 
   }
 
