@@ -40,9 +40,9 @@ class SensorInterface():
 
             rospy.logdebug(data)
 
-            imu_dat = IMUdata
+            imu_dat = IMUdata()
             imu_read = False
-            cnt_dat = ContactData
+            cnt_dat = ContactData()
             cnt_read = False
 
             msg = data.split(",")
@@ -76,7 +76,7 @@ class SensorInterface():
                 self.imu_pub.publish(imu_dat)
                 rospy.logdebug("IMU")
             if cnt_read:
-                # self.cnt_pub.publish(cnt_dat)
+                self.cnt_pub.publish(cnt_dat)
                 rospy.logdebug("CONTACT")
 
 
