@@ -37,45 +37,42 @@ class SensorInterface():
             and publishes to respective topics
         """
         rospy.loginfo("TRYING")
-        if (self.TI.ser.inWaiting() > 0):
-            data = self.TI.read_buffer()
+        data = self.TI.read_buffer()
 
-            rospy.loginfo(data)
+        rospy.loginfo(data)
 
-            imu_dat = IMUdata
-            imu_read = False
-            cnt_dat = ContactData
-            cnt_read = False
+        imu_dat = IMUdata
+        imu_read = False
+        cnt_dat = ContactData
+        cnt_read = False
 
-            msg = data.split(",")
-            if len(msg) == 8:
-                # IMU
-                imu_dat.roll = float(msg[0])
-                imu_dat.pitch = float(msg[1])
-                imu_dat.acc_x = float(msg[2])
-                imu_dat.acc_y = float(msg[3])
-                imu_dat.acc_z = float(msg[4])
-                imu_dat.gyro_x = float(msg[5])
-                imu_dat.gyro_y = float(msg[6])
-                imu_dat.gyro_z = float(msg[7])
-                imu_read = True
+        msg = data.split(",")
+        if len(msg) == 8:
+            # IMU
+            imu_dat.roll = float(msg[0])
+            imu_dat.pitch = float(msg[1])
+            imu_dat.acc_x = float(msg[2])
+            imu_dat.acc_y = float(msg[3])
+            imu_dat.acc_z = float(msg[4])
+            imu_dat.gyro_x = float(msg[5])
+            imu_dat.gyro_y = float(msg[6])
+            imu_dat.gyro_z = float(msg[7])
+            imu_read = True
 
-            elif len(msg) == 4:
-                # Contact Sensor
-                cnt_dat.FL = bool(msg[0])
-                cnt_dat.FR = bool(msg[1])
-                cnt_dat.BL = bool(msg[2])
-                cnt_dat.BR = bool(msg[3])
-                cnt_read = True
+        elif len(msg) == 4:
+            # Contact Sensor
+            cnt_dat.FL = bool(msg[0])
+            cnt_dat.FR = bool(msg[1])
+            cnt_dat.BL = bool(msg[2])
+            cnt_dat.BR = bool(msg[3])
+            cnt_read = True
 
-            if imu_read:
-                self.imu_pub.publish(imu_dat)
-                rospy.loginfo("IMU")
-            if cnt_read:
-                self.cnt_pub.publish(cnt_dat)
-                rospy.loginfo("CONTACT")
-        else:
-            rospy.loginfo("NO DATA")
+        if imu_read:
+            self.imu_pub.publish(imu_dat)
+            rospy.loginfo("IMU")
+        if cnt_read:
+            self.cnt_pub.publish(cnt_dat)
+            rospy.loginfo("CONTACT")
 
 
 def main():
