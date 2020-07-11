@@ -80,9 +80,11 @@ class SensorInterface():
 def main():
     """ The main() function. """
     si = SensorInterface()
+    rate = rospy.Rate(1.0 / 60.0)
     while not rospy.is_shutdown():
         si.read_sensors()
-        rospy.spin()
+        rate.sleep()
+        # rospy.spin()
 
 
 if __name__ == '__main__':
