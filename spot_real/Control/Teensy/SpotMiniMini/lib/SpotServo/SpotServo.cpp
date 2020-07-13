@@ -3,7 +3,7 @@
 using namespace std;
 
 // Spot Full Constructor
-void SpotServo::Initialize(const int & servo_pin, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_)
+void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_)
 {
 	conv_slope = (max_pwm - min_pwm) / (control_range - 0.0);
 	conv_intcpt = max_pwm - conv_slope * control_range;
@@ -13,7 +13,8 @@ void SpotServo::Initialize(const int & servo_pin, const double & home_angle_, co
 	current_pose = home_angle + offset;
 	leg_type = leg_type_;
 	joint_type = joint_type;
-	int pwm = (home_angle + offset) * conv_slope + conv_intcpt;
+	stand_angle = stand_angle_;
+	int pwm = (stand_angle + offset) * conv_slope + conv_intcpt;
 	servo.writeMicroseconds(pwm);
 	delay(1000);
 	last_actuated = millis();
@@ -28,6 +29,11 @@ void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_
 	constrain(goal_pose, 0.0, control_range);
 
 	desired_speed = desired_speed_;
+}
+
+double SpotServo::return_home()
+{
+	return home_angle;
 }
 
 double SpotServo::GetPoseEstimate()
