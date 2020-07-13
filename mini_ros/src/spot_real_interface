@@ -75,6 +75,13 @@ class SpotCommander():
         # Serial Talker
         self.TI = TeensyInterface()
 
+        self.spot = SpotModel()
+
+        self.T_bf0 = self.spot.WorldToFoot
+        self.T_bf = copy.deepcopy(self.T_bf0)
+
+        self.bzg = BezierGait(dt=self.env._time_step)
+
         self.load_spot()
         # cmd_cb from mini_cmd topic
         self.sub_cmd = rospy.Subscriber('mini_cmd', MiniCmd, self.cmd_cb)
@@ -212,7 +219,7 @@ class SpotCommander():
                                                 self.PenetrationDepth,
                                                 self.contacts, dt)
 
-        HipToFoot = self.HipToFoot(orn, pos, self.T_bf)
+        HipToFoot = self.spot.HipToFoot(orn, pos, self.T_bf)
 
         # Now send HipToFoot to Teensy
         # NOTE: sending one joint at a time, may be better to send all combined
