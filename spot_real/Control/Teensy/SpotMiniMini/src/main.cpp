@@ -99,11 +99,6 @@ void setup() {
 
   ik.Initialize(0.04, 0.1, 0.1);
 
-  FL:    Angle: [ -1.05801786 -47.24937942  94.49875883]
-FR:    Angle: [  1.05801786 -47.24937942  94.49875883]
-BL:    Angle: [ -1.05801786 -47.24937942  94.49875883]
-BR:    Angle: [  1.05801786 -47.24937942  94.49875883]
-
   // Shoulders
   FL_Shoulder.Initialize(4, 134, 135, -7, FL, Shoulder);  // 0 | FLS start: 134
   FL_Shoulder.SetGoal(-1, max_speed);
