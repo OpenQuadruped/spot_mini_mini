@@ -1,0 +1,41 @@
+<launch>
+ <!-- Minitaur State Machine Node-->
+  <node name="spot_sm" pkg="mini_ros" type="spot_sm" output="screen">
+    <param name="frequency" value="200.0" type="double"/>
+  </node>
+
+ <!-- Joystick Node -->
+  <node respawn="true" pkg="joy"
+        type="joy_node" name="spot_joy" >
+    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="deadzone" value="0.005" />
+  </node>
+
+ <!-- Teleop Node -->
+ <node name="spot_teleop" pkg="mini_ros" type="teleop_node" output="screen">
+  <param name="frequency" value="200.0" type="double"/>
+  <param name="axis_linear_x" value="4" type="int"/>
+  <param name="axis_linear_y" value="3" type="int"/>
+  <param name="axis_linear_z" value="1" type="int"/>
+  <param name="axis_angular" value="0" type="int"/>
+  <param name="scale_linear" value="1.0" type="double"/>
+  <param name="scale_angular" value="1.0" type="double"/>
+  <param name="button_switch" value="0" type="int"/>
+  <param name="button_estop" value="1" type="int"/>
+</node>
+
+<!-- Policy Node -->
+<node name="spot_real" pkg="mini_ros" type="spot_real_interface" output="screen"/>
+
+
+<!-- NOTE:
+        Setting Up Joystick:
+          - Get Number (you will see something like jsX): ls /dev/input/
+          - Make available to ROS: sudo chmod a+rw /dev/input/jsX
+          - Make sure <param name="dev" type="string" value="/dev/input/jsX" /> is correct in launch
+
+        You can ignore this msg: [ERROR] [1591631380.406690714]: Couldn't open joystick force feedback!
+        It just means your controller is missing some functionality, but this package doesn't use it. 
+-->
+
+</launch>

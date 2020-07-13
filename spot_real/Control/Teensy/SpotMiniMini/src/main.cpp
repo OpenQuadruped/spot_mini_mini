@@ -100,22 +100,22 @@ void setup() {
   ik.Initialize(0.04, 0.1, 0.1);
 
   // Shoulders
-  FL_Shoulder.Initialize(4, 135, 135, 0, FL, Shoulder); // 0
-  FR_Shoulder.Initialize(11, 135, 135, 0, FR, Shoulder); // 1
-  BL_Shoulder.Initialize(7, 135, 135, 0, BL, Shoulder); // 2
-  BR_Shoulder.Initialize(8, 135, 135, 0, BR, Shoulder); // 3
+  FL_Shoulder.Initialize(4, 134, 135, -7, FL, Shoulder);  // 0 | FLS start: 134
+  FR_Shoulder.Initialize(11, 136, 135, -5, FR, Shoulder); // 1 | FRS start: 136
+  BL_Shoulder.Initialize(7, 136, 135, 5, BL, Shoulder);  // 2 | BLS start: 136
+  BR_Shoulder.Initialize(8, 134, 135, -7, BR, Shoulder);  // 3 | BRS start: 134
 
   //Elbows
-  FL_Elbow.Initialize(2, 135, 135, 0, FL, Elbow); // 4
-  FR_Elbow.Initialize(13, 135, 135, 0, FR, Elbow); // 5
-  BL_Elbow.Initialize(5, 135, 135, 0, BL, Elbow); // 6
-  BR_Elbow.Initialize(10, 135, 135, 0, BR, Elbow); // 7
+  FL_Elbow.Initialize(2, 182, 135, 2, FL, Elbow);  // 4 | FLE start: 182
+  FR_Elbow.Initialize(13, 88, 135, -6, FR, Elbow); // 5 | FRE start: 88
+  BL_Elbow.Initialize(5, 182, 135, 7, BL, Elbow);  // 6 | BLE start: 182
+  BR_Elbow.Initialize(10, 88, 135, -7, BR, Elbow); // 7 | BRE start: 88
 
   //Wrists
-  FL_Wrist.Initialize(3, 100, 100, 0, FL, Wrist); // 8
-  FR_Wrist.Initialize(12, 100, 100, 0, FR, Wrist); // 9
-  BL_Wrist.Initialize(6, 100, 100, 0, BL, Wrist); // 10
-  BR_Wrist.Initialize(9, 100, 100, 0, BR, Wrist); // 11
+  FL_Wrist.Initialize(3, 76, 170, 1, FL, Wrist);  // 8 | FLW start: 76
+  FR_Wrist.Initialize(12, 194, 100, -13, FR, Wrist); // 9 | FRW start: 194
+  BL_Wrist.Initialize(6, 76, 170, 13, BL, Wrist); // 10 | BLW start: 76
+  BR_Wrist.Initialize(9, 194, 100, -8, BR, Wrist); // 11 | BRW start: 194
 
   // Contact Sensors
   FL_sensor.Initialize(A9, 17);
@@ -328,17 +328,20 @@ void loop()
         angles = ik.GetJointAngles(x, y, z, legquad);
 
         double shoulder_home = (*Shoulders[leg]).return_home();
+        LegType shoulder_leg = (*Shoulders[leg]).return_legtype();
         double elbow_home = (*Elbows[leg]).return_home();
+        LegType elbow_leg = (*Elbows[leg]).return_legtype();
         double wrist_home = (*Wrists[leg]).return_home();
+        LegType wrist_leg = (*Wrists[leg]).return_legtype();
 
 
-        double Shoulder_angle = util.angleConversion(util.toDegrees(*angles), shoulder_home, legquad);
-        double Elbow_angle = util.angleConversion(util.toDegrees(*(angles+1)), elbow_home, legquad);
-        double wrist_angle = util.angleConversion(util.toDegrees(*(angles+2)), wrist_home, legquad);
+        double Shoulder_angle = util.angleConversion(util.toDegrees(*angles), shoulder_home, shoulder_leg, Shoulder);
+        double Elbow_angle = util.angleConversion(util.toDegrees(*(angles+1)), elbow_home, elbow_leg, Elbow);
+        double Wrist_angle = util.angleConversion(util.toDegrees(*(angles+2)), wrist_home, wrist_leg, Wrist);
 
         double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
         double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
-        double w_dist = abs(wrist_angle - (*Wrists[leg]).GetPoseEstimate());
+        double w_dist = abs(Wrist_angle - (*Wrists[leg]).GetPoseEstimate());
 
         double scaling_factor = util.max(h_dist, s_dist, w_dist);
 
@@ -348,7 +351,7 @@ void loop()
 
         (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist);
         (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist);
-        (*Wrists[leg]).SetGoal(wrist_angle, max_speed * w_dist);
+        (*Wrists[leg]).SetGoal(Wrist_angle, max_speed * w_dist);
       } else if (servo_num != -1)
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY

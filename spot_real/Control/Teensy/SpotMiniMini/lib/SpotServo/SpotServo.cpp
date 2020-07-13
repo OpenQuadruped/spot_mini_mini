@@ -1,4 +1,5 @@
 #include "SpotServo.hpp"
+#include "Utilities.hpp"
 
 using namespace std;
 
@@ -14,9 +15,10 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 	leg_type = leg_type_;
 	joint_type = joint_type;
 	stand_angle = stand_angle_;
+	Utilities util;
+	goal_pose = util.angleConversion(stand_angle, home_angle, leg_type, joint_type);
 	int pwm = (stand_angle + offset) * conv_slope + conv_intcpt;
 	servo.writeMicroseconds(pwm);
-	delay(1000);
 	last_actuated = millis();
 }
 
@@ -29,6 +31,16 @@ void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_
 	constrain(goal_pose, 0.0, control_range);
 
 	desired_speed = desired_speed_;
+}
+
+JointType SpotServo::return_joint_type()
+{
+	return joint_type;
+}
+
+LegType SpotServo::return_legtype()
+{
+	return leg_type;
 }
 
 double SpotServo::return_home()
