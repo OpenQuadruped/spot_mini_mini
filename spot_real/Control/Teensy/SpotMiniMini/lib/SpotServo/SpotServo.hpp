@@ -29,6 +29,14 @@ public:
     /// \param desired_speed_: the desired motor speed (deg/sec) while reaching this goal
     void SetGoal(const double & goal_pose_, const double & desired_speed_);
 
+    /// \brief returns joint_type
+    /// \returns: joint_type
+    JointType return_joint_type();
+
+    /// \brief returns leg_type
+    /// \returns: leg_type
+    LegType return_legtype();
+
     /// \brief returns this servo's home angle
     /// \returns: home_angle
     double return_home();
