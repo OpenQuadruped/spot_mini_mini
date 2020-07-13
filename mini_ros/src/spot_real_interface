@@ -21,7 +21,6 @@ sys.path.append(rospack.get_path('mini_ros') + '/../')
 
 sys.path.append('../../')
 
-from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
@@ -80,7 +79,7 @@ class SpotCommander():
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
 
-        self.bzg = BezierGait(dt=self.env._time_step)
+        self.bzg = BezierGait(dt=0.01)
 
         self.load_spot()
         # cmd_cb from mini_cmd topic
