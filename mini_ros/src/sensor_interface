@@ -8,6 +8,7 @@ SUBSCRIBERS:
 from __future__ import division
 import rospy
 from mini_ros.msg import IMUdata, ContactData
+from std_msgs.msg import String
 # Used for str(Boolean) --> Boolean
 from distutils.util import strtobool
 
@@ -31,6 +32,9 @@ class SensorInterface():
         self.imu_pub = rospy.Publisher('spot/imu', IMUdata, queue_size=1)
         self.cnt_pub = rospy.Publisher('spot/contact',
                                        ContactData,
+                                       queue_size=1)
+        self.str_pub = rospy.Publisher('spot/teensydebug',
+                                       String,
                                        queue_size=1)
 
     def read_sensors(self):
@@ -82,6 +86,10 @@ class SensorInterface():
             if cnt_read:
                 self.cnt_pub.publish(cnt_dat)
                 # rospy.logdebug("CONTACT")
+
+            string_msg = String()
+            string_msg.data = data
+            self.str_pub.publish(string_msg)
 
 
 def main():
