@@ -8,7 +8,7 @@ SUBSCRIBERS:
 from __future__ import division
 import rospy
 import numpy as np
-from mini_ros.msg import MiniCmd, JoyButtons, IMUdata, ContactData
+from mini_ros.msg import MiniCmd, JoyButtons, IMUdata, ContactData, BezierData
 import copy
 
 import sys
@@ -89,6 +89,7 @@ class SpotCommander():
         self.sub_imu = rospy.Subscriber('spot/imu', IMUdata, self.imu_cb)
         self.sub_cnt = rospy.Subscriber('spot/contact', ContactData,
                                         self.cnt_cb)
+        self.bez_pub = rospy.Publisher('spot/bezier', BezierData, queue_size=1)
         print("READY TO GO!")
 
     def load_spot(self):
@@ -228,7 +229,16 @@ class SpotCommander():
             y = p_hf[1]
             z = p_hf[2]
 
-            rospy.logdebug("LEG: {} \t HipToFoot: {}".format(key, p_hf))
+            bzd = BezierData()
+
+            bzd.Leg = key
+            bzd.x = x
+            bzd.y = y
+            bzd.z = z
+
+            self.bez_pub.publish(bzd)
+
+            # rospy.logdebug("LEG: {} \t HipToFoot: {}".format(key, p_hf))
 
             self.TI.add_to_buffer(i, x, y, z)
         self.TI.send_buffer()

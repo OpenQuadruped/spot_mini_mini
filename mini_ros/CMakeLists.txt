@@ -67,6 +67,7 @@ add_message_files(
   JoyButtons.msg
   IMUdata.msg
   ContactData.msg
+  BezierData.msg
 )
 
 ## Generate services in the 'srv' folder
