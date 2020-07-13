@@ -226,6 +226,8 @@ class SpotCommander():
             y = p_hf[1]
             z = p_hf[2]
 
+            rospy.loginfo(p_hf)
+
             self.TI.add_to_buffer(i, x, y, z)
         self.TI.send_buffer()
 
