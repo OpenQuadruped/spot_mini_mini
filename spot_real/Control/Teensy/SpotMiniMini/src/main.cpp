@@ -189,7 +189,7 @@ void loop()
   sprintf_P(contact_sensor_buf, PSTR("CONTACT,%s,%s,%s,%s\n"), FL_sensor_buf, FR_sensor_buf, BL_sensor_buf, BR_sensor_buf);
 
   // Send to RPI
-  Serial1.println(contact_sensor_buf);
+  // Serial1.println(contact_sensor_buf);
 
   // DEBUG
   // DEBUGSERIAL.println(contact_sensor_buf);
@@ -231,7 +231,7 @@ void loop()
 
 
     // Send to RPI
-    Serial1.println(imu_buf);
+    // Serial1.println(imu_buf);
 
     // DEBUG
     // DEBUGSERIAL.println(imu_buf);
