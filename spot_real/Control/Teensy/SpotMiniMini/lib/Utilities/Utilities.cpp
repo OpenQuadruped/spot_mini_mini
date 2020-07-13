@@ -23,15 +23,28 @@ double Utilities::toDegrees(double radianVal) {
   return radianVal * 57296 / 1000.0;
 }
 
-double Utilities::angleConversion(double angle, double home_angle, LegQuadrant legquad) {
-  double mod_angle = 0.0;
+double Utilities::angleConversion(double angle, double home_angle, LegType legtype, JointType joint_type) {
+  double mod_angle = home_angle;
 
-  if (legquad == Left)
+  if (joint_type == Shoulder)
   {
-    mod_angle = home_angle - angle;
-  } else
+    if (legtype == FL or legtype == FR)
+    {
+      mod_angle = angle + home_angle;
+    } else
+    // BL or BR
+    {
+      mod_angle = home_angle - angle;
+    }
+  } else if (joint_type == Elbow or joint_type == Wrist)
   {
-    mod_angle = angle + home_angle;
+    if (legtype == FR or legtype == BR)
+    {
+      mod_angle = home_angle + angle;
+    } else
+    {
+      mod_angle = home_angle - angle;
+    }
   }
 
   return mod_angle;
