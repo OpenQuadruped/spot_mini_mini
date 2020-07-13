@@ -78,7 +78,9 @@ class SpotCommander():
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
 
-        self.bzg = BezierGait(dt=0.01)
+        self.dt = 0.01
+
+        self.bzg = BezierGait(dt=self.dt)
 
         # self.load_spot()
         # cmd_cb from mini_cmd topic
@@ -226,6 +228,8 @@ class SpotCommander():
             y = p_hf[1]
             z = p_hf[2]
 
+            rospy.logdebug("LEG: {} \t HipToFoot: {}".format(key, p_hf))
+
             self.TI.add_to_buffer(i, x, y, z)
         self.TI.send_buffer()
 
@@ -235,7 +239,7 @@ class SpotCommander():
 def main():
     """ The main() function. """
     mini_commander = SpotCommander()
-    rate = rospy.Rate(1000.0)
+    rate = rospy.Rate(1.0 / mini_commander.dt)
     while not rospy.is_shutdown():
         # This is called continuously. Has timeout functionality too
         mini_commander.move()
