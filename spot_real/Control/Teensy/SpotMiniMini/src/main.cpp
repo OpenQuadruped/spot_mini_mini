@@ -100,22 +100,22 @@ void setup() {
   ik.Initialize(0.04, 0.1, 0.1);
 
   // Shoulders
-  FL_Shoulder.Initialize(4, 135, 0, FL, Shoulder); // 0
-  FR_Shoulder.Initialize(11, 135, 0, FR, Shoulder); // 1
-  BL_Shoulder.Initialize(7, 135, 0, BL, Shoulder); // 2
-  BR_Shoulder.Initialize(8, 135, 0, BR, Shoulder); // 3
+  FL_Shoulder.Initialize(4, 135, 135, 0, FL, Shoulder); // 0
+  FR_Shoulder.Initialize(11, 135, 135, 0, FR, Shoulder); // 1
+  BL_Shoulder.Initialize(7, 135, 135, 0, BL, Shoulder); // 2
+  BR_Shoulder.Initialize(8, 135, 135, 0, BR, Shoulder); // 3
 
   //Elbows
-  FL_Elbow.Initialize(2, 135, 0, FL, Elbow); // 4
-  FR_Elbow.Initialize(13, 135, 0, FR, Elbow); // 5
-  BL_Elbow.Initialize(5, 135, 0, BL, Elbow); // 6
-  BR_Elbow.Initialize(10, 135, 0, BR, Elbow); // 7
+  FL_Elbow.Initialize(2, 135, 135, 0, FL, Elbow); // 4
+  FR_Elbow.Initialize(13, 135, 135, 0, FR, Elbow); // 5
+  BL_Elbow.Initialize(5, 135, 135, 0, BL, Elbow); // 6
+  BR_Elbow.Initialize(10, 135, 135, 0, BR, Elbow); // 7
 
   //Wrists
-  FL_Wrist.Initialize(3, 135, 0, FL, Wrist); // 8
-  FR_Wrist.Initialize(12, 135, 0, FR, Wrist); // 9
-  BL_Wrist.Initialize(6, 135, 0, BL, Wrist); // 10
-  BR_Wrist.Initialize(9, 135, 0, BR, Wrist); // 11
+  FL_Wrist.Initialize(3, 100, 100, 0, FL, Wrist); // 8
+  FR_Wrist.Initialize(12, 100, 100, 0, FR, Wrist); // 9
+  BL_Wrist.Initialize(6, 100, 100, 0, BL, Wrist); // 10
+  BR_Wrist.Initialize(9, 100, 100, 0, BR, Wrist); // 11
 
   // Contact Sensors
   FL_sensor.Initialize(A9, 17);
@@ -327,9 +327,14 @@ void loop()
 
         angles = ik.GetJointAngles(x, y, z, legquad);
 
-        double Shoulder_angle = util.angleConversion(leg, 0, util.toDegrees(*angles));
-        double Elbow_angle = util.angleConversion(leg, 1, util.toDegrees(*(angles+1)));
-        double wrist_angle = util.angleConversion(leg, 2, util.toDegrees(*(angles+2)));
+        double shoulder_home = (*Shoulders[leg]).return_home();
+        double elbow_home = (*Elbows[leg]).return_home();
+        double wrist_home = (*Wrists[leg]).return_home();
+
+
+        double Shoulder_angle = util.angleConversion(util.toDegrees(*angles), shoulder_home, legquad);
+        double Elbow_angle = util.angleConversion(util.toDegrees(*(angles+1)), elbow_home, legquad);
+        double wrist_angle = util.angleConversion(util.toDegrees(*(angles+2)), wrist_home, legquad);
 
         double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
         double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());

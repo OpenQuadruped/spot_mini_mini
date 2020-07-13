@@ -156,6 +156,10 @@ def main():
                                       ClearanceHeight, PenetrationDepth,
                                       contacts)
         joint_angles = spot.IK(orn, pos, T_bf)
+
+        # for i, (key, Tbf_in) in enumerate(T_bf.items()):
+        #     print("{}: \t Angle: {}".format(key, np.degrees(joint_angles[i])))
+
         env.pass_joint_angles(joint_angles.reshape(-1))
         # Get External Observations
         env.spot.GetExternalObservations(bzg, bz_step)

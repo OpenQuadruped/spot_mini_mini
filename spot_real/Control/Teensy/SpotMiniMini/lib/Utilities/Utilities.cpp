@@ -23,63 +23,16 @@ double Utilities::toDegrees(double radianVal) {
   return radianVal * 57296 / 1000.0;
 }
 
-double Utilities::angleConversion(int leg, int joint, double angle) {
-  // if(joint == 0){
-  //   if(leg == 0 || leg == 1) {
-  //     angle = -angle;
-  //   }
-  //   angle = angle + 135;
-  // }
+double Utilities::angleConversion(double angle, double home_angle, LegQuadrant legquad) {
+  double mod_angle = 0.0;
 
-  // if(joint == 1) {
-  //   if(leg == 0 || leg == 2) {
-  //     angle = 90 + angle;
-  //   }
-  //   if(leg == 1 || leg == 3) {
-  //     angle = 180 - angle;
-  //   }
-  // }
-
-  // if(joint == 2) {
-  //   double weird_offset = 50;
-  //   if(leg == 0 || leg == 2) {
-  //     angle = angle - weird_offset;
-  //   }
-  //   if(leg == 1 || leg == 3) {
-  //     angle = (270 + weird_offset) - angle;
-  //   }
-  // }
-  // return angle;
-  return angle + 135;
-}
-
-int Utilities::inverse_angleConversion(int leg, int joint, double angle) {
-  if(joint == 0){
-    if (leg == 0 || leg == 1) {
-      angle = 135 - angle;
-    }
-    if (leg == 2 || leg == 3) {
-      angle = angle - 135;
-    }
+  if (legquad == Left)
+  {
+    mod_angle = home_angle - angle;
+  } else
+  {
+    mod_angle = angle + home_angle;
   }
 
-  if(joint == 1) {
-    if(leg == 0 || leg == 2) {
-      angle = angle - 90;
-    }
-    if(leg == 1 || leg == 3) {
-      angle = 180 - angle;
-    }
-  }
-
-  if(joint == 2) {
-    double weird_offset = 50;
-    if(leg == 0 || leg == 2) {
-      angle = weird_offset + angle;
-    }
-    if(leg == 1 || leg == 3) {
-      angle = (270 + weird_offset) - angle;
-    }
-  }
-  return angle;
+  return mod_angle;
 }
