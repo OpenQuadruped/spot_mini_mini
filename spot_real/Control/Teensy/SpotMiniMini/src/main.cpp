@@ -14,8 +14,8 @@
 using namespace std;
 
 String serialResponse = "";
-// LegNum, FootX, FootY, FootZ
-char msg0[] = "0,-999.9,-999.9,-999.9"; // structure for position command
+// LegNum, FootX, FootY, FootZ, Dummy
+char msg0[] = "0,-999.9,-999.9,-999.9,-999.9"; // structure for position command
 // LegNum, FootX, FootY, FootZ, FootSpeedX, FootSpeedY, FootSpeedZ
 // char msg1[] = "0,-999.9,-999.9,-999.9,-999.9,-999.9,-999.9"; // structure for position/speed command
 bool ESTOPPED = false;
@@ -247,7 +247,7 @@ void loop()
   if (Serial1.available() > 0)
   {
     serialResponse = Serial1.readStringUntil('\n');
-    // Serial1.println(serialResponse);
+    Serial1.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
@@ -319,7 +319,7 @@ void loop()
     }
 
     //COMPLETE MESSAGE CHECK
-    if(leg != -9999 || x != -9999 || y != -9999 || z != -9999){
+    if(leg != -9999 and x != -9999 and y != -9999 and z != -9999){
       // Serial.println("complete message");
 
       if (servo_num == -1 and leg != -1)
