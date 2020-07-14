@@ -359,10 +359,12 @@ void loop()
         double elbow_home = (*Elbows[leg]).return_home();
         double wrist_home = (*Wrists[leg]).return_home();
 
+        // NOTE: x,y,z maps to shoulder, elbow wrist... trying smth new
 
-        double Shoulder_angle = util.angleConversion(util.toDegrees(angles[0]), shoulder_home, leg_type, Shoulder);
-        double Elbow_angle = util.angleConversion(util.toDegrees(angles[1]), elbow_home, leg_type, Elbow);
-        double Wrist_angle = util.angleConversion(util.toDegrees(angles[2]), wrist_home, leg_type, Wrist);
+
+        double Shoulder_angle = util.angleConversion(util.toDegrees(x), shoulder_home, leg_type, Shoulder);
+        double Elbow_angle = util.angleConversion(util.toDegrees(y), elbow_home, leg_type, Elbow);
+        double Wrist_angle = util.angleConversion(util.toDegrees(z), wrist_home, leg_type, Wrist);
 
         double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
         double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
