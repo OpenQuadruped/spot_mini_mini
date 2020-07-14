@@ -33,24 +33,27 @@ class Kinematics {
 		/// \param y: y coordinate of Hip To Foot Vector 
 		/// \param z: z coordinate of Hip To Foot Vector
 		/// \param D: the leg domain
+		/// \param angles: array to populate with IK angles
 		/// \returns: pointer to beginning of array containing joint angles for this leg
-		double * RightIK(const double & x, const double & y, const double & z, const double & D);
+		void RightIK(const double & x, const double & y, const double & z, const double & D, double (& angles) [3]);
 
 		/// \brief Left Leg Inverse Kinematics Solver
 		/// \param x: x coordinate of Hip To Foot Vector 
 		/// \param y: y coordinate of Hip To Foot Vector 
 		/// \param z: z coordinate of Hip To Foot Vector
 		/// \param D: the leg domain
+		/// \param angles: array to populate with IK angles
 		/// \returns: pointer to beginning of array containing joint angles for this leg
-		double * LeftIK(const double & x, const double & y, const double & z, const double & D);
+		void LeftIK(const double & x, const double & y, const double & z, const double & D, double (& angles) [3]);
 
 		/// \brief Retrives Joint Angles using a Hip To Foot Vector (x, y, z)
 		/// \param x: x coordinate of Hip To Foot Vector 
 		/// \param y: y coordinate of Hip To Foot Vector 
 		/// \param z: z coordinate of Hip To Foot Vector
 		/// \param legquad: Leg quadrant (left or right)
+		/// \param angles: array to populate with IK angles
 		/// \returns: pointer to beginning of array containing joint angles for this leg
-		double * GetJointAngles(const double & x, const double & y, const double & z,  const LegQuadrant & legquad);
+		void GetJointAngles(const double & x, const double & y, const double & z, const LegQuadrant & legquad, double (& angles) [3]);
 
 
 };

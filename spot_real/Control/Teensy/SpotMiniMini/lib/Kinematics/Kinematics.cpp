@@ -17,7 +17,7 @@ double Kinematics::GetDomain(const double & x, const double & y, const double & 
     return D;
 }
 
-double * Kinematics::RightIK(const double & x, const double & y, const double & z, const double & D)
+void Kinematics::RightIK(const double & x, const double & y, const double & z, const double & D, double (& angles) [3])
 {
 	double wrist_angle = atan2(-sqrt(1.0 - pow(D, 2)), D);
 	double sqrt_component = pow(y, 2) + pow(-z, 2) - pow(shoulder_length, 2);
@@ -31,15 +31,12 @@ double * Kinematics::RightIK(const double & x, const double & y, const double & 
             			 wrist_length * sin(wrist_angle),
             			 elbow_length + wrist_length * cos(wrist_angle));
 
-	static double joint_angles[3];
-	joint_angles[0] = shoulder_angle;
-	joint_angles[1] = -elbow_angle;
-	joint_angles[2] = -wrist_angle;
-
-	return joint_angles;
+	angles[0] = shoulder_angle;
+	angles[1] = -elbow_angle;
+	angles[2] = -wrist_angle;
 }
 
-double * Kinematics::LeftIK(const double & x, const double & y, const double & z, const double & D)
+void Kinematics::LeftIK(const double & x, const double & y, const double & z, const double & D, double (& angles) [3])
 {
 	double wrist_angle = atan2(-sqrt(1.0 - pow(D, 2)), D);
 	double sqrt_component = pow(y, 2) + pow(-z, 2) - pow(shoulder_length, 2);
@@ -53,23 +50,20 @@ double * Kinematics::LeftIK(const double & x, const double & y, const double & z
             			 wrist_length * sin(wrist_angle),
             			 elbow_length + wrist_length * cos(wrist_angle));
 
-	static double joint_angles[3];
-	joint_angles[0] = shoulder_angle;
-	joint_angles[1] = -elbow_angle;
-	joint_angles[2] = -wrist_angle;
-
-	return joint_angles;
+	angles[0] = shoulder_angle;
+	angles[1] = -elbow_angle;
+	angles[2] = -wrist_angle;
 }
 
-double * Kinematics::GetJointAngles(const double & x, const double & y, const double & z, const LegQuadrant & legquad)
+void Kinematics::GetJointAngles(const double & x, const double & y, const double & z, const LegQuadrant & legquad, double (& angles) [3])
 {
 	double D = GetDomain(x, y, z);
 	if (legquad == Right)
 	{
-		return RightIK(x, y, z, D);
+		RightIK(x, y, z, D, angles);
 	} else
 	{
-		return LeftIK(x, y, z, D);
+		LeftIK(x, y, z, D, angles);
 	}
 }
 
