@@ -240,6 +240,7 @@ class SpotCommander():
         joint_angles = self.spot.IK(orn, pos, self.T_bf)
 
         for i in range(len(joint_angles)):
+            # NOTE: flipping JA for bias
             # shoulder
             x = -joint_angles[i][0]
             # elbow
