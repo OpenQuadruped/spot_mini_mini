@@ -78,7 +78,7 @@ class SpotCommander():
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
 
-        self.dt = 0.01
+        self.dt = 0.001
 
         self.bzg = BezierGait(dt=self.dt)
 
