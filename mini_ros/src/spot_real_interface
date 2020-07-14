@@ -220,23 +220,32 @@ class SpotCommander():
                                                 self.PenetrationDepth,
                                                 self.contacts, self.dt)
 
-        HipToFoot = self.spot.HipToFoot(orn, pos, self.T_bf)
+        # HipToFoot = self.spot.HipToFoot(orn, pos, self.T_bf)
 
         # Now send HipToFoot to Teensy
         # NOTE: sending one joint at a time, may be better to send all combined
-        for i, (key, p_hf) in enumerate(HipToFoot.items()):
-            x = p_hf[0]
-            y = p_hf[1]
-            z = p_hf[2]
+        # for i, (key, p_hf) in enumerate(HipToFoot.items()):
+        #     x = p_hf[0]
+        #     y = p_hf[1]
+        #     z = p_hf[2]
 
-            bzd = BezierData()
+        #     bzd = BezierData()
 
-            bzd.Leg = key
-            bzd.x = x
-            bzd.y = y
-            bzd.z = z
+        #     bzd.Leg = key
+        #     bzd.x = x
+        #     bzd.y = y
+        #     bzd.z = z
 
-            self.bez_pub.publish(bzd)
+        #     self.bez_pub.publish(bzd)
+        joint_angles = self.spot.IK(orn, pos, self.T_bf)
+
+        for i in range(len(joint_angles)):
+            # shoulder
+            x = joint_angles[i][0]
+            # elbow
+            y = joint_angles[i][1]
+            # wrist
+            z = joint_angles[i][2]
 
             # rospy.logdebug("LEG: {} \t HipToFoot: {}".format(key, p_hf))
 
