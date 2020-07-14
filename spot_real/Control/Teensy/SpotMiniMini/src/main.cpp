@@ -326,7 +326,6 @@ void loop()
       // NORMAL OPERATION
       {
         // DEBUGSERIAL.println("SERVO ACT\n");
-        double *angles;
 
         LegQuadrant legquad;
         if (leg == 0 or leg == 2)
@@ -337,7 +336,9 @@ void loop()
           legquad = Right;
         }
 
-        angles = ik.GetJointAngles(x, y, z, legquad);
+        double angles[3];
+
+        ik.GetJointAngles(x, y, z, legquad, angles);
 
         double shoulder_home = (*Shoulders[leg]).return_home();
         LegType shoulder_leg = (*Shoulders[leg]).return_legtype();
@@ -347,9 +348,9 @@ void loop()
         LegType wrist_leg = (*Wrists[leg]).return_legtype();
 
 
-        double Shoulder_angle = util.angleConversion(util.toDegrees(*angles), shoulder_home, shoulder_leg, Shoulder);
-        double Elbow_angle = util.angleConversion(util.toDegrees(*(angles+1)), elbow_home, elbow_leg, Elbow);
-        double Wrist_angle = util.angleConversion(util.toDegrees(*(angles+2)), wrist_home, wrist_leg, Wrist);
+        double Shoulder_angle = util.angleConversion(util.toDegrees(angles[0]), shoulder_home, shoulder_leg, Shoulder);
+        double Elbow_angle = util.angleConversion(util.toDegrees(angles[1]), elbow_home, elbow_leg, Elbow);
+        double Wrist_angle = util.angleConversion(util.toDegrees(angles[2]), wrist_home, wrist_leg, Wrist);
 
         double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
         double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
