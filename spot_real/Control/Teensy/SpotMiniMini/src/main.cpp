@@ -247,7 +247,7 @@ void loop()
   if (Serial1.available() > 0)
   {
     serialResponse = Serial1.readStringUntil('\n');
-    Serial1.println(serialResponse);
+    // Serial1.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
@@ -327,13 +327,28 @@ void loop()
       {
         // DEBUGSERIAL.println("SERVO ACT\n");
 
+        LegType leg_type;
         LegQuadrant legquad;
         if (leg == 0 or leg == 2)
         {
           legquad = Left;
+          if (leg == 0)
+          {
+            leg_type = FL;
+          } else
+          {
+            leg_type = BL;
+          }
         } else
         {
           legquad = Right;
+          if (leg == 1)
+          {
+            leg_type = FR;
+          } else
+          {
+            leg_type = BR;
+          }
         }
 
         double angles[3];
@@ -341,16 +356,13 @@ void loop()
         ik.GetJointAngles(x, y, z, legquad, angles);
 
         double shoulder_home = (*Shoulders[leg]).return_home();
-        LegType shoulder_leg = (*Shoulders[leg]).return_legtype();
         double elbow_home = (*Elbows[leg]).return_home();
-        LegType elbow_leg = (*Elbows[leg]).return_legtype();
         double wrist_home = (*Wrists[leg]).return_home();
-        LegType wrist_leg = (*Wrists[leg]).return_legtype();
 
 
-        double Shoulder_angle = util.angleConversion(util.toDegrees(angles[0]), shoulder_home, shoulder_leg, Shoulder);
-        double Elbow_angle = util.angleConversion(util.toDegrees(angles[1]), elbow_home, elbow_leg, Elbow);
-        double Wrist_angle = util.angleConversion(util.toDegrees(angles[2]), wrist_home, wrist_leg, Wrist);
+        double Shoulder_angle = util.angleConversion(util.toDegrees(angles[0]), shoulder_home, leg_type, Shoulder);
+        double Elbow_angle = util.angleConversion(util.toDegrees(angles[1]), elbow_home, leg_type, Elbow);
+        double Wrist_angle = util.angleConversion(util.toDegrees(angles[2]), wrist_home, leg_type, Wrist);
 
         double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
         double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
@@ -365,6 +377,23 @@ void loop()
         (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist);
         (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist);
         (*Wrists[leg]).SetGoal(Wrist_angle, max_speed * w_dist);
+
+        // SEND DEBUG DATA
+        char Shoulder_buf[10];
+        char Elbow_buf[10];
+        char Wrist_buf[10];
+        char Leg_buf[10];
+        char Debug_buf[512];
+
+        itoa(leg, Leg_buf, 10);
+        dtostrf(Shoulder_angle, 0, 4, Shoulder_buf);
+        dtostrf(Elbow_angle, 0, 4, Elbow_buf);
+        dtostrf(Wrist_angle, 0, 4, Wrist_buf);
+
+        // convert all to string
+        sprintf_P(Debug_buf, PSTR("Leg: %s \t Shoulder: %s \t Elbow: %s \t Wirst:%s\n"), Leg_buf, Shoulder_buf, Elbow_buf, Wrist_buf);
+
+
       } else if (servo_num != -1)
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY

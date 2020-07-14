@@ -27,6 +27,9 @@
 <!-- Policy Node -->
 <node name="spot_real" pkg="mini_ros" type="spot_real_interface" output="screen"/>
 
+<!-- Sensor Interface Node -->
+<node name="sensor_interface" pkg="mini_ros" type="sensor_interface" output="screen"/>
+
 
 <!-- NOTE:
         Setting Up Joystick:
