@@ -66,7 +66,11 @@ void SpotServo::update_clk()
 		if(abs(current_pose - goal_pose) > error_threshold)
 		{
 			// returns 1.0 * sign of goal_pose - current_pose
-			double direction = copysign(1.0, goal_pose - current_pose);
+			double direction = 1.0;
+			if (goal_pose - current_pose < 0.0)
+			{
+				direction = -1.0;
+			}
 			current_pose += direction * (wait_time / 1000.0) * desired_speed;
 			int pwm = (current_pose) * conv_slope + conv_intcpt;
 			servo.writeMicroseconds(pwm);
