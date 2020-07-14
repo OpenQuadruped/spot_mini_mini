@@ -241,11 +241,11 @@ class SpotCommander():
 
         for i in range(len(joint_angles)):
             # shoulder
-            x = joint_angles[i][0]
+            x = -joint_angles[i][0]
             # elbow
-            y = joint_angles[i][1]
+            y = -joint_angles[i][1]
             # wrist
-            z = joint_angles[i][2]
+            z = -joint_angles[i][2]
 
             # rospy.logdebug("LEG: {} \t HipToFoot: {}".format(key, p_hf))
 
