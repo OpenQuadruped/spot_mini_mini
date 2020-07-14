@@ -1,5 +1,4 @@
 #include "SpotServo.hpp"
-#include "Utilities.hpp"
 
 using namespace std;
 
