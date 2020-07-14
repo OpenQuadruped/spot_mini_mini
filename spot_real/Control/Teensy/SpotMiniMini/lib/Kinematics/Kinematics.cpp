@@ -12,7 +12,13 @@ double Kinematics::GetDomain(const double & x, const double & y, const double & 
 	double D = (pow(y, 2) + pow(-z, 2) - pow(shoulder_length, 2) +
              	pow(-x, 2) - pow(elbow_length, 2) - pow(wrist_length, 2)) / (
                 2.0 * wrist_length * elbow_length);
-    D = constrain(D, -0.99, 0.99);
+    if (D > 1.0)
+    {
+        D = 1.0;
+    } if (D < -1.0)
+    {
+        D = -1.0;
+    }
 
     return D;
 }
