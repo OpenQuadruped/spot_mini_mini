@@ -22,7 +22,7 @@ sys.path.append('../../')
 
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
-# from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
+from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
 
 STEPLENGTH_SCALE = 0.05
 Z_SCALE = 0.08
@@ -71,7 +71,7 @@ class SpotCommander():
         self.imu = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
         # Serial Talker
-        # self.TI = TeensyInterface()
+        self.TI = TeensyInterface()
 
         self.spot = SpotModel()
 
