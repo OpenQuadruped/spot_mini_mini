@@ -22,7 +22,7 @@ sys.path.append('../../')
 
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
-from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
+# from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
 
 STEPLENGTH_SCALE = 0.05
 Z_SCALE = 0.08
@@ -71,7 +71,7 @@ class SpotCommander():
         self.imu = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
         # Serial Talker
-        self.TI = TeensyInterface()
+        # self.TI = TeensyInterface()
 
         self.spot = SpotModel()
 
@@ -211,6 +211,7 @@ class SpotCommander():
 
         # Time
         dt = rospy.get_time() - self.time
+        # print("dt: {}".format(dt))
         self.time = rospy.get_time()
 
         self.T_bf = self.bzg.GenerateTrajectory(StepLength, LateralFraction,
@@ -218,7 +219,7 @@ class SpotCommander():
                                                 self.T_bf0, self.T_bf,
                                                 self.ClearanceHeight,
                                                 self.PenetrationDepth,
-                                                self.contacts, self.dt)
+                                                self.contacts, dt)
 
         # HipToFoot = self.spot.HipToFoot(orn, pos, self.T_bf)
 
@@ -229,24 +230,26 @@ class SpotCommander():
         #     y = p_hf[1]
         #     z = p_hf[2]
 
-        #     bzd = BezierData()
-
-        #     bzd.Leg = key
-        #     bzd.x = x
-        #     bzd.y = y
-        #     bzd.z = z
-
         #     self.bez_pub.publish(bzd)
         joint_angles = self.spot.IK(orn, pos, self.T_bf)
 
         for i in range(len(joint_angles)):
             # NOTE: flipping JA for bias
             # shoulder
-            x = -joint_angles[i][0]
+            x = np.degrees(joint_angles[i][0])
             # elbow
-            y = -joint_angles[i][1]
+            y = np.degrees(joint_angles[i][1])
             # wrist
-            z = -joint_angles[i][2]
+            z = np.degrees(joint_angles[i][2])
+
+            bzd = BezierData()
+
+            bzd.Leg = str(i)
+            bzd.x = x
+            bzd.y = y
+            bzd.z = z
+
+            self.bez_pub.publish(bzd)
 
             # rospy.logdebug("LEG: {} \t HipToFoot: {}".format(key, p_hf))
 
@@ -259,7 +262,7 @@ class SpotCommander():
 def main():
     """ The main() function. """
     mini_commander = SpotCommander()
-    rate = rospy.Rate(1.0 / mini_commander.dt)
+    rate = rospy.Rate(600.0)
     while not rospy.is_shutdown():
         # This is called continuously. Has timeout functionality too
         mini_commander.move()
