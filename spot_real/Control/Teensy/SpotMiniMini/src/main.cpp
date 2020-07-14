@@ -393,6 +393,8 @@ void loop()
         // convert all to string
         sprintf_P(Debug_buf, PSTR("Leg: %s \t Shoulder: %s \t Elbow: %s \t Wirst:%s\n"), Leg_buf, Shoulder_buf, Elbow_buf, Wrist_buf);
 
+        // Send to RPI
+        Serial1.println(Debug_buf);
 
       } else if (servo_num != -1)
       {
