@@ -17,8 +17,8 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 	stand_angle = stand_angle_;
 	Utilities util;
 	goal_pose = util.angleConversion(stand_angle, home_angle, leg_type, joint_type);
-	int pwm = (stand_angle + offset) * conv_slope + conv_intcpt;
-	servo.writeMicroseconds(pwm);
+	// int pwm = (stand_angle + offset) * conv_slope + conv_intcpt;
+	// servo.writeMicroseconds(pwm);
 	last_actuated = millis();
 }
 
@@ -28,7 +28,13 @@ void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_
 	goal_pose += offset;
 	
 	// cpp would be std::clamp() with include cmath
-	constrain(goal_pose, 0.0, control_range);
+	if (goal_pose < 0.0)
+	{
+		goal_pose = 0.0;
+	} else if (goal_pose > control_range)
+	{
+		goal_pose = control_range;
+	}
 
 	desired_speed = desired_speed_;
 }
