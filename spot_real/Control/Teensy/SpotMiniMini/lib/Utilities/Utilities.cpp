@@ -42,6 +42,7 @@ double Utilities::angleConversion(double angle, double home_angle, LegType legty
     {
       mod_angle = home_angle + angle;
     } else
+    // FL or BL
     {
       mod_angle = home_angle - angle;
     }
