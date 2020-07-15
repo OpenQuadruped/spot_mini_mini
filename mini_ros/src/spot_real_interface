@@ -196,7 +196,7 @@ class SpotCommander():
             self.ClearanceHeight = self.BaseClearanceHeight
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
-            pos = np.array([0.0, 0.0, 0.0])
+            pos = np.array([-0.02, 0.0, -0.01])
             orn = np.array([0.0, 0.0, 0.0])
 
         # TODO: integrate into controller
