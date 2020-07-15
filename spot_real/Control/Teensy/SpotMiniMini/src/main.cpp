@@ -276,6 +276,7 @@ void loop()
       {
         // between 0 and 4
         leg = atoi(str);
+        Serial1.println(leg);
         if (leg < 0 or leg > 4)
         {
           leg = -1;
@@ -288,14 +289,17 @@ void loop()
         if (message_string_index == 1)
         {
           x = atof(str);
+          Serial1.println(x);
         } else if (message_string_index == 2)
         {
           // Read Desired Foot y pos
           y = atof(str);
+          Serial1.println(y);
         } else if (message_string_index == 3)
         {
           // Read Desired Foot z pos
           z = atof(str);
+          Serial1.println(z);
         }
       } else if (leg == 4)
       {

@@ -234,13 +234,13 @@ class SpotCommander():
         joint_angles = self.spot.IK(orn, pos, self.T_bf)
 
         for i in range(len(joint_angles)):
-            # NOTE: flipping JA for bias
+            # NOTE: Rounding to one decimal point or teensy can't read!
             # shoulder
-            x = np.degrees(joint_angles[i][0])
+            x = round(np.degrees(joint_angles[i][0]), 1)
             # elbow
-            y = np.degrees(joint_angles[i][1])
+            y = round(np.degrees(joint_angles[i][1]), 1)
             # wrist
-            z = np.degrees(joint_angles[i][2])
+            z = round(np.degrees(joint_angles[i][2]), 1)
 
             bzd = BezierData()
 
