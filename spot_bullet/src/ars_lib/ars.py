@@ -469,6 +469,7 @@ class ARSAgent():
                                        self.smach.PenetrationDepth_LIMITS[1])
 
             contacts = copy.deepcopy(state[-4:])
+            # contacts = [0, 0, 0, 0]
 
             # print("CONTACTS: {}".format(contacts))
 
