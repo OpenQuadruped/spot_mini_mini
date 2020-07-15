@@ -41,8 +41,8 @@ Table of Contents
 
 Body manipulation with [leg IK](https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot) and [body IK](https://moribots.github.io/project/spot-mini-mini) descriptions.
 
-<img src="spot_bullet/media/spot_rpy.gif" alt="SIK" width="300"/>
-<img src="spot_real/media/rpy.gif" alt="SRIK" width="300"/>
+<img src="spot_bullet/media/spot_rpy.gif" alt="SIK" width="500"/>
+<img src="spot_real/media/rpy.gif" alt="SRIK" width="500"/>
 
 ### Reinforcement Learning
 
