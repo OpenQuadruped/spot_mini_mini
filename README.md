@@ -7,7 +7,11 @@
 [![Open Source Love png2](https://badges.frapsoft.com/os/v2/open-source.png?v=103)](https://github.com/moribots)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/moribots/spot_mini_mini/blob/spot/LICENSE)
 
-![SIK](spot_bullet/media/spot-mini-mini.gif)
+<!-- ![SIK](spot_bullet/media/spot-mini-mini.gif) -->
+<p float="left">
+  <img src="spot_bullet/media/spot-mini-mini.gif" width="100" />
+  <img src="spot_real/media/full_control.gif" width="100" />
+</p>
 
 **Featured in [Robotics Weekly](https://weeklyrobotics.com/weekly-robotics-98) and [Mithi's Robotics Coursework](https://github.com/mithi/robotics-coursework/#hands-on-and-blogs)!**
 
