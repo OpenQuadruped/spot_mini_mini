@@ -53,8 +53,8 @@ class SpotCommander():
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
         # Stock, use bumper btns to change
-        self.BaseStepVelocity = 0.8
-        self.StepVelocity = 0.8
+        self.BaseStepVelocity = 0.01
+        self.StepVelocity = 0.01
         # Stock, use arrow pads to change
         self.BaseClearanceHeight = 0.02
         self.BasePenetrationDepth = 0.005
@@ -107,8 +107,8 @@ class SpotCommander():
         try:
             # Update imu
             self.imu = [
-                imu.roll, imu.pitch, imu.acc_x, imu.acc_y,
-                imu.acc_z, imu.gyro_x, imu.gyro_y, imu.gyro_z
+                imu.roll, imu.pitch, imu.acc_x, imu.acc_y, imu.acc_z,
+                imu.gyro_x, imu.gyro_y, imu.gyro_z
             ]
             # log input data as debug-level message
             rospy.logdebug(imu)
@@ -161,8 +161,8 @@ class SpotCommander():
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = np.clip(
                 self.BaseStepVelocity +
-                (self.mini_cmd.faster + self.mini_cmd.slower) * SV_SCALE, 0.1,
-                1.5)
+                (self.mini_cmd.faster + self.mini_cmd.slower) * SV_SCALE,
+                0.001, 1.5)
             if self.mini_cmd.movement == "Stepping":
                 StepLength = self.mini_cmd.x_velocity + abs(
                     self.mini_cmd.y_velocity * 0.66)
