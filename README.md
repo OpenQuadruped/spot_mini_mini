@@ -10,7 +10,7 @@
 <!-- ![SIK](spot_bullet/media/spot-mini-mini.gif) -->
 <p float="left">
   <img src="spot_bullet/media/spot-mini-mini.gif" width="340" />
-  <img src="spot_real/media/full_control.gif" width="310" />
+  <img src="spot_real/media/full_control.gif" width="315" />
 </p>
 
 **Featured in [Robotics Weekly](https://weeklyrobotics.com/weekly-robotics-98) and [Mithi's Robotics Coursework](https://github.com/mithi/robotics-coursework/#hands-on-and-blogs)!**
