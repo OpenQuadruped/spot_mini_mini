@@ -100,11 +100,11 @@ void setup() {
   ik.Initialize(0.04, 0.1, 0.1);
 
   // Shoulders
-  FL_Shoulder.Initialize(4, 134, 135, -7, FL, Shoulder);  // 0 | FLS start: 134
+  FL_Shoulder.Initialize(4, 134, 135, -15, FL, Shoulder);  // 0 | FLS start: 134
   FL_Shoulder.SetGoal(134, max_speed / 5.0);
   FR_Shoulder.Initialize(11, 136, 135, -5, FR, Shoulder); // 1 | FRS start: 136
   FR_Shoulder.SetGoal(136, max_speed / 5.0);
-  BL_Shoulder.Initialize(7, 136, 135, 5, BL, Shoulder);  // 2 | BLS start: 136
+  BL_Shoulder.Initialize(7, 136, 135, 7, BL, Shoulder);  // 2 | BLS start: 136
   BL_Shoulder.SetGoal(136, max_speed / 5.0);
   BR_Shoulder.Initialize(8, 134, 135, -7, BR, Shoulder);  // 3 | BRS start: 134
   BR_Shoulder.SetGoal(134, max_speed / 5.0);
