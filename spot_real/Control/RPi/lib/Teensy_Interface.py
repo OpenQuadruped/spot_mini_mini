@@ -9,7 +9,7 @@ class TeensyInterface:
         self.buffer = []
 
     def __construct_string(self, i, x, y, z):
-        return "{},{},{},{},\n".format(i, x, y, z)
+        return "{},{},{},{}\n".format(i, x, y, z)
 
     def add_to_buffer(self, i, x, y, z):
         self.buffer.append(self.__construct_string(i, x, y, z))

@@ -14,8 +14,8 @@
 using namespace std;
 
 String serialResponse = "";
-// LegNum, FootX, FootY, FootZ, Dummy
-char msg0[] = "0,-999.9,-999.9,-999.9,-999.9"; // structure for position command
+// LegNum, FootX, FootY, FootZ
+char msg0[] = "0,-999.9,-999.9,-999.9"; // structure for position command
 // LegNum, FootX, FootY, FootZ, FootSpeedX, FootSpeedY, FootSpeedZ
 // char msg1[] = "0,-999.9,-999.9,-999.9,-999.9,-999.9,-999.9"; // structure for position/speed command
 bool ESTOPPED = false;
