@@ -67,6 +67,7 @@ class SpotCommander():
         # mini_cmd_cb from mini_cmd topic
         self.sub_cmd = rospy.Subscriber('mini_cmd', MiniCmd, self.mini_cmd_cb)
         self.sub_jb = rospy.Subscriber('joybuttons', JoyButtons, self.jb_cb)
+        self.time = rospy.get_time()
         print("READY TO GO!")
 
     def load_spot(self):
@@ -190,12 +191,17 @@ class SpotCommander():
 
         contacts = self.state[-4:]
 
+        # Time
+        dt = rospy.get_time() - self.time
+        # print("dt: {}".format(dt))
+        self.time = rospy.get_time()
+
         self.T_bf = self.bzg.GenerateTrajectory(StepLength, LateralFraction,
                                                 YawRate, self.StepVelocity,
                                                 self.T_bf0, self.T_bf,
                                                 self.ClearanceHeight,
                                                 self.PenetrationDepth,
-                                                contacts)
+                                                contacts, dt)
 
         joint_angles = self.spot.IK(orn, pos, self.T_bf)
         self.env.pass_joint_angles(joint_angles.reshape(-1))

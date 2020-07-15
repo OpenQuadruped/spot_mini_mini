@@ -172,7 +172,7 @@ class SpotCommander():
                     self.mini_cmd.z = 0.5
                 LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
                 YawRate = self.mini_cmd.rate * YAW_SCALE
-                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
+                pos = np.array([-0.012, 0.0, self.mini_cmd.z * Z_SCALE])
                 orn = np.array([0.0, 0.0, 0.0])
             else:
                 StepLength = 0.0
