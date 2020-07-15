@@ -24,7 +24,7 @@ from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
 
-STEPLENGTH_SCALE = 0.08
+STEPLENGTH_SCALE = 0.05
 Z_SCALE = 0.08
 RPY_SCALE = 0.5
 SV_SCALE = 1.0
