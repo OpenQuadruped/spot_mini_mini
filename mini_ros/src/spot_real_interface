@@ -56,9 +56,9 @@ class SpotCommander():
         self.BaseStepVelocity = 0.01
         self.StepVelocity = 0.01
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.02
+        self.BaseClearanceHeight = 0.03
         self.BasePenetrationDepth = 0.005
-        self.ClearanceHeight = 0.02
+        self.ClearanceHeight = 0.03
         self.PenetrationDepth = 0.005
 
         # Time
@@ -80,7 +80,7 @@ class SpotCommander():
 
         self.dt = 0.001
 
-        self.bzg = BezierGait(dt=self.dt)
+        self.bzg = BezierGait(dt=self.dt, Tswing=0.20)
 
         # self.load_spot()
         # cmd_cb from mini_cmd topic
