@@ -90,9 +90,9 @@ class SpotCommander():
             shoulder_length=0.055,
             elbow_length=0.11,
             wrist_length=0.125,
-            hip_x=0.192,
+            hip_x=0.24,
             hip_y=0.105,
-            foot_x=0.192,
+            foot_x=0.24,
             foot_y=0.22,
             height=0.155,
         )
@@ -196,8 +196,10 @@ class SpotCommander():
         """ Turn joystick inputs into commands
         """
 
-        x_offset = -0.012
-        z_offset = -0.01
+        # x_offset = -0.012
+        # z_offset = -0.01
+        x_offset = 0.0
+        z_offset = 0.0
 
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = np.clip(
