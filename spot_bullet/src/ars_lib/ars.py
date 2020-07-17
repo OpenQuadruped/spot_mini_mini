@@ -1,14 +1,12 @@
 # from tg_lib.tg_policy import TGPolicy
 import pickle
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import TransToRp
 import copy
-from scipy.signal import savgol_filter as sv_filt
 from spotmicro.util.gui import GUI
 
 np.random.seed(0)
