@@ -11,6 +11,11 @@ class SpotModel:
                  shoulder_length=0.04,
                  elbow_length=0.1,
                  wrist_length=0.1,
+                 hip_x=0.192,
+                 hip_y=0.085,
+                 foot_x=0.192,
+                 foot_y=0.17,
+                 height=0.135,
                  shoulder_lim=[-0.548, 0.548],
                  elbow_lim=[-2.17, 0.97],
                  wrist_lim=[-0.1, 2.59]):
@@ -26,18 +31,18 @@ class SpotModel:
 
         # Distance Between Hips
         # Length
-        self.hip_x = 0.192
+        self.hip_x = hip_x
         # Width
-        self.hip_y = 0.085
+        self.hip_y = hip_y
 
         # Distance Between Feet
         # Length
-        self.foot_x = 0.192
+        self.foot_x = foot_x
         # Width
-        self.foot_y = 0.17
+        self.foot_y = foot_y
 
         # Body Height
-        self.height = 0.135
+        self.height = height
 
         # Joint Parameters
         self.shoulder_lim = shoulder_lim
