@@ -10,9 +10,8 @@ import rospy
 import numpy as np
 from mini_ros.msg import MiniCmd, JoyButtons, IMUdata, ContactData, BezierData
 import copy
-
 import sys
-
+import os
 import rospkg
 rospack = rospkg.RosPack()
 
@@ -23,7 +22,10 @@ sys.path.append('../../')
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
+from spot_bullet.ars_lib.ars import ARSAgent, Normalizer, Policy
+from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
+# Controller Params
 STEPLENGTH_SCALE = 0.05
 Z_SCALE = 0.08
 RPY_SCALE = 0.5
@@ -31,15 +33,26 @@ SV_SCALE = 1.0
 CHPD_SCALE = 0.0005
 YAW_SCALE = 2.0
 
+# AGENT PARAMS
+CD_SCALE = 0.05
+SLV_SCALE = 0.05
+RESIDUALS_SCALE = 0.03
+Z_SCALE = 0.05
+# Filter actions
+alpha = 0.7
+# Added this to avoid filtering residuals
+# -1 for all
+actions_to_filter = 2
+
 
 class SpotCommander():
-    def __init__(self):
+    def __init__(self, Agent=False):
 
         rospy.init_node('Policies', anonymous=True)
-        self.agents = {}
         # self.movetypes = [
         #     "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
         # ]
+        self.Agent = Agent
         self.movetypes = ["Stop"]
         self.mini_cmd = MiniCmd()
         self.jb = JoyButtons()
@@ -82,7 +95,8 @@ class SpotCommander():
 
         self.bzg = BezierGait(dt=self.dt, Tswing=0.20)
 
-        # self.load_spot()
+        if self.Agent:
+            self.load_spot()
         # cmd_cb from mini_cmd topic
         self.sub_cmd = rospy.Subscriber('mini_cmd', MiniCmd, self.cmd_cb)
         self.sub_jb = rospy.Subscriber('joybuttons', JoyButtons, self.jb_cb)
@@ -93,11 +107,26 @@ class SpotCommander():
         print("READY TO GO!")
 
     def load_spot(self):
-        data = "NOTREADY"
-        while data != "READY!":
-            data = self.TI.read_buffer()
-            data = data.rstrip('\r\n')
-        rospy.loginfo("Spot is Ready!")
+        self.policy = Policy(state_dim=16, action_dim=15)
+        self.normalizer = Normalizer(state_dim=16)
+        env = spotBezierEnv(render=False,
+                            on_rack=False,
+                            height_field=False,
+                            draw_foot_path=False)
+        agent = ARSAgent(self.normalizer, self.policy, env)
+        my_path = os.path.abspath(os.path.dirname(__file__))
+        models_path = os.path.join(my_path, "../models")
+        agent_num = 149
+        file_name = "spot_ars_"
+        if os.path.exists(models_path + "/" + file_name + str(agent_num) +
+                          "_policy"):
+            print("Loading Existing agent")
+            agent.load(models_path + "/" + file_name + str(agent_num))
+            agent.policy.episode_steps = np.inf
+            self.policy = agent.policy
+
+        self.action = np.zeros(15)
+        self.old_act = self.action[:actions_to_filter]
 
     def imu_cb(self, imu):
         """ Reads the IMU
@@ -107,8 +136,8 @@ class SpotCommander():
         try:
             # Update imu
             self.imu = [
-                imu.roll, imu.pitch, imu.acc_x, imu.acc_y, imu.acc_z,
-                imu.gyro_x, imu.gyro_y, imu.gyro_z
+                imu.roll, imu.pitch, imu.gyro_x, imu.gyro_y, imu.gyro_z,
+                imu.acc_x, imu.acc_y, imu.acc_z
             ]
             # log input data as debug-level message
             rospy.logdebug(imu)
@@ -214,6 +243,29 @@ class SpotCommander():
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
 
+        # OPTIONAL: Agent
+        if self.Agent:
+            phases = copy.deepcopy(self.bzg.Phases)
+            # Total 16
+            state = []
+            # r, p, gz, gy, gz, ax, ay, az (8)
+            state.extend(self.imu)
+            # FL, FR, BL, BR (4)
+            state.extend(phases)
+            # FL, FR, BL, BR (4)
+            state.extend(self.contacts)
+            self.normalizer.observe(state)
+            # Don't normalize contacts
+            state[:-4] = self.normalizer.normalize(state)[:-4]
+            self.action = self.policy.evaluate(state, None, None)
+            self.action = np.tanh(self.action)
+            # EXP FILTER
+            self.action[:actions_to_filter] = alpha * self.old_act + (
+                1.0 - alpha) * self.action[:actions_to_filter]
+            self.old_act = self.action[:actions_to_filter]
+
+            self.ClearanceHeight += self.action[0] * CD_SCALE
+
         # Time
         dt = rospy.get_time() - self.time
         # print("dt: {}".format(dt))
@@ -226,16 +278,15 @@ class SpotCommander():
                                                 self.PenetrationDepth,
                                                 self.contacts, dt)
 
-        # HipToFoot = self.spot.HipToFoot(orn, pos, self.T_bf)
+        # OPTIONAL: Agent
+        if self.Agent:
+            # Add DELTA to XYZ Foot Poses
+            self.T_bf["FL"][3, :3] += self.action[2:5] * RESIDUALS_SCALE
+            self.T_bf["FR"][3, :3] += self.action[5:8] * RESIDUALS_SCALE
+            self.T_bf["BL"][3, :3] += self.action[8:11] * RESIDUALS_SCALE
+            self.T_bf["BR"][3, :3] += self.action[11:14] * RESIDUALS_SCALE
+            pos[2] += self.action[1] * Z_SCALE
 
-        # Now send HipToFoot to Teensy
-        # NOTE: sending one joint at a time, may be better to send all combined
-        # for i, (key, p_hf) in enumerate(HipToFoot.items()):
-        #     x = p_hf[0]
-        #     y = p_hf[1]
-        #     z = p_hf[2]
-
-        #     self.bez_pub.publish(bzd)
         joint_angles = self.spot.IK(orn, pos, self.T_bf)
 
         for i in range(len(joint_angles)):
