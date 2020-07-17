@@ -22,7 +22,7 @@ sys.path.append('../../')
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
-from spot_bullet.ars_lib.ars import ARSAgent, Normalizer, Policy
+from spot_bullet.src.ars_lib.ars import ARSAgent, Normalizer, Policy
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
 # Controller Params
