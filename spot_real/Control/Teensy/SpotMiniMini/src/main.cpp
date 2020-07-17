@@ -19,7 +19,7 @@ char msg0[] = "0,-999.9,-999.9,-999.9"; // structure for position command
 // LegNum, FootX, FootY, FootZ, FootSpeedX, FootSpeedY, FootSpeedZ
 // char msg1[] = "0,-999.9,-999.9,-999.9,-999.9,-999.9,-999.9"; // structure for position/speed command
 bool ESTOPPED = false;
-int max_speed = 500; // deg/sec
+int max_speed = 1000; // doesn't really mean anything, theoretically deg/sec
 double last_estop = millis();
 const int ledPin = 13;
 
@@ -247,7 +247,7 @@ void loop()
   if (Serial1.available() > 0)
   {
     serialResponse = Serial1.readStringUntil('\n');
-    Serial1.println(serialResponse);
+    // Serial1.println(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
@@ -396,7 +396,7 @@ void loop()
         sprintf_P(Debug_buf, PSTR("Leg: %s \t Shoulder: %s \t Elbow: %s \t Wirst:%s\n"), Leg_buf, Shoulder_buf, Elbow_buf, Wrist_buf);
 
         // Send to RPI
-        Serial1.println(Debug_buf);
+        // Serial1.println(Debug_buf);
 
       } else if (servo_num != -1)
       {
