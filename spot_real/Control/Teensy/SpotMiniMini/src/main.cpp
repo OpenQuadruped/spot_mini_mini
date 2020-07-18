@@ -152,7 +152,7 @@ void loop()
   char FR_sensor_buf[2];
   char BL_sensor_buf[2];
   char BR_sensor_buf[2];
-  char contact_sensor_buf[9];
+  char contact_sensor_buf[20];
 
   if (FL_sensor.isTriggered())
   {
@@ -197,35 +197,35 @@ void loop()
   //IMU
   if (imu_sensor.available())
   {
-    char roll_buf[20];
-    char pitch_buf[20];
-    char yaw_buf[20];
-    char acc_x_buf[20];
-    char acc_y_buf[20];
-    char acc_z_buf[20];
-    char gyro_x_buf[20];
-    char gyro_y_buf[20];
-    char gyro_z_buf[20];
+    char roll_buf[] = "-9.999";
+    char pitch_buf[] = "-9.999";
+    char yaw_buf[] = "-9.999";
+    char acc_x_buf[] = "-999.99";
+    char acc_y_buf[] = "-999.99";
+    char acc_z_buf[] = "-999.99";
+    char gyro_x_buf[] = "-999.99";
+    char gyro_y_buf[] = "-999.99";
+    char gyro_z_buf[] = "-999.99";
     // just in case we get some big values
-    char imu_buf[512];
+    char imu_buf[] = "IMUDATA,-9.999,-9.999,-999.99,-999.99,-999.99,-999.99,-999.99,-999.99";
 
     imu::Vector<3> eul = imu_sensor.GetEuler();
     // val, width, precision, buff
     // NOTE: switching eul.x and eul.x because Bosch is weird..
-    dtostrf(eul.z(), 0, 4, roll_buf);
-    dtostrf(eul.y(), 0, 4, pitch_buf);
-    dtostrf(eul.x(), 0, 4, yaw_buf);
+    dtostrf(eul.z(), 0, 2, roll_buf);
+    dtostrf(eul.y(), 0, 2, pitch_buf);
+    dtostrf(eul.x(), 0, 2, yaw_buf);
     imu::Vector<3> acc = imu_sensor.GetAcc();
-    dtostrf(acc.x(), 0, 4, acc_x_buf);
-    dtostrf(acc.y(), 0, 4, acc_y_buf);
-    dtostrf(acc.z(), 0, 4, acc_z_buf);
+    dtostrf(acc.x(), 0, 2, acc_x_buf);
+    dtostrf(acc.y(), 0, 2, acc_y_buf);
+    dtostrf(acc.z(), 0, 2, acc_z_buf);
     imu::Vector<3> gyro = imu_sensor.GetGyro();
-    dtostrf(gyro.x(), 0, 4, gyro_x_buf);
-    dtostrf(gyro.y(), 0, 4, gyro_y_buf);
-    dtostrf(gyro.z(), 0, 4, gyro_z_buf);
+    dtostrf(gyro.x(), 0, 2, gyro_x_buf);
+    dtostrf(gyro.y(), 0, 2, gyro_y_buf);
+    dtostrf(gyro.z(), 0, 2, gyro_z_buf);
 
     // convert all to string
-    sprintf_P(imu_buf, PSTR("IMU,%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
+    sprintf_P(imu_buf, PSTR("IMUDATA,%s,%s,%s,%s,%s,%s,%s,%s\n"), roll_buf, pitch_buf, acc_x_buf, acc_y_buf, acc_z_buf, gyro_x_buf, gyro_y_buf, gyro_z_buf);
 
     // sprintf_P(imu_buf, PSTR("Roll: %s,\tPitch: %s,\tYaw: %s\n"), roll_buf, pitch_buf, yaw_buf);
 

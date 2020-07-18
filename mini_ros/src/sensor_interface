@@ -56,7 +56,7 @@ class SensorInterface():
             msg[-1] = msg[-1].rstrip('\r\n')
 
             # IMU
-            if msg[0] == "IMU":
+            if msg[0] == "IMUDATA":
                 imu_msg = [float(x) for x in msg[1:]]
                 # rospy.loginfo(imu_msg)
                 # IMU
