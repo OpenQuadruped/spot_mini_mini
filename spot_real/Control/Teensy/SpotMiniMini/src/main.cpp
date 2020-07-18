@@ -393,7 +393,7 @@ void loop()
         dtostrf(Wrist_angle, 0, 4, Wrist_buf);
 
         // convert all to string
-        sprintf_P(Debug_buf, PSTR("Leg: %s \t Shoulder: %s \t Elbow: %s \t Wirst:%s\n"), Leg_buf, Shoulder_buf, Elbow_buf, Wrist_buf);
+        // sprintf_P(Debug_buf, PSTR("Leg: %s \t Shoulder: %s \t Elbow: %s \t Wirst:%s\n"), Leg_buf, Shoulder_buf, Elbow_buf, Wrist_buf);
 
         // Send to RPI
         // Serial1.println(Debug_buf);
