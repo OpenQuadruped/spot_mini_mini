@@ -72,7 +72,6 @@ class SensorInterface():
 
             # CONTACT
             elif msg[0] == "CONTACT":
-                msg[:] = msg[1:]
                 cnt_msg = [strtobool(x) for x in msg[1:]]
                 # rospy.loginfo(cnt_msg)
                 # Contact Sensor
