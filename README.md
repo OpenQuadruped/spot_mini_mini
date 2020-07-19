@@ -105,6 +105,8 @@ Yaw logic based on [4-wheel steering car](http://www.inase.org/library/2014/sant
 * Pybullet
 * Gym
 * OpenCV
+* Scipy
+* Numpy
 
 ### Joystick Control with ROS
 First, you're going to need a joystick (okay, not really, but it's more fun if you have one).
