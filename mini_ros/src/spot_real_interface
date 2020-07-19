@@ -46,7 +46,7 @@ actions_to_filter = 2
 
 
 class SpotCommander():
-    def __init__(self, Agent=False):
+    def __init__(self, Agent=True):
 
         rospy.init_node('Policies', anonymous=True)
         # self.movetypes = [
