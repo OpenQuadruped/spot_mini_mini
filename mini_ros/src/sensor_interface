@@ -37,7 +37,7 @@ class SensorInterface():
         self.str_pub = rospy.Publisher('spot/teensydebug',
                                        String,
                                        queue_size=1)
-        input("PUT SPOT ON THE GROUND, PRESS ENTER TO CALIBRATE IMU")
+        input("PUT SPOT ON THE GROUND, PRESS ENTER TO CALIBRATE IMU\n")
         self.imu = IMU()
 
     def read_sensors(self):
