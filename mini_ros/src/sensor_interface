@@ -54,7 +54,7 @@ class SensorInterface():
             cnt_dat = ContactData()
             cnt_read = False
 
-            msg = data.split(",")
+            msg = data.decode().split(",")
             # REMOVE NEWLINE
             msg[-1] = msg[-1].rstrip('\r\n')
 
