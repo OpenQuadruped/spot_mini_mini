@@ -7,7 +7,7 @@ import math
 
 
 class IMU:
-    def __init__(self, rp_flip=True, r_neg=False, p_neg=False, y_neg=True):
+    def __init__(self, rp_flip=True, r_neg=False, p_neg=True, y_neg=True):
         # I2C connection:
         # SPI connection:
         # from digitalio import DigitalInOut, Direction
