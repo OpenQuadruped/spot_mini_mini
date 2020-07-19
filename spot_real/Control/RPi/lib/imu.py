@@ -5,6 +5,8 @@ import adafruit_lsm9ds1
 import numpy as np
 import math
 
+# i2c permission: sudo usermod -a -G i2c <user>
+# https://www.raspberrypi.org/forums/viewtopic.php?t=58782
 
 class IMU:
     def __init__(self, rp_flip=True, r_neg=False, p_neg=True, y_neg=True):
