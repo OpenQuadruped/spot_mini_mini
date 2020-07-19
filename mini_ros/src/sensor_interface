@@ -94,12 +94,12 @@ class SensorInterface():
             self.imu.filter_rpy()
             imu_dat.roll = self.imu.true_roll
             imu_dat.pitch = self.imu.true_pitch
-            imu_dat.acc_x = self.imu_data[3]
-            imu_dat.acc_y = self.imu_data[4]
-            imu_dat.acc_z = self.imu_data[5]
-            imu_dat.gyro_x = self.imu_data[0]
-            imu_dat.gyro_y = self.imu_data[1]
-            imu_dat.gyro_z = self.imu_data[2]
+            imu_dat.acc_x = self.imu.imu_data[3]
+            imu_dat.acc_y = self.imu.imu_data[4]
+            imu_dat.acc_z = self.imu.imu_data[5]
+            imu_dat.gyro_x = self.imu.imu_data[0]
+            imu_dat.gyro_y = self.imu.imu_data[1]
+            imu_dat.gyro_z = self.imu.imu_data[2]
             imu_read = True
 
             if imu_read:
