@@ -8,6 +8,8 @@ import math
 # i2c permission: sudo usermod -a -G i2c <user>
 # https://www.raspberrypi.org/forums/viewtopic.php?t=58782
 
+# use ROS with python3: https://medium.com/@beta_b0t/how-to-setup-ros-with-python-3-44a69ca36674
+
 class IMU:
     def __init__(self, rp_flip=True, r_neg=False, p_neg=True, y_neg=True):
         # I2C connection:
