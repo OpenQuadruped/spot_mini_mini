@@ -63,7 +63,7 @@ class IMU:
         # CALIBRATE
         self.calibrate_imu()
 
-        print("IMU Calibrated!")
+        print("IMU Calibrated!\n")
 
     def calibrate_imu(self):
         """
@@ -88,7 +88,7 @@ class IMU:
 
         num_calibrations = 1000
 
-        print("Calibrating Gyroscope and Accelerometer...")
+        print("Calibrating Gyroscope and Accelerometer...\n")
 
         for i in range(num_calibrations):
             """ GYRO/ACC CALIBRATION
@@ -122,26 +122,26 @@ class IMU:
         self.pitch_calibration = sum_pitch / float(num_calibrations)
         # self.yaw_calibration = sum_yaw / float(num_calibrations)
 
-        print("Gyroscope and Accelerometer calibrated!")
+        print("Gyroscope and Accelerometer calibrated!\n")
 
-        magne_cal = input(
-            "Calibrate Magnemometer [c] or Load Existing Calibration [l] ?")
+        # magne_cal = input(
+        #     "Calibrate Magnemometer [c] or Load Existing Calibration [l] ?")
 
-        if magne_cal == "c":
-            print("Calibrating Magnetometer...")
-            self.calibrate_magnemometer()
-        else:
-            print("Loading Magnetometer Calibration...")
-            self.load_magnemometer_calibration()
+        # if magne_cal == "c":
+        #     print("Calibrating Magnetometer...")
+        #     self.calibrate_magnemometer()
+        # else:
+        #     print("Loading Magnetometer Calibration...")
+        #     self.load_magnemometer_calibration()
 
-        input(
-            "Put the robot at its zero-yaw position and press Enter to calibrate Yaw"
-        )
-        self.read_imu()
-        self.yaw_bias = (math.atan2(self.imu_data[7], self.imu_data[6]) *
-                         180.0 / np.pi)
-        print("Recorded Bias: {}".format(self.yaw_bias))
-        input("Enter To Start")
+        # input(
+        #     "Put the robot at its zero-yaw position and press Enter to calibrate Yaw"
+        # )
+        # self.read_imu()
+        # self.yaw_bias = (math.atan2(self.imu_data[7], self.imu_data[6]) *
+        #                  180.0 / np.pi)
+        # print("Recorded Bias: {}".format(self.yaw_bias))
+        # input("Enter To Start")
 
     def load_magnemometer_calibration(self):
         return True
