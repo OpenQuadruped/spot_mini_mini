@@ -189,10 +189,10 @@ void loop()
   sprintf_P(contact_sensor_buf, PSTR("CONTACT,%s,%s,%s,%s\n"), FL_sensor_buf, FR_sensor_buf, BL_sensor_buf, BR_sensor_buf);
 
   // Send to RPI
-  Serial1.println(contact_sensor_buf);
+  Serial1.print(contact_sensor_buf);
 
   // DEBUG
-  // DEBUGSERIAL.println(contact_sensor_buf);
+  // DEBUGSERIAL.print(contact_sensor_buf);
 
   //IMU
   if (imu_sensor.available())
@@ -231,10 +231,10 @@ void loop()
 
 
     // Send to RPI
-    Serial1.println(imu_buf);
+    Serial1.print(imu_buf);
 
     // DEBUG
-    // DEBUGSERIAL.println(imu_buf);
+    // DEBUGSERIAL.print(imu_buf);
 
   }
 
@@ -247,7 +247,7 @@ void loop()
   if (Serial1.available() > 0)
   {
     serialResponse = Serial1.readStringUntil('\n');
-    // Serial1.println(serialResponse);
+    // Serial1.print(serialResponse);
     // Convert from String Object to String.
     // NOTE: Must have size of msg0
     char buf[sizeof(msg0)];
@@ -276,7 +276,7 @@ void loop()
       {
         // between 0 and 4
         leg = atoi(str);
-        // Serial1.println(leg);
+        // Serial1.print(leg);
         if (leg < 0 or leg > 4)
         {
           leg = -1;
@@ -289,17 +289,17 @@ void loop()
         if (message_string_index == 1)
         {
           x = atof(str);
-          // Serial1.println(x);
+          // Serial1.print(x);
         } else if (message_string_index == 2)
         {
           // Read Desired Foot y pos
           y = atof(str);
-          // Serial1.println(y);
+          // Serial1.print(y);
         } else if (message_string_index == 3)
         {
           // Read Desired Foot z pos
           z = atof(str);
-          // Serial1.println(z);
+          // Serial1.print(z);
         }
       } else if (leg == 4)
       {
@@ -324,12 +324,12 @@ void loop()
 
     //COMPLETE MESSAGE CHECK
     if(leg != -9999 and x != -9999 and y != -9999 and z != -9999){
-      // Serial.println("complete message");
+      // Serial.print("complete message");
 
       if (servo_num == -1 and leg != -1)
       // NORMAL OPERATION
       {
-        // DEBUGSERIAL.println("SERVO ACT\n");
+        // DEBUGSERIAL.print("SERVO ACT\n");
 
         LegType leg_type;
         LegQuadrant legquad;
@@ -396,12 +396,12 @@ void loop()
         // sprintf_P(Debug_buf, PSTR("Leg: %s \t Shoulder: %s \t Elbow: %s \t Wirst:%s\n"), Leg_buf, Shoulder_buf, Elbow_buf, Wrist_buf);
 
         // Send to RPI
-        // Serial1.println(Debug_buf);
+        // Serial1.print(Debug_buf);
 
       } else if (servo_num != -1)
       {
         // SERVO CALIBRATION - SEND ANGLE DIRECTLY
-        // DEBUGSERIAL.println("SERVO CALIB\n");
+        // DEBUGSERIAL.print("SERVO CALIB\n");
         (*AllServos[servo_num]).SetGoal(servo_calib_angle, max_speed);
       }
     }
