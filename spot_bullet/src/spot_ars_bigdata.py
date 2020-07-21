@@ -117,17 +117,15 @@ def main():
     print("STARTED MINITAUR TEST SCRIPT")
 
     # Used to create gaussian distribution of survival
-    survived_timesteps = dict()
+    surv_dt = []
 
     while episode_num < (int(max_episodes)):
 
         episode_reward, episode_timesteps = agent.deployTG()
         episode_num += 1
 
-        # If ep_dt contains duplicate values, increase frequency
         # Store dt and frequency for prob distribution
-        survived_timesteps[episode_timesteps] = survived_timesteps.get(
-            episode_timesteps, 0) + 1
+        surv_dt.append(episode_timesteps)
 
         print("Episode Num: {} Episode T: {} Reward: {}".format(
             episode_num, episode_timesteps, episode_reward))
@@ -146,20 +144,11 @@ def main():
     with open(
             results_path + "/" + str(file_name) + agt + '_survival_' +
             str(max_episodes), 'wb') as filehandle:
-        pickle.dump(survived_timesteps, filehandle)
+        pickle.dump(surv_dt, filehandle)
 
     # Plot
-    df = pd.DataFrame(survived_timesteps, index=[0])
-    print(df)
-    ax = sns.distplot(df,
-                      bins=100,
-                      kde=True,
-                      color='skyblue',
-                      hist_kws={
-                          "linewidth": 15,
-                          'alpha': 1
-                      })
-    ax.set(xlabel='Survival Timestep', ylabel='Frequency')
+    sns.distplot(surv_dt)
+    plt.show()
 
 
 if __name__ == '__main__':
