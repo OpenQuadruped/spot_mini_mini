@@ -18,6 +18,10 @@ import os
 import argparse
 
 import pickle
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+sns.set()
 
 # ARGUMENTS
 descr = "Spot Mini Mini ARS Agent Evaluator."
@@ -129,6 +133,7 @@ def main():
             episode_num, episode_timesteps, episode_reward))
 
     env.close()
+    print("---------------------------------------")
 
     # Store results
     if use_agent:
@@ -144,6 +149,17 @@ def main():
         pickle.dump(survived_timesteps, filehandle)
 
     # Plot
+    df = pd.DataFrame(survived_timesteps, index=[0])
+    print(df)
+    ax = sns.distplot(df,
+                      bins=100,
+                      kde=True,
+                      color='skyblue',
+                      hist_kws={
+                          "linewidth": 15,
+                          'alpha': 1
+                      })
+    ax.set(xlabel='Survival Timestep', ylabel='Frequency')
 
 
 if __name__ == '__main__':
