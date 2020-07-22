@@ -46,7 +46,7 @@ def main():
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
-    max_episodes = 10000
+    max_episodes = 1000
     if ARGS.NumberOfEpisodes:
         max_episodes = ARGS.NumberOfEpisodes
     file_name = "spot_ars_"
@@ -136,19 +136,15 @@ def main():
     # Store results
     if use_agent:
         # Store _agent
-        agt = "_agent"
+        agt = "agent"
     else:
         # Store _vanilla
-        agt = "_vanilla"
+        agt = "vanilla"
 
     with open(
             results_path + "/" + str(file_name) + agt + '_survival_' +
             str(max_episodes), 'wb') as filehandle:
         pickle.dump(surv_dt, filehandle)
-
-    # Plot
-    sns.distplot(surv_dt)
-    plt.show()
 
 
 if __name__ == '__main__':
