@@ -364,7 +364,7 @@ class Spot(object):
                     pybullet_data.getDataPath() + "/assets/urdf/spot.urdf",
                     init_position,
                     useFixedBase=self._on_rack,
-                    flags=self._pybullet_client.URDF_USE_SELF_COLLISION)
+                    flags=self._pybullet_client.URDF_USE_SELF_COLLISION_EXCLUDE_PARENT)
             else:
                 self.quadruped = self._pybullet_client.loadURDF(
                     pybullet_data.getDataPath() + "/assets/urdf/spot.urdf",
