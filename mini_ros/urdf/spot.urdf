@@ -313,9 +313,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
@@ -427,9 +427,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
@@ -541,9 +541,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
@@ -655,9 +655,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
