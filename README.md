@@ -223,8 +223,8 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 
 * Original idea and CAD files: [Spot Micro AI Community](https://spotmicroai.readthedocs.io/en/latest/)
 
-* URDF: [Rex Gym](https://github.com/nicrusso7/rex-gym)
+* Collaborator on `OpenQuadruped` design, including mechanical parts, custom PCB, and Teensy interface: [Adham Elarabawy](https://github.com/adham-elarabawy/OpenQuadruped)
 
 * OpenAI Gym Interface: [Minitaur Environment](https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py)
 
-* Modified CAD files and excellent collaborator for Teensy interface, and PCB design: [Adham Elarabawy](https://github.com/adham-elarabawy/OpenQuadruped)
+* Deprecated URDF: [Rex Gym](https://github.com/nicrusso7/rex-gym)
