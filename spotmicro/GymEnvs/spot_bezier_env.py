@@ -226,17 +226,17 @@ class spotBezierEnv(spotGymEnv):
         roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
             [orn[0], orn[1], orn[2], orn[3]])
 
-        if yaw < 0.0:
-            yaw += np.pi
-        else:
-            yaw -= np.pi
+        # if yaw < 0.0:
+        #     yaw += np.pi
+        # else:
+        #     yaw -= np.pi
+
+        # For auto correct
+        self.yaw = yaw
 
         # penalty for nonzero PITCH and YAW(hidden) ONLY
         # NOTE: Added Yaw mult
         rp_reward = -(abs(obs[0]) + abs(obs[1]))
-
-        # For auto correct
-        self.yaw = yaw
 
         # print("YAW: {}".format(yaw))
         # print("RP RWD: {:.2f}".format(rp_reward))
