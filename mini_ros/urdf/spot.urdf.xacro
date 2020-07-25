@@ -5,509 +5,473 @@
   <xacro:include filename="$(find mini_ros)/urdf/spot_macro.xacro" />
 
   <!-- Robot description -->
-  <!-- Links -->
+  <!-- STATIC Links -->
   <link name="base_footprint"/>
 
   <!-- MAIN BODY -->
   <xacro:mesh_link name="base_link"
-              origin_rpy="0 0 0" origin_xyz="-0.045 -0.060 -0.015"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.16 0.035 -0.045"
               i_rpy="0 0 0" i_xyz="0 0 0"
-              mass="1.2"
+              mass="0.6"
               c_xyz="0 0 0"
-              length="0.14"
-              width="0.11"
-              height="0.07"
+              length="0.114"
+              width="0.2"
+              height="0.1"
+              matname="orange"
+              meshfile="package://mini_ros/stl/OpenQuadruped/MAINBODY.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+
+  <!-- BATTERY -->
+  <xacro:mesh_link name="battery"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.15 0.035 -0.022"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.4"
+              c_xyz="0 0 0"
+              length="0.048"
+              width="0.145"
+              height="0.026"
               matname="black"
-              meshfile="package://mini_ros/stl/mainbody.stl"
-              meshscale="0.001 0.001 0.001" /> <!-- m to mm -->
-  <!-- HEAD -->
-  <xacro:mesh_link name="chassis_front_link"
-              origin_rpy="0 0 0" origin_xyz="-0.040 -0.060 -0.0140"
-              i_rpy="0 0 0" i_xyz="-0.145 0 0"
-              mass="0.1"
-              c_xyz="-0.145 0 0"
-              length="0.058"
-              width="0.11"
-              height="0.07"
-              matname="yellow"
-              meshfile="package://mini_ros/stl/frontpart.stl"
-              meshscale="0.001 0.001 0.001" />
+              meshfile="package://mini_ros/stl/OpenQuadruped/Battery.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
 
-  <!-- TAIL -->
-  <xacro:mesh_link name="chassis_rear_link"
-              origin_rpy="0 0 0" origin_xyz="-0.040 -0.060 -0.0140"
-              i_rpy="0 0 0" i_xyz="0.135 0 0"
-              mass="0.1"
-              c_xyz="0.135 0 0"
-              length="0.04"
-              width="0.11"
-              height="0.07"
-              matname="yellow"
-              meshfile="package://mini_ros/stl/backpart.stl"
-              meshscale="0.001 0.001 0.001" />
+  <!-- CHASSIS LEFT -->
+  <xacro:mesh_link name="chassis_left"
+              origin_rpy="0 ${pi/2} -${pi/2}" origin_xyz="0.016 0.003 0"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.01"
+              c_xyz="0 0 0"
+              length="0.06"
+              width="0.15"
+              height="0.006"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/Chassis_Left_Side.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
 
+  <!-- CHASSIS Right -->
+  <xacro:mesh_link name="chassis_right"
+              origin_rpy="0 ${pi/2} ${pi/2}" origin_xyz="-0.016 -0.003 0"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.01"
+              c_xyz="0 0 0"
+              length="0.06"
+              width="0.15"
+              height="0.006"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/Chassis_Right_Side.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+
+  <!-- FRONT -->
+  <xacro:mesh_link name="front"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.16 0.035 -0.045"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.1"
+              c_xyz="0.16 0 0.006"
+              length="0.114"
+              width="0.045"
+              height="0.085"
+              matname="orange"
+              meshfile="package://mini_ros/stl/OpenQuadruped/Front.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+
+  <!-- BACK -->
+  <xacro:mesh_link name="back"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.16 0.035 -0.045"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.1"
+              c_xyz="-0.16 0 0.006"
+              length="0.114"
+              width="0.075"
+              height="0.085"
+              matname="orange"
+              meshfile="package://mini_ros/stl/OpenQuadruped/Back.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+
+  <!-- FRONT BRACKET -->
+  <xacro:mesh_link name="front_bracket"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.16 0.035 -0.045"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.1"
+              c_xyz="0.1 0 0"
+              length="0.025"
+              width="0.075"
+              height="0.085"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/Front_Bracket.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+
+  <!-- BACK BRACKET -->
+  <xacro:mesh_link name="back_bracket"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.16 0.035 -0.045"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.1"
+              c_xyz="-0.1 0 0"
+              length="0.025"
+              width="0.075"
+              height="0.085"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/Back_Bracket.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+
+
+  <!-- DYNAMIC LINKS (Joints Included) -->
   <!-- FRONT LEFT LEG -->
-  <!-- SHOULDER -->
-  <xacro:mesh_link name="front_left_shoulder_link"
-              origin_rpy="0 0 0" origin_xyz="-0.135 -0.02 -0.01"
+  <!-- HIP -->
+  <xacro:mesh_link name="front_left_hip"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.25 -0.0044 -0.067"
               i_rpy="0 0 0" i_xyz="0 0 0"
-              mass="0.1"
-              c_xyz="0 0 0"
-              length="0.044"
-              width="0.038"
-              height="0.07"
+              mass="0.2"
+              c_xyz="0.015 0.01 -0.01"
+              length="0.05"
+              width="0.065"
+              height="0.065"
               matname="black"
-              meshfile="package://mini_ros/stl/lshoulder.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- COVER -->
-  <xacro:mesh_link name="front_left_leg_link_cover"
-              origin_rpy="0 0 0" origin_xyz="-0.125 0.04 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.005"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
-              height="0.12"
-              matname="yellow"
-              meshfile="package://mini_ros/stl/larm_cover.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- LEG -->
-  <xacro:mesh_link name="front_left_leg_link"
-              origin_rpy="0 0 0" origin_xyz="-0.125 0.04 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.1"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_HIP.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_front_left_hip" type="revolute"
+                    axis_xyz="1 0 0"
+                    origin_rpy="0 0 0" origin_xyz="${0.2515-0.16} ${0.0044+0.035} ${0.067-0.045}"
+                    parent="front_bracket" child="front_left_hip"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-1.04"
+                    upper="1.04"/>
+  <!-- UPPER LEG -->
+  <xacro:mesh_link name="front_left_upper_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.252} ${-0.05} ${-0.055}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.13"
+              c_xyz="0 0.02 -0.05"
+              length="0.035"
+              width="0.035"
+              height="0.11"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_UPPER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_front_left_upper_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="0.0015 0.045 -0.0087"
+                    parent="front_left_hip" child="front_left_upper_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="${-pi/2}"
+                    upper="2.59"/>
+  <!-- LOWER LEG -->
+  <xacro:mesh_link name="front_left_lower_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${-0.068} ${0.0535}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.05"
+              c_xyz="0 0 -0.06"
+              length="0.035"
+              width="0.035"
               height="0.12"
               matname="black"
-              meshfile="package://mini_ros/stl/larm.stl"
-              meshscale="0.001 0.001 0.001" />
-
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_LOWER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_front_left_lower_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="-0.005 0.018 -0.109"
+                    parent="front_left_upper_leg" child="front_left_lower_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-2.9"
+                    upper="${pi/2}"/>
   <!-- FOOT -->
-  <xacro:mesh_link name="front_left_foot_link"
-              origin_rpy="0 0 0" origin_xyz="-0.120 0.04 0.1"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.1"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.026"
-              width="0.02"
-              height="0.115"
-              matname="black"
-              meshfile="package://mini_ros/stl/lfoot.stl"
-              meshscale="0.001 0.001 0.001" />
-
-<!-- TOE -->
-  <xacro:mesh_link_sphere name="front_left_toe_link"
-              origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
+  <xacro:mesh_link_sphere name="front_left_foot"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${-0.068} ${0.18}"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.005"
-              c_xyz="0 0 0"
-              length="0.02"
-              width="0.02"
-              height="0.02"
+              c_xyz="-0.005 0 0"
+              length="0.05"
+              width="0.065"
+              height="0.065"
               radius="0.02"
-              matname="grey"
-              meshfile="package://mini_ros/stl/foot.stl"
-              meshscale="0.001 0.001 0.001" />
+              matname="orange"
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:frame_joint name="front_left_leg_foot" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 -0.1265"
+                  parent="front_left_lower_leg" child="front_left_foot"/>
+
+  <!-- BACK LEFT LEG -->
+  <!-- HIP -->
+  <xacro:mesh_link name="back_left_hip"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.25 -0.0044 -0.067"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.2"
+              c_xyz="0.015 0.01 -0.01"
+              length="0.05"
+              width="0.065"
+              height="0.065"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_HIP.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_back_left_hip" type="revolute"
+                    axis_xyz="1 0 0"
+                    origin_rpy="0 0 0" origin_xyz="${-0.2515+0.115} ${0.0044+0.035} ${0.067-0.045}"
+                    parent="back_bracket" child="back_left_hip"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-1.04"
+                    upper="1.04"/>
+  <!-- UPPER LEG -->
+  <xacro:mesh_link name="back_left_upper_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.252} ${-0.05} ${-0.055}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.13"
+              c_xyz="0 0.02 -0.05"
+              length="0.035"
+              width="0.035"
+              height="0.11"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_UPPER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_back_left_upper_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="0.0015 0.045 -0.0087"
+                    parent="back_left_hip" child="back_left_upper_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="${-pi/2}"
+                    upper="2.59"/>
+  <!-- LOWER LEG -->
+  <xacro:mesh_link name="back_left_lower_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${-0.068} ${0.0535}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.05"
+              c_xyz="0 0 -0.06"
+              length="0.035"
+              width="0.035"
+              height="0.12"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_LOWER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_back_left_lower_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="-0.005 0.018 -0.109"
+                    parent="back_left_upper_leg" child="back_left_lower_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-2.9"
+                    upper="${pi/2}"/>
+  <!-- FOOT -->
+  <xacro:mesh_link_sphere name="back_left_foot"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${-0.068} ${0.18}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.005"
+              c_xyz="-0.005 0 0"
+              length="0.05"
+              width="0.065"
+              height="0.065"
+              radius="0.02"
+              matname="orange"
+              meshfile="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:frame_joint name="back_left_leg_foot" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 -0.1265"
+                  parent="back_left_lower_leg" child="back_left_foot"/>
 
   <!-- FRONT RIGHT LEG -->
-  <!-- SHOULDER -->
-  <xacro:mesh_link name="front_right_shoulder_link"
-              origin_rpy="0 0 0" origin_xyz="-0.135 -0.09 -0.01"
+  <!-- HIP -->
+  <xacro:mesh_link name="front_right_hip"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.25 0.074 -0.067"
               i_rpy="0 0 0" i_xyz="0 0 0"
-              mass="0.1"
-              c_xyz="0 0 0"
-              length="0.044"
-              width="0.038"
-              height="0.07"
+              mass="0.2"
+              c_xyz="0.015 ${-0.01} -0.01"
+              length="0.05"
+              width="0.065"
+              height="0.065"
               matname="black"
-              meshfile="package://mini_ros/stl/rshoulder.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- COVER -->
-  <xacro:mesh_link name="front_right_leg_link_cover"
-              origin_rpy="0 0 0" origin_xyz="-0.125 -0.15 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.005"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
-              height="0.12"
-              matname="yellow"
-              meshfile="package://mini_ros/stl/rarm_cover.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- LEG -->
-  <xacro:mesh_link name="front_right_leg_link"
-              origin_rpy="0 0 0" origin_xyz="-0.125 -0.15 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.1"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_HIP.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_front_right_hip" type="revolute"
+                    axis_xyz="1 0 0"
+                    origin_rpy="0 0 0" origin_xyz="${0.2515-0.16} ${-(0.0044+0.035)} ${0.067-0.045}"
+                    parent="front_bracket" child="front_right_hip"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-1.04"
+                    upper="1.04"/>
+  <!-- UPPER LEG -->
+  <xacro:mesh_link name="front_right_upper_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.252} ${0.12} ${-0.055}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.13"
+              c_xyz="0 ${-0.02} -0.05"
+              length="0.035"
+              width="0.035"
+              height="0.11"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_UPPER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_front_right_upper_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="0.0015 -0.045 -0.0087"
+                    parent="front_right_hip" child="front_right_upper_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="${-pi/2}"
+                    upper="2.59"/>
+  <!-- LOWER LEG -->
+  <xacro:mesh_link name="front_right_lower_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${0.138} ${0.0535}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.05"
+              c_xyz="0 0 -0.06"
+              length="0.035"
+              width="0.035"
               height="0.12"
               matname="black"
-              meshfile="package://mini_ros/stl/rarm.stl"
-              meshscale="0.001 0.001 0.001" />
-
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_LOWER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_front_right_lower_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="-0.005 -0.018 -0.109"
+                    parent="front_right_upper_leg" child="front_right_lower_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-2.9"
+                    upper="${pi/2}"/>
   <!-- FOOT -->
-  <xacro:mesh_link name="front_right_foot_link"
-              origin_rpy="0 0 0" origin_xyz="-0.120 -0.15 0.1"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.1"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.026"
-              width="0.02"
-              height="0.115"
-              matname="black"
-              meshfile="package://mini_ros/stl/rfoot.stl"
-              meshscale="0.001 0.001 0.001" />
-
-<!-- TOE -->
-  <xacro:mesh_link_sphere name="front_right_toe_link"
-              origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
+  <xacro:mesh_link_sphere name="front_right_foot"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${0.138} ${0.18}"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.005"
-              c_xyz="0 0 0"
-              length="0.02"
-              width="0.02"
-              height="0.02"
+              c_xyz="-0.005 0 0"
+              length="0.05"
+              width="0.065"
+              height="0.065"
               radius="0.02"
-              matname="grey"
-              meshfile="package://mini_ros/stl/foot.stl"
-              meshscale="0.001 0.001 0.001" />
+              matname="orange"
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:frame_joint name="front_right_leg_foot" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 -0.1265"
+                  parent="front_right_lower_leg" child="front_right_foot"/>
 
-  <!-- REAR LEFT LEG -->
-  <!-- SHOULDER -->
-  <xacro:mesh_link name="rear_left_shoulder_link"
-              origin_rpy="0 0 0" origin_xyz="-0.135 -0.02 -0.01"
+  <!-- BACK RIGHT LEG -->
+  <!-- HIP -->
+  <xacro:mesh_link name="back_right_hip"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="-0.25 0.074 -0.067"
               i_rpy="0 0 0" i_xyz="0 0 0"
-              mass="0.1"
-              c_xyz="0 0 0"
-              length="0.044"
-              width="0.038"
-              height="0.07"
+              mass="0.2"
+              c_xyz="0.015 ${-0.01} -0.01"
+              length="0.05"
+              width="0.065"
+              height="0.065"
               matname="black"
-              meshfile="package://mini_ros/stl/lshoulder.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- COVER -->
-  <xacro:mesh_link name="rear_left_leg_link_cover"
-              origin_rpy="0 0 0" origin_xyz="-0.125 0.04 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.005"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
-              height="0.12"
-              matname="yellow"
-              meshfile="package://mini_ros/stl/larm_cover.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- LEG -->
-  <xacro:mesh_link name="rear_left_leg_link"
-              origin_rpy="0 0 0" origin_xyz="-0.125 0.04 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.1"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_HIP.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_back_right_hip" type="revolute"
+                    axis_xyz="1 0 0"
+                    origin_rpy="0 0 0" origin_xyz="${-0.2515+0.115} ${-(0.0044+0.035)} ${0.067-0.045}"
+                    parent="back_bracket" child="back_right_hip"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-1.04"
+                    upper="1.04"/>
+  <!-- UPPER LEG -->
+  <xacro:mesh_link name="back_right_upper_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.252} ${0.12} ${-0.055}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.13"
+              c_xyz="0 ${-0.02} -0.05"
+              length="0.035"
+              width="0.035"
+              height="0.11"
+              matname="black"
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_UPPER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_back_right_upper_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="0.0015 -0.045 -0.0087"
+                    parent="back_right_hip" child="back_right_upper_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="${-pi/2}"
+                    upper="2.59"/>
+  <!-- LOWER LEG -->
+  <xacro:mesh_link name="back_right_lower_leg"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${0.138} ${0.0535}"
+              i_rpy="0 0 0" i_xyz="0 0 0"
+              mass="0.05"
+              c_xyz="0 0 -0.06"
+              length="0.035"
+              width="0.035"
               height="0.12"
               matname="black"
-              meshfile="package://mini_ros/stl/larm.stl"
-              meshscale="0.001 0.001 0.001" />
-
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_LOWER_LEG.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:rev_joint name="motor_back_right_lower_leg" type="revolute"
+                    axis_xyz="0 1 0"
+                    origin_rpy="0 0 0" origin_xyz="-0.005 -0.018 -0.109"
+                    parent="back_right_upper_leg" child="back_right_lower_leg"
+                    effort="1000.0" velocity="0.7"
+                    damping="0.0"
+                    friction="0.0"
+                    lower="-2.9"
+                    upper="${pi/2}"/>
   <!-- FOOT -->
-  <xacro:mesh_link name="rear_left_foot_link"
-              origin_rpy="0 0 0" origin_xyz="-0.120 0.04 0.1"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.1"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.026"
-              width="0.02"
-              height="0.115"
-              matname="black"
-              meshfile="package://mini_ros/stl/lfoot.stl"
-              meshscale="0.001 0.001 0.001" />
-
-<!-- TOE -->
-  <xacro:mesh_link_sphere name="rear_left_toe_link"
-              origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
+  <xacro:mesh_link_sphere name="back_right_foot"
+              origin_rpy="0 0 ${pi/2}" origin_xyz="${-0.247} ${0.138} ${0.18}"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.005"
-              c_xyz="0 0 0"
-              length="0.02"
-              width="0.02"
-              height="0.02"
+              c_xyz="-0.005 0 0"
+              length="0.05"
+              width="0.065"
+              height="0.065"
               radius="0.02"
-              matname="grey"
-              meshfile="package://mini_ros/stl/foot.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- REAR RIGHT LEG -->
-  <!-- SHOULDER -->
-  <xacro:mesh_link name="rear_right_shoulder_link"
-              origin_rpy="0 0 0" origin_xyz="-0.135 -0.09 -0.01"
-              i_rpy="0 0 0" i_xyz="0 0 0"
-              mass="0.1"
-              c_xyz="0 0 0"
-              length="0.044"
-              width="0.038"
-              height="0.07"
-              matname="black"
-              meshfile="package://mini_ros/stl/rshoulder.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- COVER -->
-  <xacro:mesh_link name="rear_right_leg_link_cover"
-              origin_rpy="0 0 0" origin_xyz="-0.125 -0.15 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.005"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
-              height="0.12"
-              matname="yellow"
-              meshfile="package://mini_ros/stl/rarm_cover.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- LEG -->
-  <xacro:mesh_link name="rear_right_leg_link"
-              origin_rpy="0 0 0" origin_xyz="-0.125 -0.15 -0.02"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.1"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.028"
-              width="0.036"
-              height="0.12"
-              matname="black"
-              meshfile="package://mini_ros/stl/rarm.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  <!-- FOOT -->
-  <xacro:mesh_link name="rear_right_foot_link"
-              origin_rpy="0 0 0" origin_xyz="-0.120 -0.15 0.1"
-              i_rpy="0 0 0" i_xyz="0.0 0.0 -0.050"
-              mass="0.15"
-              c_xyz="0.0 0.0 -0.050"
-              length="0.026"
-              width="0.02"
-              height="0.115"
-              matname="black"
-              meshfile="package://mini_ros/stl/rfoot.stl"
-              meshscale="0.001 0.001 0.001" />
-
-<!-- TOE -->
-  <xacro:mesh_link_sphere name="rear_right_toe_link"
-              origin_rpy="0 -0.40010 0" origin_xyz="0 -0.01 0"
-              i_rpy="0 0 0" i_xyz="0 0 0"
-              mass="0.005"
-              c_xyz="0 0 0"
-              length="0.02"
-              width="0.02"
-              height="0.02"
-              radius="0.02"
-              matname="grey"
-              meshfile="package://mini_ros/stl/foot.stl"
-              meshscale="0.001 0.001 0.001" />
-
-  
-  
-  <!-- Joints -->
-  <!-- MAIN BODY TO FOOTPRINT -->
-  <xacro:frame_joint name="base_base" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 0"
-                    parent="base_footprint" child="base_link"/>
-
-  <!-- BASE TO CHASSIS FRONT -->
-  <xacro:frame_joint name="chassis_base_front" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 0"
-                    parent="base_link" child="chassis_front_link"/>
-
-  <!-- BASE TO CHASSIS REAR -->
-  <xacro:frame_joint name="chassis_base_rear" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 0"
-                    parent="base_link" child="chassis_rear_link"/>
-
-  <!-- FRONT LEFT LEG -->
-  <!-- SHOULDER TO BASE -->     
-  <xacro:rev_joint name="motor_front_left_shoulder" type="revolute"
-                    axis_xyz="1 0 0"
-                    origin_rpy="0 0 0" origin_xyz="-0.093 -0.036 0"
-                    parent="base_link" child="front_left_shoulder_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-1.0"
-                    upper="1.0"/>
-
-  <!-- SHOULDER TO LEG -->     
-  <xacro:rev_joint name="motor_front_left_leg" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="0 -0.052 0"
-                    parent="front_left_shoulder_link" child="front_left_leg_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-2.17"
-                    upper="0.97"/>
-
-  <!-- LEG TO COVER -->
-  <xacro:frame_joint name="front_left_leg_cover_joint" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 0"
-                    parent="front_left_leg_link" child="front_left_leg_link_cover"/>
-
-  <!-- LEG TO FOOT -->     
-  <xacro:rev_joint name="foot_motor_front_left" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="-0.01 0 -0.12"
-                    parent="front_left_leg_link" child="front_left_foot_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-0.1"
-                    upper="2.59"/>
-
-  <!-- FOOT TO TOE -->
-  <xacro:frame_joint name="front_left_toe" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 -0.115"
-                    parent="front_left_foot_link" child="front_left_toe_link"/>
-
-  <!-- FRONT RIGHT LEG -->
-  <!-- SHOULDER TO BASE -->     
-  <xacro:rev_joint name="motor_front_right_shoulder" type="revolute"
-                    axis_xyz="1 0 0"
-                    origin_rpy="0 0 0" origin_xyz="-0.093 0.036 0"
-                    parent="base_link" child="front_right_shoulder_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-1.0"
-                    upper="1.0"/>
-
-  <!-- SHOULDER TO LEG -->     
-  <xacro:rev_joint name="motor_front_right_leg" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="0 0.052 0"
-                    parent="front_right_shoulder_link" child="front_right_leg_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-2.17"
-                    upper="0.97"/>
-
-  <!-- LEG TO COVER -->
-  <xacro:frame_joint name="front_right_leg_cover_joint" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 0"
-                    parent="front_right_leg_link" child="front_right_leg_link_cover"/>
-
-  <!-- LEG TO FOOT -->     
-  <xacro:rev_joint name="foot_motor_front_right" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="-0.01 0 -0.12"
-                    parent="front_right_leg_link" child="front_right_foot_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-0.1"
-                    upper="2.59"/>
-
-  <!-- FOOT TO TOE -->
-  <xacro:frame_joint name="front_right_toe" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 -0.115"
-                    parent="front_right_foot_link" child="front_right_toe_link"/>
+              matname="orange"
+              meshfile="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl"
+              meshscale="1 1 1" /> <!-- m to mm -->
+  <xacro:frame_joint name="back_right_leg_foot" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 -0.1265"
+                  parent="back_right_lower_leg" child="back_right_foot"/>
 
 
-  <!-- REAR LEFT LEG -->
-  <!-- SHOULDER TO BASE -->     
-  <xacro:rev_joint name="motor_rear_left_shoulder" type="revolute"
-                    axis_xyz="1 0 0"
-                    origin_rpy="0 0 0" origin_xyz="0.093 -0.036 0"
-                    parent="base_link" child="rear_left_shoulder_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-1.0"
-                    upper="1.0"/>
-
-  <!-- SHOULDER TO LEG -->     
-  <xacro:rev_joint name="motor_rear_left_leg" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="0 -0.052 0"
-                    parent="rear_left_shoulder_link" child="rear_left_leg_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-2.17"
-                    upper="0.97"/>
-
-  <!-- LEG TO COVER -->
-  <xacro:frame_joint name="rear_left_leg_cover_joint" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 0"
-                    parent="rear_left_leg_link" child="rear_left_leg_link_cover"/>
-
-  <!-- LEG TO FOOT -->     
-  <xacro:rev_joint name="foot_motor_rear_left" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="-0.01 0 -0.12"
-                    parent="rear_left_leg_link" child="rear_left_foot_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-0.1"
-                    upper="2.59"/>
-
-  <!-- FOOT TO TOE -->
-  <xacro:frame_joint name="rear_left_toe" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 -0.115"
-                    parent="rear_left_foot_link" child="rear_left_toe_link"/>
-
-  <!-- REAR RIGHT LEG -->
-  <!-- SHOULDER TO BASE -->     
-  <xacro:rev_joint name="motor_rear_right_shoulder" type="revolute"
-                    axis_xyz="1 0 0"
-                    origin_rpy="0 0 0" origin_xyz="0.093 0.036 0"
-                    parent="base_link" child="rear_right_shoulder_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-1.0"
-                    upper="1.0"/>
-
-  <!-- SHOULDER TO LEG -->     
-  <xacro:rev_joint name="motor_rear_right_leg" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="0 0.052 0"
-                    parent="rear_right_shoulder_link" child="rear_right_leg_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-2.17"
-                    upper="0.97"/>
-
-  <!-- LEG TO COVER -->
-  <xacro:frame_joint name="rear_right_leg_cover_joint" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 0"
-                    parent="rear_right_leg_link" child="rear_right_leg_link_cover"/>
-
-  <!-- LEG TO FOOT -->     
-  <xacro:rev_joint name="foot_motor_rear_right" type="revolute"
-                    axis_xyz="0 1 0"
-                    origin_rpy="0 0 0" origin_xyz="-0.01 0 -0.12"
-                    parent="rear_right_leg_link" child="rear_right_foot_link"
-                    effort="1000.0" velocity="0.7"
-                    damping="0.0"
-                    friction="0.0"
-                    lower="-0.1"
-                    upper="2.59"/>
-
-  <!-- FOOT TO TOE -->
-  <xacro:frame_joint name="rear_right_toe" type="fixed"
-                    origin_rpy="0 0 0" origin_xyz="0 0 -0.115"
-                    parent="rear_right_foot_link" child="rear_right_toe_link"/>
+<!-- STATIC Joints -->
+<!-- FOOTPRINT TO MAIN BODY-->
+<xacro:frame_joint name="base_base" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 0"
+                  parent="base_footprint" child="base_link"/>
+<!-- MAIN BODY TO BATTERY -->
+<xacro:frame_joint name="base_battery" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="-0.01 0 -0.0225"
+                  parent="base_link" child="battery"/>
+<!-- MAIN BODY TO CHASSIS LEFT -->
+<xacro:frame_joint name="base_left" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0.00 0.052 0"
+                  parent="base_link" child="chassis_left"/>
+<!-- MAIN BODY TO CHASSIS RIGHT -->
+<xacro:frame_joint name="base_right" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0.00 -0.052 0"
+                  parent="base_link" child="chassis_right"/>
+<!-- MAIN BODY TO FRONT -->
+<xacro:frame_joint name="base_front" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 0"
+                  parent="base_link" child="front"/>
+<!-- MAIN BODY TO BACK -->
+<xacro:frame_joint name="base_back" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 0"
+                  parent="base_link" child="back"/>
+<!-- MAIN BODY TO FRONT BRACKET -->
+<xacro:frame_joint name="base_front_bracket" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 0"
+                  parent="base_link" child="front_bracket"/>
+<!-- MAIN BODY TO BACK BRACKET -->
+<xacro:frame_joint name="base_back_bracket" type="fixed"
+                  origin_rpy="0 0 0" origin_xyz="0 0 0"
+                  parent="base_link" child="back_bracket"/>
      
   
 </robot>

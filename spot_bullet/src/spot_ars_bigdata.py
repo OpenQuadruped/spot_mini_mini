@@ -106,7 +106,7 @@ def main():
                       "_policy"):
         print("Loading Existing agent")
         agent.load(models_path + "/" + file_name + str(agent_num))
-        agent.policy.episode_steps = np.inf
+        agent.policy.episode_steps = 50000
         policy = agent.policy
 
     env.reset()
