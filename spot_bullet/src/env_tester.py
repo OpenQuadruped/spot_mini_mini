@@ -101,14 +101,6 @@ def main():
     g_u_i = GUI(env.spot.quadruped)
 
     spot = SpotModel(
-        shoulder_length=0.055,
-        elbow_length=0.11,
-        wrist_length=0.125,
-        hip_x=0.192,
-        hip_y=0.105,
-        foot_x=0.192,
-        foot_y=0.22,
-        height=0.155,
     )
     T_bf0 = spot.WorldToFoot
     T_bf = copy.deepcopy(T_bf0)

@@ -46,7 +46,7 @@ class HeightField():
             terrainShape = env.pybullet_client.createCollisionShape(
                 shapeType=env.pybullet_client.GEOM_HEIGHTFIELD,
                 # meshScale=[.5, .5, 1.5],
-                meshScale=[.1, .1, 1.8],
+                meshScale=[.07, .07, 1.8],
                 heightfieldTextureScaling=(numHeightfieldRows - 1) / 2,
                 heightfieldData=self.heightfieldData,
                 numHeightfieldRows=numHeightfieldRows,
