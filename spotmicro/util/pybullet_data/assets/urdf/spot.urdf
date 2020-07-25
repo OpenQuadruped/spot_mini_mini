@@ -30,9 +30,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="1.20"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.6"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.0025" ixy="0" ixz="0" iyx="0" iyy="0.0011498" iyz="0" izx="0" izy="0" izz="0.0026498"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -73,10 +74,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.0001"/>
+      <mass value="0.01"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="0" ixy="0" ixz="0" iyx="0" iyy="0" iyz="0" izx="0" izy="0" izz="0"/>
+      <inertia ixx="1.878e-05" ixy="0" ixz="0" iyx="0" iyy="3.03e-06" iyz="0" izx="0" izy="0" izz="2.175e-05"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -95,10 +96,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.0001"/>
+      <mass value="0.01"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="0" ixy="0" ixz="0" iyx="0" iyy="0" iyz="0" izx="0" izy="0" izz="0"/>
+      <inertia ixx="1.878e-05" ixy="0" ixz="0" iyx="0" iyy="3.03e-06" iyz="0" izx="0" izy="0" izz="2.175e-05"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -117,10 +118,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.025"/>
+      <mass value="0.1"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <inertia ixx="7.70833333333e-05" ixy="0" ixz="0" iyx="0" iyy="0.000168508333333" iyz="0" izx="0" izy="0" izz="0.000125175"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -139,10 +140,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.025"/>
+      <mass value="0.1"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="0.000168508333333" iyz="0" izx="0" izy="0" izz="0.000155175"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -161,10 +162,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.025"/>
+      <mass value="0.1"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="6.54166666667e-05" iyz="0" izx="0" izy="0" izz="5.20833333333e-05"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -183,10 +184,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.025"/>
+      <mass value="0.1"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="6.54166666667e-05" iyz="0" izx="0" izy="0" izz="5.20833333333e-05"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -205,10 +206,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.12"/>
+      <mass value="0.2"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
   <joint name="motor_front_left_hip" type="revolute">
@@ -233,6 +234,12 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
+    <inertial>
+      <mass value="0.13"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
+    </inertial>
   </link>
   <joint name="motor_front_left_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -257,8 +264,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.05"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
   <joint name="motor_front_left_lower_leg" type="revolute">
@@ -286,7 +295,9 @@
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
   <joint name="front_left_leg_foot" type="fixed">
@@ -309,8 +320,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.120"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.2"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
   <joint name="motor_back_left_hip" type="revolute">
@@ -335,6 +348,12 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
+    <inertial>
+      <mass value="0.13"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
+    </inertial>
   </link>
   <joint name="motor_back_left_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -359,8 +378,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.05"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
   <joint name="motor_back_left_lower_leg" type="revolute">
@@ -388,7 +409,9 @@
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
   <joint name="back_left_leg_foot" type="fixed">
@@ -411,8 +434,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.120"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.2"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
   <joint name="motor_front_right_hip" type="revolute">
@@ -437,6 +462,12 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
+    <inertial>
+      <mass value="0.13"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
+    </inertial>
   </link>
   <joint name="motor_front_right_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -461,8 +492,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.05"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
   <joint name="motor_front_right_lower_leg" type="revolute">
@@ -490,7 +523,9 @@
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
   <joint name="front_right_leg_foot" type="fixed">
@@ -513,8 +548,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.120"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.2"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
   <joint name="motor_back_right_hip" type="revolute">
@@ -539,6 +576,12 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
+    <inertial>
+      <mass value="0.13"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
+    </inertial>
   </link>
   <joint name="motor_back_right_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -563,8 +606,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <mass value="0.05"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
   <joint name="motor_back_right_lower_leg" type="revolute">
@@ -592,7 +637,9 @@
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <!-- Inertial Axes -->
+      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
   <joint name="back_right_leg_foot" type="fixed">
