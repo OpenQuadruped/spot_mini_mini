@@ -19,7 +19,9 @@
 
 As part of the [Spot Micro](https://spotmicroai.readthedocs.io/en/latest/) community, I saw the need for a reliable and versatile simulator for those who wanted to try things out without risking damage to their robots. To that end, I developed my own in Pybullet which can also be used as a Gym environment for Reinforcement Learning tasks.
 
-If you don't need a Gym environment, that's okay too! `env_tester.py` works without RL or Gym, is designed to accept any gait implementation, and provides a GUI for testing it out! In my case, I've implemented a 12-point Bezier gait.
+You'll notice that there are gifs of the original `SpotMicro` as well a new version designed for added real world fidelity. The default branch simulates the new version, but you can work with `SpotMicro` in the `spotmicroai` branch of this repo. The new version also has a more reliable URDF, with more accurate inertial calculations.
+
+If you don't need a Gym environment, that's okay too! `env_tester.py` works without RL or Gym, it is designed to accept any gait implementation, and provides a GUI for testing it out! In my case, I've implemented a 12-point Bezier gait.
 
 **Read the [docs](https://spot-mini-mini.readthedocs.io/en/latest/index.html)!**
 
