@@ -9,7 +9,7 @@
 
 <!-- ![SIK](spot_bullet/media/spot-mini-mini.gif) -->
 <p float="left">
-  <img src="spot_bullet/media/spot-mini-mini.gif" width="340" />
+  <img src="spot_bullet/media/spot_new_demo.gif" width="340" />
   <img src="spot_real/media/full_control.gif" width="315" />
 </p>
 
