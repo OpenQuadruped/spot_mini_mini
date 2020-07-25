@@ -7,6 +7,8 @@
 [![Open Source Love png2](https://badges.frapsoft.com/os/v2/open-source.png?v=103)](https://github.com/moribots)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/moribots/spot_mini_mini/blob/spot/LICENSE)
 
+**NOTE: This branch simulates the original Spot Micro AI. I am offering very limited updates in terms of gait generation and IK fixes as I have redesigned Spot for higher fidelity. Please go to the `spot` branch for my most up-to-date work.**
+
 <!-- ![SIK](spot_bullet/media/spot-mini-mini.gif) -->
 <p float="left">
   <img src="spot_bullet/media/spot-mini-mini.gif" width="340" />
