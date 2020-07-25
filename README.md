@@ -1,4 +1,4 @@
-## Spot Mini Mini OpenAI Gym Environment
+## LIMITED SUPPORT
 
 [![GitHub release](https://img.shields.io/github/release/moribots/spot_mini_mini.svg)](https://github.com/moribots/spot_mini_mini/releases)
 [![Documentation Status](https://readthedocs.org/projects/spot-mini-mini/badge/?version=latest)](https://spot-mini-mini.readthedocs.io/en/latest/?badge=latest)
