@@ -72,7 +72,7 @@ class LegIK():
         elbow_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
             self.wrist_length * np.sin(wrist_angle),
             self.elbow_length + self.wrist_length * np.cos(wrist_angle))
-        joint_angles = np.array([shoulder_angle, elbow_angle, wrist_angle])
+        joint_angles = np.array([-shoulder_angle, elbow_angle, wrist_angle])
         return joint_angles
 
     def LeftIK(self, x, y, z, D):
@@ -93,5 +93,5 @@ class LegIK():
         elbow_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(
             self.wrist_length * np.sin(wrist_angle),
             self.elbow_length + self.wrist_length * np.cos(wrist_angle))
-        joint_angles = np.array([shoulder_angle, elbow_angle, wrist_angle])
+        joint_angles = np.array([-shoulder_angle, elbow_angle, wrist_angle])
         return joint_angles

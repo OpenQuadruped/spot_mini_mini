@@ -68,7 +68,7 @@
       <collision>
         <origin rpy="${origin_rpy}" xyz="${c_xyz}" />
         <geometry>
-          <sphere radius="${radius}"/>
+          <mesh filename="${meshfile}" scale="${meshscale}"/>
         </geometry>
         <contact_coefficients mu="10.1"/>
       </collision>
