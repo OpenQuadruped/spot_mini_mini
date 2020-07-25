@@ -16,14 +16,16 @@ p.setGravity(0, 0, -9.81)
 # p.setTimeStep(1./240.)       # slow, accurate
 p.setRealTimeSimulation(0)  # we want to be faster than real time :)
 planeId = p.loadURDF("plane.urdf")
-StartPos = [0, 0, 0.21]
+StartPos = [0, 0, 0.3]
 StartOrientation = p.getQuaternionFromEuler([0, 0, 0])
 p.resetDebugVisualizerCamera(cameraDistance=0.8,
                              cameraYaw=45,
                              cameraPitch=-30,
                              cameraTargetPosition=[0, 0, 0])
-boxId = p.loadURDF(pd.getDataPath() + "/assets/urdf/spot.urdf", StartPos,
-                   StartOrientation)
+boxId = p.loadURDF(pd.getDataPath() + "/assets/urdf/spot.urdf",
+                   StartPos,
+                   StartOrientation,
+                   flags=p.URDF_USE_SELF_COLLISION_EXCLUDE_PARENT)
 
 numj = p.getNumJoints(boxId)
 numb = p.getNumBodies()
@@ -54,8 +56,28 @@ p.setJointMotorControlArray(bodyUniqueId=boxId,
                             controlMode=p.POSITION_CONTROL,
                             targetPositions=np.zeros(12),
                             targetVelocities=np.zeros(12),
-                            forces=np.ones(12) * 0.15)
+                            forces=np.ones(12) * np.inf)
+
+counter = 0
+angle1 = -np.pi / 2.0
+angle2 = 0.0
+
+angle = angle1
 
 for i in range(100000000):
+    counter += 1
+    if counter % 1000 == 0:
+        p.setJointMotorControlArray(
+            bodyUniqueId=boxId,
+            jointIndices=[8, 12, 17, 21],  # FWrists
+            controlMode=p.POSITION_CONTROL,
+            targetPositions=np.ones(4) * angle,
+            targetVelocities=np.zeros(4),
+            forces=np.ones(4) * 0.15)
+        counter = 0
+        if angle == angle1:
+            angle = angle2
+        else:
+            angle = angle1
     p.stepSimulation()
 p.disconnect()

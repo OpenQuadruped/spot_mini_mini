@@ -58,7 +58,7 @@
       <mass value="0.6"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="0.0025" ixy="0" ixz="0" iyx="0" iyy="0.0011498" iyz="0" izx="0" izy="0" izz="0.0026498"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyx="0" iyy="100" iyz="0" izx="0" izy="0" izz="100"/>
     </inertial>
   </link>
   <!-- m to mm -->
