@@ -13,38 +13,13 @@
   <material name="grey">
     <color rgba="0.6 0.6 0.6 1"/>
   </material>
-  <!-- Left Leg: prefix is front or rear -->
-  <!--   <xacro:macro name="LeftLeg" params="prefix reflect">
-    <link name="${prefix}_Left_Leg">
-        <visual>
-            <geometry>
-                <box size="${leglen} 0.1 0.2"/>
-            </geometry>
-            <origin xyz="0 0 -${leglen/2}" rpy="0 ${pi/2} 0"/>
-            <material name="white"/>
-        </visual>
-        <collision>
-            <geometry>
-                <box size="${leglen} 0.1 0.2"/>
-            </geometry>
-            <origin xyz="0 0 -${leglen/2}" rpy="0 ${pi/2} 0"/>
-        </collision>
-        <xacro:default_inertial mass="10"/>
-    </link>
-
-    <joint name="base_to_${prefix}_leg" type="fixed">
-        <parent link="base_link"/>
-        <child link="${prefix}_leg"/>
-        <origin xyz="0 ${reflect*(width+.02)} 0.25" />
-    </joint>
-</xacro:macro> -->
   <!-- Robot description -->
   <!-- STATIC Links -->
   <link name="base_link">
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/MAINBODY.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/MAINBODY.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -55,10 +30,9 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.6"/>
+      <mass value="1.20"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="100" ixy="0" ixz="0" iyx="0" iyy="100" iyz="0" izx="0" izy="0" izz="100"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -66,7 +40,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.15 0.035 -0.022"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/Battery.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/Battery.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -88,7 +62,7 @@
     <visual>
       <origin rpy="0 1.57079632679 -1.57079632679" xyz="0.016 0.003 0"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/Chassis_Left_Side.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/Chassis_Left_Side.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -99,10 +73,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.01"/>
+      <mass value="0.0001"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="1.878e-05" ixy="0" ixz="0" iyx="0" iyy="3.03e-06" iyz="0" izx="0" izy="0" izz="2.175e-05"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyx="0" iyy="0" iyz="0" izx="0" izy="0" izz="0"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -110,7 +84,7 @@
     <visual>
       <origin rpy="0 1.57079632679 1.57079632679" xyz="-0.016 -0.003 0"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/Chassis_Right_Side.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/Chassis_Right_Side.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -121,10 +95,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.01"/>
+      <mass value="0.0001"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="1.878e-05" ixy="0" ixz="0" iyx="0" iyy="3.03e-06" iyz="0" izx="0" izy="0" izz="2.175e-05"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyx="0" iyy="0" iyz="0" izx="0" izy="0" izz="0"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -132,7 +106,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/Front.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/Front.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -143,10 +117,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.025"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="7.70833333333e-05" ixy="0" ixz="0" iyx="0" iyy="0.000168508333333" iyz="0" izx="0" izy="0" izz="0.000125175"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -154,7 +128,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/Back.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/Back.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -165,10 +139,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.025"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="0.000168508333333" iyz="0" izx="0" izy="0" izz="0.000155175"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -176,7 +150,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/Front_Bracket.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/Front_Bracket.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -187,10 +161,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.025"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="6.54166666667e-05" iyz="0" izx="0" izy="0" izz="5.20833333333e-05"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -198,7 +172,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/Back_Bracket.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/Back_Bracket.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -209,10 +183,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.1"/>
+      <mass value="0.025"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="6.54166666667e-05" iyz="0" izx="0" izy="0" izz="5.20833333333e-05"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <!-- m to mm -->
@@ -220,7 +194,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 -0.0044 -0.067"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -231,10 +205,10 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.2"/>
+      <mass value="0.12"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <!-- Inertial Axes -->
-      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_front_left_hip" type="revolute">
@@ -249,7 +223,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 -0.05 -0.055"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -259,12 +233,6 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
-    </inertial>
   </link>
   <joint name="motor_front_left_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -278,7 +246,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.0535"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -289,10 +257,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
+      <mass value="0.1"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_front_left_lower_leg" type="revolute">
@@ -307,22 +273,20 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="front_left_leg_foot" type="fixed">
@@ -334,7 +298,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 -0.0044 -0.067"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -345,10 +309,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.2"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
+      <mass value="0.120"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_back_left_hip" type="revolute">
@@ -363,7 +325,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 -0.05 -0.055"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -373,12 +335,6 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
-    </inertial>
   </link>
   <joint name="motor_back_left_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -392,7 +348,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.0535"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -403,10 +359,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
+      <mass value="0.1"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_back_left_lower_leg" type="revolute">
@@ -421,22 +375,20 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="back_left_leg_foot" type="fixed">
@@ -448,7 +400,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 0.074 -0.067"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -459,10 +411,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.2"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
+      <mass value="0.120"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_front_right_hip" type="revolute">
@@ -477,7 +427,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 0.12 -0.055"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -487,12 +437,6 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
-    </inertial>
   </link>
   <joint name="motor_front_right_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -506,7 +450,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.0535"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -517,10 +461,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
+      <mass value="0.1"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_front_right_lower_leg" type="revolute">
@@ -535,22 +477,20 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="front_right_leg_foot" type="fixed">
@@ -562,7 +502,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 0.074 -0.067"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -573,10 +513,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.2"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
+      <mass value="0.120"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_back_right_hip" type="revolute">
@@ -591,7 +529,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 0.12 -0.055"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -601,12 +539,6 @@
         <box size="0.035 0.035 0.11"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
-    </inertial>
   </link>
   <joint name="motor_back_right_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
@@ -620,7 +552,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.0535"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -631,10 +563,8 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
+      <mass value="0.1"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="motor_back_right_lower_leg" type="revolute">
@@ -649,22 +579,20 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 1.57079632679" xyz="-0.005 0 0"/>
+      <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <sphere radius="0.02"/>
+        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
     <inertial>
       <mass value="0.005"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <!-- Inertial Axes -->
-      <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
+      <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100"/>
     </inertial>
   </link>
   <joint name="back_right_leg_foot" type="fixed">
