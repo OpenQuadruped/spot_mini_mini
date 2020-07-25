@@ -8,7 +8,7 @@ class LegIK():
                  legtype="RIGHT",
                  shoulder_length=0.04,
                  elbow_length=0.1,
-                 wrist_length=0.1,
+                 wrist_length=0.125,
                  hip_lim=[-0.548, 0.548],
                  shoulder_lim=[-2.17, 0.97],
                  leg_lim=[-0.1, 2.59]):
