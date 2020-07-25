@@ -17,7 +17,7 @@ INIT_POSITION = [0, 0, 0.21]
 INIT_RACK_POSITION = [0, 0, 1]
 # NOTE: URDF IS FACING THE WRONG WAY
 # TEMP FIX
-INIT_ORIENTATION = [0, 0, 1, 0]
+INIT_ORIENTATION = [0, 0, 0, 1]
 OVERHEAT_SHUTDOWN_TORQUE = 2.45
 OVERHEAT_SHUTDOWN_TIME = 1.0
 # -math.pi / 5
@@ -25,8 +25,8 @@ INIT_LEG_POS = -0.658319
 # math.pi / 3
 INIT_FOOT_POS = 1.0472
 
-LEG_POSITION = ["front_left", "front_right", "rear_left", "rear_right"]
-MOTOR_NAMES = [
+OLD_LEG_POSITION = ["front_left", "front_right", "rear_left", "rear_right"]
+OLD_MOTOR_NAMES = [
     "motor_front_left_shoulder", "motor_front_left_leg",
     "foot_motor_front_left", "motor_front_right_shoulder",
     "motor_front_right_leg", "foot_motor_front_right",
@@ -35,22 +35,46 @@ MOTOR_NAMES = [
     "foot_motor_rear_right"
 ]
 
+OLD_MOTOR_LIMITS_BY_NAME = {}
+for name in OLD_MOTOR_NAMES:
+    if "shoulder" in name:
+        OLD_MOTOR_LIMITS_BY_NAME[name] = [-1.04, 1.04]
+    elif "leg" in name:
+        OLD_MOTOR_LIMITS_BY_NAME[name] = [-2.59, 1.571]
+    elif "foot" in name:
+        OLD_MOTOR_LIMITS_BY_NAME[name] = [-1.571, 2.9]
+
+OLD_FOOT_NAMES = [
+    "front_left_toe", "front_right_toe", "rear_left_toe", "rear_right_toe"
+]
+
+LEG_POSITION = ["front_left", "front_right", "back_left", "back_right"]
+MOTOR_NAMES = [
+    "motor_front_left_hip", "motor_front_left_upper_leg",
+    "motor_front_left_lower_leg", "motor_front_right_hip",
+    "motor_front_right_upper_leg", "motor_front_right_lower_leg",
+    "motor_back_left_hip", "motor_back_left_upper_leg",
+    "motor_back_left_lower_leg", "motor_back_right_hip",
+    "motor_back_right_upper_leg", "motor_back_right_lower_leg"
+]
+
 MOTOR_LIMITS_BY_NAME = {}
 for name in MOTOR_NAMES:
-    if "shoulder" in name:
-        MOTOR_LIMITS_BY_NAME[name] = [-1.0, 1.0]
-    elif "leg" in name:
-        MOTOR_LIMITS_BY_NAME[name] = [-2.17, 0.97]
-    elif "foot" in name:
-        MOTOR_LIMITS_BY_NAME[name] = [-0.1, 2.59]
+    if "hip" in name:
+        MOTOR_LIMITS_BY_NAME[name] = [-1.04, 1.04]
+    elif "upper_leg" in name:
+        MOTOR_LIMITS_BY_NAME[name] = [-2.59, 1.571]
+    elif "lower_leg" in name:
+        MOTOR_LIMITS_BY_NAME[name] = [-1.571, 2.9]
 
 FOOT_NAMES = [
-    "front_left_toe", "front_right_toe", "rear_left_toe", "rear_right_toe"
+    "front_left_leg_foot", "front_right_leg_foot", "back_left_leg_foot",
+    "back_right_leg_foot"
 ]
 
 _CHASSIS_NAME_PATTERN = re.compile(r"chassis\D*")
 _MOTOR_NAME_PATTERN = re.compile(r"motor\D*")
-_FOOT_NAME_PATTERN = re.compile(r"foot_motor\D*")
+_FOOT_NAME_PATTERN = re.compile(r"foot\D*")
 SENSOR_NOISE_STDDEV = (0.0, 0.0, 0.0, 0.0, 0.0)
 TWO_PI = 2 * math.pi
 
@@ -85,7 +109,9 @@ class Spot(object):
             -0.7552236, 1.5104472
         ]),
         'liedown':
-        np.array([-0.4, -1.5, 6, 0.4, -1.5, 6, -0.4, -1.5, 6, 0.4, -1.5, 6])
+        np.array([-0.4, -1.5, 6, 0.4, -1.5, 6, -0.4, -1.5, 6, 0.4, -1.5, 6]),
+        'zero':
+        np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     }
 
     def __init__(self,
@@ -108,7 +134,7 @@ class Spot(object):
                  motor_overheat_protection=False,
                  on_rack=False,
                  kd_for_pd_controllers=0.3,
-                 pose_id='stand',
+                 pose_id='zero',
                  np_random=np.random):
         """Constructs a spot and reset it to the initial states.
 
@@ -337,7 +363,6 @@ class Spot(object):
                 self.quadruped = self._pybullet_client.loadURDF(
                     pybullet_data.getDataPath() + "/assets/urdf/spot.urdf",
                     init_position,
-                    INIT_ORIENTATION,
                     useFixedBase=self._on_rack,
                     flags=self._pybullet_client.URDF_USE_SELF_COLLISION)
             else:
@@ -445,18 +470,18 @@ class Spot(object):
         leg_position = LEG_POSITION[leg_id]
         self._pybullet_client.resetJointState(
             self.quadruped,
-            self._joint_name_to_id["motor_" + leg_position + "_shoulder"],
+            self._joint_name_to_id["motor_" + leg_position + "_hip"],
             self.INIT_POSES[self._pose_id][3 * leg_id],
             targetVelocity=0)
 
         self._pybullet_client.resetJointState(
             self.quadruped,
-            self._joint_name_to_id["motor_" + leg_position + "_leg"],
+            self._joint_name_to_id["motor_" + leg_position + "_upper_leg"],
             self.INIT_POSES[self._pose_id][3 * leg_id + 1],
             targetVelocity=0)
         self._pybullet_client.resetJointState(
             self.quadruped,
-            self._joint_name_to_id["foot_motor_" + leg_position],
+            self._joint_name_to_id["motor_" + leg_position + "_lower_leg"],
             self.INIT_POSES[self._pose_id][3 * leg_id + 2],
             targetVelocity=0)
 
@@ -465,21 +490,21 @@ class Spot(object):
             self._pybullet_client.setJointMotorControl2(
                 bodyIndex=self.quadruped,
                 jointIndex=(self._joint_name_to_id["motor_" + leg_position +
-                                                   "_shoulder"]),
+                                                   "_hip"]),
                 controlMode=self._pybullet_client.VELOCITY_CONTROL,
                 targetVelocity=0,
                 force=knee_friction_force)
             self._pybullet_client.setJointMotorControl2(
                 bodyIndex=self.quadruped,
                 jointIndex=(self._joint_name_to_id["motor_" + leg_position +
-                                                   "_leg"]),
+                                                   "_upper_leg"]),
                 controlMode=self._pybullet_client.VELOCITY_CONTROL,
                 targetVelocity=0,
                 force=knee_friction_force)
             self._pybullet_client.setJointMotorControl2(
                 bodyIndex=self.quadruped,
-                jointIndex=(self._joint_name_to_id["foot_motor_" +
-                                                   leg_position]),
+                jointIndex=(self._joint_name_to_id["motor_" + leg_position +
+                                                   "_lower_leg"]),
                 controlMode=self._pybullet_client.VELOCITY_CONTROL,
                 targetVelocity=0,
                 force=knee_friction_force)

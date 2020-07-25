@@ -17,7 +17,7 @@
   </include>
 
   <!-- Spawn the urdf -->
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 0.0 -y 0.0 -z 0.15 -model spot" respawn="false" output="screen"/>
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 0.0 -y 0.0 -z 0.21 -model spot" respawn="false" output="screen"/>
 
   <include file="$(find mini_ros)/launch/controller.launch"/>
 

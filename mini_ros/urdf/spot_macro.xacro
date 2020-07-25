@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <material name="yellow">
-    <color rgba="0.92 0.83 0.0 1"/>
+  <material name="orange">
+    <color rgba="1.0 0.5 0.0 1"/>
   </material>
   <material name="black">
     <color rgba="0.1 0.1 0.1 1"/>
@@ -80,5 +80,32 @@
       </inertial>
     </link>
   </xacro:macro>
+
+
+  <!-- Left Leg: prefix is front or rear -->
+<!--   <xacro:macro name="LeftLeg" params="prefix reflect">
+    <link name="${prefix}_Left_Leg">
+        <visual>
+            <geometry>
+                <box size="${leglen} 0.1 0.2"/>
+            </geometry>
+            <origin xyz="0 0 -${leglen/2}" rpy="0 ${pi/2} 0"/>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${leglen} 0.1 0.2"/>
+            </geometry>
+            <origin xyz="0 0 -${leglen/2}" rpy="0 ${pi/2} 0"/>
+        </collision>
+        <xacro:default_inertial mass="10"/>
+    </link>
+
+    <joint name="base_to_${prefix}_leg" type="fixed">
+        <parent link="base_link"/>
+        <child link="${prefix}_leg"/>
+        <origin xyz="0 ${reflect*(width+.02)} 0.25" />
+    </joint>
+</xacro:macro> -->
 
 </robot>
