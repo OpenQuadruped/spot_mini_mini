@@ -13,7 +13,7 @@ print(pybullet_data.getDataPath())
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 import spotmicro.Kinematics.LieAlgebra as LA
 
-INIT_POSITION = [0, 0, 0.21]
+INIT_POSITION = [0, 0, 0.25]
 INIT_RACK_POSITION = [0, 0, 1]
 # NOTE: URDF IS FACING THE WRONG WAY
 # TEMP FIX
@@ -104,9 +104,9 @@ class Spot(object):
     INIT_POSES = {
         'stand':
         np.array([
-            -0.15192765, -0.7552236, 1.5104472, 0.15192765, -0.7552236,
-            1.5104472, -0.15192765, -0.7552236, 1.5104472, 0.15192765,
-            -0.7552236, 1.5104472
+            0.15192765, 0.7552236, -1.5104472, -0.15192765, 0.7552236,
+            -1.5104472, 0.15192765, 0.7552236, -1.5104472, -0.15192765,
+            0.7552236, -1.5104472
         ]),
         'liedown':
         np.array([-0.4, -1.5, 6, 0.4, -1.5, 6, -0.4, -1.5, 6, 0.4, -1.5, 6]),
@@ -134,7 +134,7 @@ class Spot(object):
                  motor_overheat_protection=False,
                  on_rack=False,
                  kd_for_pd_controllers=0.3,
-                 pose_id='zero',
+                 pose_id='stand',
                  np_random=np.random):
         """Constructs a spot and reset it to the initial states.
 
@@ -620,32 +620,34 @@ class Spot(object):
         orn = self.GetBaseOrientation()
         roll, pitch, yaw = self._pybullet_client.getEulerFromQuaternion(
             [orn[0], orn[1], orn[2], orn[3]])
-        rpy = LA.RPY(roll, pitch, yaw)
-        R, _ = LA.TransToRp(rpy)
-        T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
-        T_bw = LA.TransInv(T_wb)
-        Adj_Tbw = LA.Adjoint(T_bw)
+        # rpy = LA.RPY(roll, pitch, yaw)
+        # R, _ = LA.TransToRp(rpy)
+        # T_wb = LA.RpToTrans(R, np.array([pos[0], pos[1], pos[2]]))
+        # T_bw = LA.TransInv(T_wb)
+        # Adj_Tbw = LA.Adjoint(T_bw)
 
         # Get Linear and Angular Twist in WORLD FRAME
         lin_twist, ang_twist = self.GetBaseTwist()
 
-        Vw = np.concatenate((ang_twist, lin_twist))
-        Vb = np.dot(Adj_Tbw, Vw)
+        lin_twist = np.array([lin_twist[0], lin_twist[1], lin_twist[2]])
+        ang_twist = np.array([ang_twist[0], ang_twist[1], ang_twist[2]])
 
-        roll, pitch, _ = self._pybullet_client.getEulerFromQuaternion(
-            [orn[0], orn[1], orn[2], orn[3]])
+        # Vw = np.concatenate((ang_twist, lin_twist))
+        # Vb = np.dot(Adj_Tbw, Vw)
 
-        # Get linear accelerations
-        lin_twist = -Vb[3:]
+        # roll, pitch, _ = self._pybullet_client.getEulerFromQuaternion(
+        #     [orn[0], orn[1], orn[2], orn[3]])
+
+        # # Get linear accelerations
+        # lin_twist = -Vb[3:]
+        # ang_twist = Vb[:3]
         lin_acc = lin_twist - self.prev_lin_twist
         if lin_acc.all() == 0.0:
             lin_acc = self.prev_lin_acc
         self.prev_lin_acc = lin_acc
         # print("LIN TWIST: ", lin_twist)
         self.prev_lin_twist = lin_twist
-        self.prev_ang_twist = Vb[:3]
-
-        ang_twist = self.prev_ang_twist
+        self.prev_ang_twist = ang_twist
 
         # Get Contacts
         CONTACT = list(self._pybullet_client.getContactPoints(self.quadruped))

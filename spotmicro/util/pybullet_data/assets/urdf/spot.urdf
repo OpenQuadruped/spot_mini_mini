@@ -13,13 +13,38 @@
   <material name="grey">
     <color rgba="0.6 0.6 0.6 1"/>
   </material>
+  <!-- Left Leg: prefix is front or rear -->
+  <!--   <xacro:macro name="LeftLeg" params="prefix reflect">
+    <link name="${prefix}_Left_Leg">
+        <visual>
+            <geometry>
+                <box size="${leglen} 0.1 0.2"/>
+            </geometry>
+            <origin xyz="0 0 -${leglen/2}" rpy="0 ${pi/2} 0"/>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${leglen} 0.1 0.2"/>
+            </geometry>
+            <origin xyz="0 0 -${leglen/2}" rpy="0 ${pi/2} 0"/>
+        </collision>
+        <xacro:default_inertial mass="10"/>
+    </link>
+
+    <joint name="base_to_${prefix}_leg" type="fixed">
+        <parent link="base_link"/>
+        <child link="${prefix}_leg"/>
+        <origin xyz="0 ${reflect*(width+.02)} 0.25" />
+    </joint>
+</xacro:macro> -->
   <!-- Robot description -->
   <!-- STATIC Links -->
   <link name="base_link">
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/MAINBODY.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/MAINBODY.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -41,7 +66,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.15 0.035 -0.022"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/Battery.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/Battery.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -63,7 +88,7 @@
     <visual>
       <origin rpy="0 1.57079632679 -1.57079632679" xyz="0.016 0.003 0"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/Chassis_Left_Side.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/Chassis_Left_Side.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -85,7 +110,7 @@
     <visual>
       <origin rpy="0 1.57079632679 1.57079632679" xyz="-0.016 -0.003 0"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/Chassis_Right_Side.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/Chassis_Right_Side.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -107,7 +132,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/Front.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/Front.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -129,7 +154,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/Back.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/Back.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -151,7 +176,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/Front_Bracket.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/Front_Bracket.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -173,7 +198,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/Back_Bracket.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/Back_Bracket.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -195,7 +220,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 -0.0044 -0.067"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -224,7 +249,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 -0.05 -0.055"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -253,7 +278,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.0535"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -282,14 +307,14 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
@@ -309,7 +334,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 -0.0044 -0.067"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -338,7 +363,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 -0.05 -0.055"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -367,7 +392,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.0535"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -396,14 +421,14 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 -0.068 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/LEFT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
@@ -423,7 +448,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 0.074 -0.067"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -452,7 +477,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 0.12 -0.055"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -481,7 +506,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.0535"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -510,14 +535,14 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
@@ -537,7 +562,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.25 0.074 -0.067"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_HIP.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -566,7 +591,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.252 0.12 -0.055"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_UPPER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -595,7 +620,7 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.0535"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_LOWER_LEG.stl" scale="1 1 1"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -624,14 +649,14 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
     <collision>
       <origin rpy="0 0 1.57079632679" xyz="-0.247 0.138 0.18"/>
       <geometry>
-        <mesh filename="stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
+        <mesh filename="package://mini_ros/stl/OpenQuadruped/RIGHT_FOOT.stl" scale="1 1 1"/>
       </geometry>
       <contact_coefficients mu="10.1"/>
     </collision>
