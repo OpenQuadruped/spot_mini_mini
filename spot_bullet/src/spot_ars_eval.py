@@ -36,6 +36,10 @@ parser.add_argument("-gui",
                     "--GUI",
                     help="Control The Robot Yourself With a GUI",
                     action='store_true')
+parser.add_argument("-nc",
+                    "--NoContactSensing",
+                    help="Disable Contact Sensing",
+                    action='store_true')
 parser.add_argument("-a",
                     "--AgentNum",
                     help="Agent Number To Load")
@@ -79,10 +83,16 @@ def main():
     else:
         height_field = False
 
+    if ARGS.NoContactSensing:
+        contacts = False
+    else:
+        contacts = True
+
     env = spotBezierEnv(render=True,
                         on_rack=on_rack,
                         height_field=height_field,
-                        draw_foot_path=draw_foot_path)
+                        draw_foot_path=draw_foot_path,
+                        contacts=contacts)
 
     # Set seeds
     env.seed(seed)

@@ -103,7 +103,9 @@ class spotGymEnv(gym.Env):
                  lateral=False,
                  draw_foot_path=False,
                  height_field=False,
-                 AutoStepper=False):
+                 height_field_iters=2,
+                 AutoStepper=False,
+                 contacts=True):
         """Initialize the spot gym environment.
 
     Args:
@@ -162,6 +164,8 @@ class spotGymEnv(gym.Env):
     Raises:
       ValueError: If the urdf_version is not supported.
     """
+        # Sense Contacts
+        self.contacts = contacts
         # Enable Auto Stepper State Machine
         self.AutoStepper = AutoStepper
         # Enable Rough Terrain or Not
@@ -275,8 +279,8 @@ class spotGymEnv(gym.Env):
         self.hf = HeightField()
         if self.height_field:
             # Do 3x for extra roughness
-            self.hf._generate_field(self)
-            self.hf._generate_field(self)
+            for i in range(height_field_iters):
+                self.hf._generate_field(self)
 
     def set_env_randomizer(self, env_randomizer):
         self._env_randomizer = env_randomizer
@@ -336,7 +340,8 @@ class spotGymEnv(gym.Env):
                     torque_control_enabled=self._torque_control_enabled,
                     motor_overheat_protection=motor_protect,
                     on_rack=self._on_rack,
-                    np_random=self.np_random))
+                    np_random=self.np_random,
+                    contacts=self.contacts))
         self.spot.Reset(reload_urdf=False,
                         default_motor_angles=initial_motor_angles,
                         reset_time=reset_duration)
