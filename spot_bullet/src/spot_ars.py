@@ -23,6 +23,21 @@ from multiprocessing import Pipe
 
 import os
 
+import argparse
+
+# ARGUMENTS
+descr = "Spot Mini Mini ARS Agent Trainer."
+parser = argparse.ArgumentParser(description=descr)
+parser.add_argument("-hf",
+                    "--HeightField",
+                    help="Use HeightField",
+                    action='store_true')
+parser.add_argument("-nc",
+                    "--NoContactSensing",
+                    help="Disable Contact Sensing",
+                    action='store_true')
+ARGS = parser.parse_args()
+
 # Messages for Pipe
 _RESET = 1
 _CLOSE = 2
@@ -52,10 +67,21 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
+    if ARGS.HeightField:
+        height_field = True
+    else:
+        height_field = False
+
+    if ARGS.NoContactSensing:
+        contacts = False
+    else:
+        contacts = True
+
     env = spotBezierEnv(render=False,
                         on_rack=False,
-                        height_field=True,
-                        draw_foot_path=False)
+                        height_field=height_field,
+                        draw_foot_path=False,
+                        contacts=contacts)
 
     # Set seeds
     env.seed(seed)

@@ -82,7 +82,8 @@ class spotBezierEnv(spotGymEnv):
                  draw_foot_path=False,
                  height_field=False,
                  AutoStepper=True,
-                 action_dim=15):
+                 action_dim=14,
+                 contacts=True):
 
         super(spotBezierEnv, self).__init__(
             distance_weight=distance_weight,
@@ -123,7 +124,8 @@ class spotBezierEnv(spotGymEnv):
             lateral=lateral,
             draw_foot_path=draw_foot_path,
             height_field=height_field,
-            AutoStepper=AutoStepper)
+            AutoStepper=AutoStepper,
+            contacts=contacts)
 
         # Residuals + Clearance Height + Penetration Depth
         action_high = np.array([self._action_bound] * action_dim)

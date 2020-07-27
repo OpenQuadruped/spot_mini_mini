@@ -224,7 +224,7 @@ class Policy():
             # used to update weights, sorted by highest rwrd
             num_best_deltas=16,
             # number of timesteps per episode per rollout
-            episode_steps=2000,
+            episode_steps=5000,
             # weight of sampled exploration noise
             expl_noise=0.01,
             # for seed gen
