@@ -135,7 +135,8 @@ class Spot(object):
                  on_rack=False,
                  kd_for_pd_controllers=0.3,
                  pose_id='stand',
-                 np_random=np.random):
+                 np_random=np.random,
+                 contacts=True):
         """Constructs a spot and reset it to the initial states.
 
     Args:
@@ -173,6 +174,8 @@ class Spot(object):
     """
         # SPOT MODEL
         self.spot = SpotModel()
+        # Whether to include contact sensing
+        self.contacts = contacts
         # Control Inputs
         self.StepLength = 0.0
         self.StepVelocity = 0.0
@@ -581,7 +584,8 @@ class Spot(object):
         # Leg Phases
         upper_bound[8:12] = 2.0
         # Contacts
-        upper_bound[12:] = 1.0
+        if self.contacts:
+            upper_bound[12:] = 1.0
         return upper_bound
 
     def GetObservationLowerBound(self):
@@ -683,10 +687,11 @@ class Spot(object):
         # observation.append(self.LateralFraction)
         # observation.append(self.YawRate)
         observation.extend(self.LegPhases)
-        observation.append(FLC)
-        observation.append(FRC)
-        observation.append(BLC)
-        observation.append(BRC)
+        if self.contacts:
+            observation.append(FLC)
+            observation.append(FRC)
+            observation.append(BLC)
+            observation.append(BRC)
         # print("CONTACTS: {}  {}  {}  {}".format(FLC, FRC, BLC, BRC))
         return observation
 
