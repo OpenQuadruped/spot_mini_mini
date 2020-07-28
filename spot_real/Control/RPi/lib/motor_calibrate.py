@@ -27,9 +27,9 @@ while loop:
                        actuation_range=actuation_range)
 
     val = float(input("Select a HIGH angle value (deg): "))
-    servo.actuate(np.radians(val))
+    servo.actuate_deg(val)
     val = float(input("Select a LOW angle value (deg): "))
-    servo.actuate(np.radians(val))
+    servo.actuate_deg(val)
 
     cont = input("Test another motor [y] or quit [n]? ")
 
