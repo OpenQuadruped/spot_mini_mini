@@ -145,3 +145,7 @@ class ServoJoint:
     def actuate(self, desired_pos):
         self.kit.servo[
             self.pwm_chan].angle = self.bias + self.rad2deg(desired_pos)
+
+    def actuate_deg(self, desired_pos):
+        self.kit.servo[
+            self.pwm_chan].angle = desired_pos
