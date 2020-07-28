@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import time
+import numpy as np
 from servo_model import ServoJoint
 
 joint_names = [
@@ -23,10 +24,10 @@ while loop:
                        pwm_min=pwm_min,
                        pwm_max=pwm_max)
 
-    val = float(input("Select a HIGH angle value (rad): "))
-    servo.actuate(val)
-    val = float(input("Select a LOW angle value (rad): "))
-    servo.actuate(val)
+    val = float(input("Select a HIGH angle value (deg): "))
+    servo.actuate(np.radians(val))
+    val = float(input("Select a LOW angle value (deg): "))
+    servo.actuate(np.radians(val))
 
     cont = input("Test another motor [y] or quit [n]? ")
 
