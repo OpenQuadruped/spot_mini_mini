@@ -26,10 +26,15 @@ while loop:
                        pwm_max=pwm_max,
                        actuation_range=actuation_range)
 
-    val = float(input("Select a HIGH angle value (deg): "))
-    servo.actuate_deg(val)
-    val = float(input("Select a LOW angle value (deg): "))
-    servo.actuate_deg(val)
+    inner_loop = True
+
+    while inner_loop:
+
+        val = float(input("Select an angle value (deg): [q to quit]"))
+        if val == "q" or val == "Q":
+            inner_loop = False
+        else:
+            servo.actuate_deg(val)
 
     cont = input("Test another motor [y] or quit [n]? ")
 
