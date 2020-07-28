@@ -12,7 +12,6 @@ joint_names = [
 ]
 loop = True
 
-calib = input("Calibration [c] or Test [t]?: ")
 pwm_min = int(input("Enter Min PWM: "))
 pwm_max = int(input("Enter Max PWM: "))
 
