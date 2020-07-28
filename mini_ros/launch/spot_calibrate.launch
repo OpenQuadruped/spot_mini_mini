@@ -1,0 +1,5 @@
+<launch>
+<!-- Sensor Calibration Node -->
+<node name="servo_calibration" pkg="mini_ros" type="servo_calibration" output="screen"/>
+
+</launch>
