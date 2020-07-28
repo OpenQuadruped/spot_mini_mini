@@ -65,7 +65,7 @@ class ServoJoint:
         self.kit.servo[self.pwm_chan].set_pulse_width_range(pwm_min, pwm_max)
         self.kit.servo[self.pwm_chan].actuation_range = actuation_range
 
-        self.bias = 90.0 + self.rad2deg(self.servo_horn_bias)  # degrees
+        self.bias = self.rad2deg(self.servo_horn_bias)  # degrees
 
     def forward_propagate(self, current_pos, desired_pos, dt):
         """ Predict the new position of the actuated servo
