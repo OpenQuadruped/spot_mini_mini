@@ -15,6 +15,7 @@ loop = True
 
 pwm_min = int(input("Enter Min PWM: "))
 pwm_max = int(input("Enter Max PWM: "))
+actuation_range = int(input("Enter Actuation Range: "))
 
 while loop:
     channel = int(
@@ -22,7 +23,8 @@ while loop:
     servo = ServoJoint(name=joint_names[channel],
                        pwm_chan=channel,
                        pwm_min=pwm_min,
-                       pwm_max=pwm_max)
+                       pwm_max=pwm_max,
+                       actuation_range=actuation_range)
 
     val = float(input("Select a HIGH angle value (deg): "))
     servo.actuate(np.radians(val))

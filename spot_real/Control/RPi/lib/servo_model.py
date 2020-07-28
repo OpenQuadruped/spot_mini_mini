@@ -21,7 +21,8 @@ class ServoJoint:
                  pwm_chan=0,
                  pwm_min=600,
                  pwm_max=2800,
-                 servo_horn_bias=0):
+                 servo_horn_bias=0,
+                 actuation_range=270):
         self.name = name
         self.effort = effort  # Nm
         self.speed = speed  # rad/s
@@ -62,6 +63,7 @@ class ServoJoint:
         self.kit = ServoKit(channels=16)
         self.pwm_chan = pwm_chan
         self.kit.servo[self.pwm_chan].set_pulse_width_range(pwm_min, pwm_max)
+        self.kit.servo[self.pwm_chan].actuation_range = actuation_range
 
         self.bias = 90.0 + self.rad2deg(self.servo_horn_bias)  # degrees
 
