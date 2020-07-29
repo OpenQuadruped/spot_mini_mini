@@ -13,8 +13,8 @@ joint_names = [
 ]
 loop = True
 
-pwm_min = int(input("Enter Min PWM: "))
-pwm_max = int(input("Enter Max PWM: "))
+pwm_min = int(input("Enter Min PWM: "))  # 500
+pwm_max = int(input("Enter Max PWM: "))  # 2400
 actuation_range = int(input("Enter Actuation Range: "))
 
 while loop:
