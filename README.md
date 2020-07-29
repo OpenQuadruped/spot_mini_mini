@@ -69,7 +69,7 @@ What's even better, is that the same agent `#149` is able to adapt to unseen com
 
 ![UNIVERSAL](spot_bullet/media/spot_universal.gif)
 
-Here's an example of the new URDF being teleoperated with a trained agent:
+Here's an example of the new URDF being teleoperated with a trained agent on 2x higher terrain:
 
 ![UNIVERSAL2](spot_bullet/media/spot_new_universal.gif)
 
