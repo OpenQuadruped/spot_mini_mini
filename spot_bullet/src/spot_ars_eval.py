@@ -57,17 +57,6 @@ def main():
     max_timesteps = 4e6
     file_name = "spot_ars_"
 
-    # Find abs path to this file
-    my_path = os.path.abspath(os.path.dirname(__file__))
-    results_path = os.path.join(my_path, "../results")
-    models_path = os.path.join(my_path, "../models")
-
-    if not os.path.exists(results_path):
-        os.makedirs(results_path)
-
-    if not os.path.exists(models_path):
-        os.makedirs(models_path)
-
     if ARGS.DebugRack:
         on_rack = True
     else:
@@ -87,6 +76,20 @@ def main():
         contacts = False
     else:
         contacts = True
+
+    # Find abs path to this file
+    my_path = os.path.abspath(os.path.dirname(__file__))
+    results_path = os.path.join(my_path, "../results")
+    if contacts:
+        models_path = os.path.join(my_path, "../models/contact")
+    else:
+        models_path = os.path.join(my_path, "../models/no_contact")
+
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+
+    if not os.path.exists(models_path):
+        os.makedirs(models_path)
 
     env = spotBezierEnv(render=True,
                         on_rack=on_rack,
