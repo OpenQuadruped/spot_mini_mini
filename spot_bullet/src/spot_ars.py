@@ -56,17 +56,6 @@ def main():
     save_model = True
     file_name = "spot_ars_"
 
-    # Find abs path to this file
-    my_path = os.path.abspath(os.path.dirname(__file__))
-    results_path = os.path.join(my_path, "../results")
-    models_path = os.path.join(my_path, "../models")
-
-    if not os.path.exists(results_path):
-        os.makedirs(results_path)
-
-    if not os.path.exists(models_path):
-        os.makedirs(models_path)
-
     if ARGS.HeightField:
         height_field = True
     else:
@@ -76,6 +65,20 @@ def main():
         contacts = False
     else:
         contacts = True
+
+    # Find abs path to this file
+    my_path = os.path.abspath(os.path.dirname(__file__))
+    results_path = os.path.join(my_path, "../results")
+    if contacts:
+        models_path = os.path.join(my_path, "../models/contact")
+    else:
+        models_path = os.path.join(my_path, "../models/no_contact")
+
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+
+    if not os.path.exists(models_path):
+        os.makedirs(models_path)
 
     env = spotBezierEnv(render=False,
                         on_rack=False,
