@@ -122,11 +122,11 @@ void setup() {
   //Wrists
   FL_Wrist.Initialize(10, 90, 90, 0.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
   FL_Wrist.SetGoal(180, max_speed / 5.0);
-  FR_Wrist.Initialize(11, 90, 90, 0.0, FR, Wrist); // 9 | 
+  FR_Wrist.Initialize(11, 90, 90, 0.0, FR, Wrist); // 9 | 180 straight - 0 bent in
   FR_Wrist.SetGoal(90, max_speed / 5.0);
   BL_Wrist.Initialize(12, 180, 180, 0.0, BL, Wrist); // 10 | 90 straight - 270 bent in
   BL_Wrist.SetGoal(180, max_speed / 5.0);
-  BR_Wrist.Initialize(13, 90, 90, 0.0, BR, Wrist); // 11 | 
+  BR_Wrist.Initialize(13, 90, 90, 0.0, BR, Wrist); // 11 | 180 straight - 0 bent in
   BR_Wrist.SetGoal(90, max_speed / 5.0);
 
   // Contact Sensors
