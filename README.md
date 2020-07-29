@@ -69,6 +69,10 @@ What's even better, is that the same agent `#149` is able to adapt to unseen com
 
 ![UNIVERSAL](spot_bullet/media/spot_universal.gif)
 
+Here's an example of the new URDF being teleoperated with a trained agent:
+
+![UNIVERSAL2](spot_bullet/media/spot_new_universal.gif)
+
 <!-- #### Drift Correction
 I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
 
