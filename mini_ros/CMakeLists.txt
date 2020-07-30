@@ -68,6 +68,7 @@ add_message_files(
   IMUdata.msg
   ContactData.msg
   BezierData.msg
+  JointAngles.msg
 )
 
 ## Generate services in the 'srv' folder
