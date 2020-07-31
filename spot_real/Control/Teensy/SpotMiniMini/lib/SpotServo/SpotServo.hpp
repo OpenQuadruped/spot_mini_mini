@@ -78,8 +78,8 @@ private:
     double desired_speed = 0.0; // deg/sec
 
     // Servo's PWM range (usec)
-    int min_pwm = 600;
-    int max_pwm = 2800;
+    int min_pwm = 500;
+    int max_pwm = 2400;
 
     // Interpolation to convert from deg to usec
     double conv_slope = 0.0;
