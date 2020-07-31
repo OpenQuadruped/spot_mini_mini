@@ -73,6 +73,8 @@ namespace ros_srl
             FR_.FillLegJoint(ja_msg.frs, ja_msg.fre, ja_msg.frw);
             BL_.FillLegJoint(ja_msg.bls, ja_msg.ble, ja_msg.blw);
             BR_.FillLegJoint(ja_msg.brs, ja_msg.bre, ja_msg.brw);
+            // flag
+            joints_cmd_active_ = true;
         }
 
         public:
@@ -108,20 +110,12 @@ namespace ros_srl
             }
 
             void run()
-            {   
+            {
+                // timeout
                 unsigned long now = micros();
-                if((now - prev_resetter_time_) > 333333)
+                if((now - prev_joints_time_) > 1000000)
                 {
-                    prev_resetter_time_ = now;
-
-                    if((now - prev_joints_time_) < 500000)
-                    {
-                        joints_cmd_active_ = true;
-                    }
-                    else
-                    {
-                        joints_cmd_active_ = false;
-                    }
+                    joints_cmd_active_ = false;
                 }
                 nh_.spinOnce();
             }

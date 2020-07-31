@@ -143,32 +143,32 @@ void setup() {
   // Shoulders
   FL_Shoulder.Initialize(2, 135, 135, 0.0, FL, Shoulder);  // 0 | 
   FL_Shoulder.SetGoal(135, max_speed / 5.0);
-  FR_Shoulder.Initialize(3, 135, 135, 0.0, FR, Shoulder); // 1 | 
+  FR_Shoulder.Initialize(5, 135, 135, 0.0, FR, Shoulder); // 1 | 
   FR_Shoulder.SetGoal(135, max_speed / 5.0);
-  BL_Shoulder.Initialize(4, 135, 135, 0.0, BL, Shoulder);  // 2 | 
+  BL_Shoulder.Initialize(8, 135, 135, 0.0, BL, Shoulder);  // 2 | 
   BL_Shoulder.SetGoal(135, max_speed / 5.0);
-  BR_Shoulder.Initialize(5, 135, 135, 0.0, BR, Shoulder);  // 3 | 
+  BR_Shoulder.Initialize(11, 135, 135, 0.0, BR, Shoulder);  // 3 | 
   BR_Shoulder.SetGoal(135, max_speed / 5.0);
 
   //Elbows
-  FL_Elbow.Initialize(6, 135, 135, 0.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
+  FL_Elbow.Initialize(3, 135, 135, 0.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
   FL_Elbow.SetGoal(135, max_speed / 5.0);
-  FR_Elbow.Initialize(7, 135, 135, 0.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
+  FR_Elbow.Initialize(6, 135, 135, 0.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
   FR_Elbow.SetGoal(135, max_speed / 5.0);
-  BL_Elbow.Initialize(8, 135, 135, 0.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
+  BL_Elbow.Initialize(9, 135, 135, 0.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
   BL_Elbow.SetGoal(135, max_speed / 5.0);
-  BR_Elbow.Initialize(9, 135, 135, 0.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
+  BR_Elbow.Initialize(12, 135, 135, 0.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
   BR_Elbow.SetGoal(135, max_speed / 5.0);
 
   //Wrists
-  FL_Wrist.Initialize(10, 90, 90, 0.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
-  FL_Wrist.SetGoal(180, max_speed / 5.0);
-  FR_Wrist.Initialize(11, 90, 90, 0.0, FR, Wrist); // 9 | 180 straight - 0 bent in
-  FR_Wrist.SetGoal(90, max_speed / 5.0);
-  BL_Wrist.Initialize(12, 180, 180, 0.0, BL, Wrist); // 10 | 90 straight - 270 bent in
-  BL_Wrist.SetGoal(180, max_speed / 5.0);
-  BR_Wrist.Initialize(13, 90, 90, 0.0, BR, Wrist); // 11 | 180 straight - 0 bent in
-  BR_Wrist.SetGoal(90, max_speed / 5.0);
+  FL_Wrist.Initialize(4, 90, 90, 0.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
+  FL_Wrist.SetGoal(90, max_speed / 5.0);
+  FR_Wrist.Initialize(7, 180, 180, 0.0, FR, Wrist); // 9 | 180 straight - 0 bent in
+  FR_Wrist.SetGoal(180, max_speed / 5.0);
+  BL_Wrist.Initialize(10, 90, 90, 0.0, BL, Wrist); // 10 | 90 straight - 270 bent in
+  BL_Wrist.SetGoal(90, max_speed / 5.0);
+  BR_Wrist.Initialize(13, 180, 180, 0.0, BR, Wrist); // 11 | 180 straight - 0 bent in
+  BR_Wrist.SetGoal(180, max_speed / 5.0);
 
   // Contact Sensors
   FL_sensor.Initialize(A9, 17);
@@ -189,6 +189,7 @@ void loop()
 {
   // CHECK SENSORS AND SEND INFO
   // CONTACT
+  // 1'000'000 / 20'000 = 50hz
   if ((micros() - prev_publish_time) >= 20000)
   {
     ros_serial.publishContacts(FL_sensor.isTriggered(), FR_sensor.isTriggered(), BL_sensor.isTriggered(), BR_sensor.isTriggered());
@@ -214,11 +215,14 @@ void loop()
   update_sensors();
   
   // Command Servos
-  ros_serial.returnJoints(FL_, FR_, BL_, BR_);
-  command_servos(FL_);
-  command_servos(FR_);
-  command_servos(BL_);
-  command_servos(BR_);
+  if (ros_serial.jointsInputIsActive())
+  {
+    ros_serial.returnJoints(FL_, FR_, BL_, BR_);
+    command_servos(FL_);
+    command_servos(FR_);
+    command_servos(BL_);
+    command_servos(BR_);
+  }
 
   // Update ROS Node (spinOnce etc...)
   ros_serial.run();
