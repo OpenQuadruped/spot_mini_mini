@@ -1,6 +1,8 @@
 #ifndef ROSSERIAL_HPP
 #define ROSSERIAL_HPP
 
+#define USE_TEENSY_HW_SERIAL
+
 #include <ros.h>
 #include <ros/time.h>
 #include <Arduino.h>
@@ -9,8 +11,6 @@
 #include <mini_ros/JointAngles.h>
 #include <SpotServo.hpp>
 #include <IMU.hpp>
-
-#define USE_TEENSY_HW_SERIAL
 
 struct LegJoints
 {
