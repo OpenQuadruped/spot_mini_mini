@@ -113,7 +113,7 @@ class SpotCommander():
         self.sub_cnt = rospy.Subscriber('spot/contact', ContactData,
                                         self.cnt_cb)
         self.bez_pub = rospy.Publisher('spot/bezier', BezierData, queue_size=1)
-        self.ja_pub = rospy.Publisher('spot/joints', BezierData, queue_size=1)
+        self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
         print("READY TO GO!")
 
     def load_spot(self):
