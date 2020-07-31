@@ -101,7 +101,7 @@ namespace ros_srl
                 FL_ref = FL_;
                 FR_ref = FR_;
                 BL_ref = BL_;
-                BR_ref = BR;        
+                BR_ref = BR_;        
             }
 
             bool jointsInputIsActive()
