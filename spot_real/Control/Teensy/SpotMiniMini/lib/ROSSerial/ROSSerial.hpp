@@ -10,6 +10,8 @@
 #include <SpotServo.hpp>
 #include <IMU.hpp>
 
+#define USE_TEENSY_HW_SERIAL
+
 struct LegJoints
 {
     LegType legtype;
