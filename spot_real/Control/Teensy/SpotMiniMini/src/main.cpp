@@ -143,23 +143,23 @@ void setup() {
 
   // SERVOS
   // Shoulders
-  FL_Shoulder.Initialize(2, 135, 135, 0.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
+  FL_Shoulder.Initialize(2, 135, 135, -10.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
   FL_Shoulder.SetGoal(135, max_speed / 5.0);
-  FR_Shoulder.Initialize(5, 135, 135, 0.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
+  FR_Shoulder.Initialize(5, 135, 135, -6.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
   FR_Shoulder.SetGoal(135, max_speed / 5.0);
-  BL_Shoulder.Initialize(8, 135, 135, 0.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
+  BL_Shoulder.Initialize(8, 135, 135, -5.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
   BL_Shoulder.SetGoal(135, max_speed / 5.0);
-  BR_Shoulder.Initialize(11, 135, 135, 0.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
+  BR_Shoulder.Initialize(11, 135, 135, -8.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
   BR_Shoulder.SetGoal(135, max_speed / 5.0);
 
   //Elbows
-  FL_Elbow.Initialize(3, 135, 135, 0.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
+  FL_Elbow.Initialize(3, 135, 135, -3.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
   FL_Elbow.SetGoal(135, max_speed / 5.0);
-  FR_Elbow.Initialize(6, 135, 135, 0.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
+  FR_Elbow.Initialize(6, 135, 135, -8.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
   FR_Elbow.SetGoal(135, max_speed / 5.0);
-  BL_Elbow.Initialize(9, 135, 135, 0.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
+  BL_Elbow.Initialize(9, 135, 135, -5.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
   BL_Elbow.SetGoal(135, max_speed / 5.0);
-  BR_Elbow.Initialize(12, 135, 135, 0.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
+  BR_Elbow.Initialize(12, 135, 135, 2.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
   BR_Elbow.SetGoal(135, max_speed / 5.0);
 
   //Wrists
