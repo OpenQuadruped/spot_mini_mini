@@ -303,21 +303,21 @@ class SpotCommander():
 
         ja_msg = JointAngles()
 
-        ja_msg.fls = joint_angles[0][0]
-        ja_msg.fle = joint_angles[0][1]
-        ja_msg.flw = joint_angles[0][2]
+        ja_msg.fls = np.degrees(joint_angles[0][0])
+        ja_msg.fle = np.degrees(joint_angles[0][1])
+        ja_msg.flw = np.degrees(joint_angles[0][2])
 
-        ja_msg.frs = joint_angles[1][0]
-        ja_msg.fre = joint_angles[1][1]
-        ja_msg.frw = joint_angles[1][2]
+        ja_msg.frs = np.degrees(joint_angles[1][0])
+        ja_msg.fre = np.degrees(joint_angles[1][1])
+        ja_msg.frw = np.degrees(joint_angles[1][2])
 
-        ja_msg.bls = joint_angles[2][0]
-        ja_msg.ble = joint_angles[2][1]
-        ja_msg.blw = joint_angles[2][2]
+        ja_msg.bls = np.degrees(joint_angles[2][0])
+        ja_msg.ble = np.degrees(joint_angles[2][1])
+        ja_msg.blw = np.degrees(joint_angles[2][2])
 
-        ja_msg.brs = joint_angles[3][0]
-        ja_msg.bre = joint_angles[3][1]
-        ja_msg.brw = joint_angles[3][2]
+        ja_msg.brs = np.degrees(joint_angles[3][0])
+        ja_msg.bre = np.degrees(joint_angles[3][1])
+        ja_msg.brw = np.degrees(joint_angles[3][2])
 
         self.ja_pub.publish(ja_msg)
 
