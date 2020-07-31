@@ -14,15 +14,15 @@ void IMU::displaySensorDetails(void)
 {
     sensor_t sensor;
     bno.getSensor(&sensor);
-    Serial1.println("------------------------------------");
-    Serial1.print("Sensor:       "); Serial1.println(sensor.name);
-    Serial1.print("Driver Ver:   "); Serial1.println(sensor.version);
-    Serial1.print("Unique ID:    "); Serial1.println(sensor.sensor_id);
-    Serial1.print("Max Value:    "); Serial1.print(sensor.max_value); Serial1.println(" xxx");
-    Serial1.print("Min Value:    "); Serial1.print(sensor.min_value); Serial1.println(" xxx");
-    Serial1.print("Resolution:   "); Serial1.print(sensor.resolution); Serial1.println(" xxx");
-    Serial1.println("------------------------------------");
-    Serial1.println("");
+    Serial.println("------------------------------------");
+    Serial.print("Sensor:       "); Serial.println(sensor.name);
+    Serial.print("Driver Ver:   "); Serial.println(sensor.version);
+    Serial.print("Unique ID:    "); Serial.println(sensor.sensor_id);
+    Serial.print("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" xxx");
+    Serial.print("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" xxx");
+    Serial.print("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" xxx");
+    Serial.println("------------------------------------");
+    Serial.println("");
     delay(500);
 }
 
@@ -38,15 +38,15 @@ void IMU::displaySensorStatus(void)
     system_status = self_test_results = system_error = 0;
     bno.getSystemStatus(&system_status, &self_test_results, &system_error);
 
-    /* Display the results in the Serial1 Monitor */
-    Serial1.println("");
-    Serial1.print("System Status: 0x");
-    Serial1.println(system_status, HEX);
-    Serial1.print("Self Test:     0x");
-    Serial1.println(self_test_results, HEX);
-    Serial1.print("System Error:  0x");
-    Serial1.println(system_error, HEX);
-    Serial1.println("");
+    /* Display the results in the Serial Monitor */
+    Serial.println("");
+    Serial.print("System Status: 0x");
+    Serial.println(system_status, HEX);
+    Serial.print("Self Test:     0x");
+    Serial.println(self_test_results, HEX);
+    Serial.print("System Error:  0x");
+    Serial.println(system_error, HEX);
+    Serial.println("");
     delay(500);
 }
 
@@ -65,21 +65,21 @@ void IMU::displayCalStatus(void)
     bno.getCalibration(&system, &gyro, &accel, &mag);
 
     /* The data should be ignored until the system calibration is > 0 */
-    Serial1.print("\t");
+    Serial.print("\t");
     if (!system)
     {
-        Serial1.print("! ");
+        Serial.print("! ");
     }
 
     /* Display the individual values */
-    Serial1.print("Sys:");
-    Serial1.print(system, DEC);
-    Serial1.print(" G:");
-    Serial1.print(gyro, DEC);
-    Serial1.print(" A:");
-    Serial1.print(accel, DEC);
-    Serial1.print(" M:");
-    Serial1.print(mag, DEC);
+    Serial.print("Sys:");
+    Serial.print(system, DEC);
+    Serial.print(" G:");
+    Serial.print(gyro, DEC);
+    Serial.print(" A:");
+    Serial.print(accel, DEC);
+    Serial.print(" M:");
+    Serial.print(mag, DEC);
 }
 
 /**************************************************************************/
@@ -89,26 +89,26 @@ void IMU::displayCalStatus(void)
 /**************************************************************************/
 void IMU::displaySensorOffsets(const adafruit_bno055_offsets_t &calibData)
 {
-    Serial1.print("Accelerometer: ");
-    Serial1.print(calibData.accel_offset_x); Serial1.print(" ");
-    Serial1.print(calibData.accel_offset_y); Serial1.print(" ");
-    Serial1.print(calibData.accel_offset_z); Serial1.print(" ");
+    Serial.print("Accelerometer: ");
+    Serial.print(calibData.accel_offset_x); Serial.print(" ");
+    Serial.print(calibData.accel_offset_y); Serial.print(" ");
+    Serial.print(calibData.accel_offset_z); Serial.print(" ");
 
-    Serial1.print("\nGyro: ");
-    Serial1.print(calibData.gyro_offset_x); Serial1.print(" ");
-    Serial1.print(calibData.gyro_offset_y); Serial1.print(" ");
-    Serial1.print(calibData.gyro_offset_z); Serial1.print(" ");
+    Serial.print("\nGyro: ");
+    Serial.print(calibData.gyro_offset_x); Serial.print(" ");
+    Serial.print(calibData.gyro_offset_y); Serial.print(" ");
+    Serial.print(calibData.gyro_offset_z); Serial.print(" ");
 
-    Serial1.print("\nMag: ");
-    Serial1.print(calibData.mag_offset_x); Serial1.print(" ");
-    Serial1.print(calibData.mag_offset_y); Serial1.print(" ");
-    Serial1.print(calibData.mag_offset_z); Serial1.print(" ");
+    Serial.print("\nMag: ");
+    Serial.print(calibData.mag_offset_x); Serial.print(" ");
+    Serial.print(calibData.mag_offset_y); Serial.print(" ");
+    Serial.print(calibData.mag_offset_z); Serial.print(" ");
 
-    Serial1.print("\nAccel Radius: ");
-    Serial1.print(calibData.accel_radius);
+    Serial.print("\nAccel Radius: ");
+    Serial.print(calibData.accel_radius);
 
-    Serial1.print("\nMag Radius: ");
-    Serial1.print(calibData.mag_radius);
+    Serial.print("\nMag Radius: ");
+    Serial.print(calibData.mag_radius);
 }
 
 void IMU::Initialize()
@@ -116,7 +116,7 @@ void IMU::Initialize()
 	if(!bno.begin())
 	{
 		/* There was a problem detecting the BNO055 ... check your connections */
-		Serial1.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!\n");
+		Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!\n");
 		ok = false;
 	} else
 	{
@@ -136,21 +136,21 @@ void IMU::Initialize()
 	    bno.getSensor(&sensor);
 	    if (bnoID != sensor.sensor_id)
 	    {
-	        Serial1.println("\nNo Calibration Data for this sensor exists in EEPROM");
+	        Serial.println("\nNo Calibration Data for this sensor exists in EEPROM");
 	        delay(500);
 	    }
 	    else
 	    {
-	        Serial1.println("\nFound Calibration for this sensor in EEPROM.");
+	        Serial.println("\nFound Calibration for this sensor in EEPROM.");
 	        eeAddress += sizeof(long);
 	        EEPROM.get(eeAddress, calibrationData);
 
 	        displaySensorOffsets(calibrationData);
 
-	        Serial1.println("\n\nRestoring Calibration data to the BNO055...");
+	        Serial.println("\n\nRestoring Calibration data to the BNO055...");
 	        bno.setSensorOffsets(calibrationData);
 
-	        Serial1.println("\n\nCalibration data loaded into BNO055");
+	        Serial.println("\n\nCalibration data loaded into BNO055");
 	        foundCalib = true;
 	    }
 
@@ -170,47 +170,47 @@ void IMU::Initialize()
 	    /* always recal the mag as It goes out of calibration very often */
 	    if (foundCalib){
 	    	// NOTE: UNCOMMENT IF PLANNING TO USE MAGNEMOMETER
-	        // Serial1.println("Move sensor slightly to calibrate magnetometers");
+	        // Serial.println("Move sensor slightly to calibrate magnetometers");
 	        // while (!bno.isFullyCalibrated())
 	        // {
 	        //     bno.getEvent(&event);
 	        //     delay(BNO055_SAMPLERATE_DELAY_MS);
 	        // }
-	        Serial1.println("Loading Calibration...");
+	        Serial.println("Loading Calibration...");
 	    }
 	    else
 	    {
-	        Serial1.println("Please Calibrate Sensor: ");
+	        Serial.println("Please Calibrate Sensor: ");
 	        while (!bno.isFullyCalibrated())
 	        {
 	            bno.getEvent(&event);
 
-	            Serial1.print("X: ");
-	            Serial1.print(event.orientation.x, 4);
-	            Serial1.print("\tY: ");
-	            Serial1.print(event.orientation.y, 4);
-	            Serial1.print("\tZ: ");
-	            Serial1.print(event.orientation.z, 4);
+	            Serial.print("X: ");
+	            Serial.print(event.orientation.x, 4);
+	            Serial.print("\tY: ");
+	            Serial.print(event.orientation.y, 4);
+	            Serial.print("\tZ: ");
+	            Serial.print(event.orientation.z, 4);
 
 	            /* Optional: Display calibration status */
 	            displayCalStatus();
 
 	            /* New line for the next sample */
-	            Serial1.println("");
+	            Serial.println("");
 
 	            /* Wait the specified delay before requesting new data */
 	            delay(BNO055_SAMPLERATE_DELAY_MS);
 	        }
 	    }
 
-	    Serial1.println("\nFully calibrated!");
-	    Serial1.println("--------------------------------");
-	    Serial1.println("Calibration Results: ");
+	    Serial.println("\nFully calibrated!");
+	    Serial.println("--------------------------------");
+	    Serial.println("Calibration Results: ");
 	    adafruit_bno055_offsets_t newCalib;
 	    bno.getSensorOffsets(newCalib);
 	    displaySensorOffsets(newCalib);
 
-	    Serial1.println("\n\nStoring calibration data to EEPROM...");
+	    Serial.println("\n\nStoring calibration data to EEPROM...");
 
 	    eeAddress = 0;
 	    bno.getSensor(&sensor);
@@ -220,9 +220,9 @@ void IMU::Initialize()
 
 	    eeAddress += sizeof(long);
 	    EEPROM.put(eeAddress, newCalib);
-	    Serial1.println("Data stored to EEPROM.");
+	    Serial.println("Data stored to EEPROM.");
 
-	    Serial1.println("\n--------------------------------\n");
+	    Serial.println("\n--------------------------------\n");
 
 	    // REMAP AXIS. IMPORTANT
 	    /** Remap settings **/

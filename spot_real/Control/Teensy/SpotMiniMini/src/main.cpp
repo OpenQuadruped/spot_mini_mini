@@ -134,6 +134,8 @@ void update_sensors()
 // THIS ONLY RUNS ONCE
 void setup() {
 
+  Serial.begin(9600);
+
   pinMode(ledPin, OUTPUT);
 
   ik.Initialize(0.04, 0.1, 0.1);
