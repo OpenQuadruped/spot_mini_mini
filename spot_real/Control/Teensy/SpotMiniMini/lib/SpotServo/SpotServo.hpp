@@ -1,7 +1,7 @@
 #ifndef SPOTSERVO_INCLUDE_GUARD_HPP
 #define SPOTSERVO_INCLUDE_GUARD_HPP
 /// \file
-/// \brief Servo Speed Control Library. Adapted from https://github.com/adham-elarabawy/OpenQuadruped
+/// \brief Servo Speed Control Library
 #include <Servo.h>
 #include <Arduino.h>
 // #include <cmath>
@@ -78,6 +78,7 @@ private:
     double desired_speed = 0.0; // deg/sec
 
     // Servo's PWM range (usec)
+    // NOTE: This is unique to your servos, VERY IMPORTANT
     int min_pwm = 500;
     int max_pwm = 2400;
 

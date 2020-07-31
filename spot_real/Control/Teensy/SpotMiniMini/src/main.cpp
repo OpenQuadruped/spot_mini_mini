@@ -1,5 +1,5 @@
 /// \file
-/// \brief Teensy Main. Adapted from https://github.com/adham-elarabawy/OpenQuadruped
+/// \brief Teensy Main.
 
 #include <Arduino.h>
 #include <SpotServo.hpp>
@@ -138,16 +138,18 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
 
+  // IK - unused
   ik.Initialize(0.04, 0.1, 0.1);
 
+  // SERVOS
   // Shoulders
-  FL_Shoulder.Initialize(2, 135, 135, 0.0, FL, Shoulder);  // 0 | 
+  FL_Shoulder.Initialize(2, 135, 135, 0.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
   FL_Shoulder.SetGoal(135, max_speed / 5.0);
-  FR_Shoulder.Initialize(5, 135, 135, 0.0, FR, Shoulder); // 1 | 
+  FR_Shoulder.Initialize(5, 135, 135, 0.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
   FR_Shoulder.SetGoal(135, max_speed / 5.0);
-  BL_Shoulder.Initialize(8, 135, 135, 0.0, BL, Shoulder);  // 2 | 
+  BL_Shoulder.Initialize(8, 135, 135, 0.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
   BL_Shoulder.SetGoal(135, max_speed / 5.0);
-  BR_Shoulder.Initialize(11, 135, 135, 0.0, BR, Shoulder);  // 3 | 
+  BR_Shoulder.Initialize(11, 135, 135, 0.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
   BR_Shoulder.SetGoal(135, max_speed / 5.0);
 
   //Elbows
