@@ -22,19 +22,24 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 
 void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_)
 {
-	goal_pose = goal_pose_;
-	goal_pose += offset;
-	
-	// cpp would be std::clamp() with include cmath
-	if (goal_pose < 0.0)
+	// Catch for invalid command (used by calibration node to single out motors)
+	// Only update if valid command
+	if (goal_pose_ > -999)
 	{
-		goal_pose = 0.0;
-	} else if (goal_pose > control_range)
-	{
-		goal_pose = control_range;
-	}
+		goal_pose = goal_pose_;
+		goal_pose += offset;
+		
+		// cpp would be std::clamp() with include cmath
+		if (goal_pose < 0.0)
+		{
+			goal_pose = 0.0;
+		} else if (goal_pose > control_range)
+		{
+			goal_pose = control_range;
+		}
 
-	desired_speed = desired_speed_;
+		desired_speed = desired_speed_;
+	}
 }
 
 JointType SpotServo::return_joint_type()
