@@ -24,7 +24,7 @@ void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_
 {
 	// Catch for invalid command (used by calibration node to single out motors)
 	// Only update if valid command
-	if (goal_pose_ > -999)
+	if (goal_pose_ > -998)
 	{
 		goal_pose = goal_pose_;
 		goal_pose += offset;
