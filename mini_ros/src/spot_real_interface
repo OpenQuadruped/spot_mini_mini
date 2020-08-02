@@ -189,7 +189,7 @@ class SpotCommander():
         """
 
         x_offset = -0.012
-        z_offset = -0.01
+        # z_offset = -0.01
         # x_offset = 0.0
         # z_offset = 0.0
 
