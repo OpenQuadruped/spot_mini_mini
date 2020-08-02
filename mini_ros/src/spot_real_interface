@@ -93,7 +93,7 @@ class SpotCommander():
 
         self.dt = 0.001
 
-        self.bzg = BezierGait(dt=self.dt, Tswing=0.25)
+        self.bzg = BezierGait(dt=self.dt, Tswing=0.2)
 
         if self.Agent:
             self.load_spot()
