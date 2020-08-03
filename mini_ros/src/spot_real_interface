@@ -26,9 +26,9 @@ from spot_bullet.src.ars_lib.ars import ARSAgent, Normalizer, Policy
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
 # Controller Params
-STEPLENGTH_SCALE = 0.08
+STEPLENGTH_SCALE = 0.06
 Z_SCALE_CTRL = 0.12
-RPY_SCALE = 0.7
+RPY_SCALE = 0.6
 SV_SCALE = 1.0
 CHPD_SCALE = 0.0005
 YAW_SCALE = 2.0
