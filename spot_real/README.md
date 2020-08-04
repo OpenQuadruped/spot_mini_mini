@@ -1,6 +1,6 @@
 # Spot Mini Mini - The Real Deal
 
-## Software `Control`
+## Software
 
 ### Teensy Low Level Speed Controller: `Teensy`
 
@@ -49,9 +49,11 @@ Main improvements:
 
 ### Bill of Materials
 
-See [BOM](https://docs.google.com/spreadsheets/d/1Z4y59K8bY3r_442I70xe564zAFuP0pVIFEJ6bNZaCi0/edit?usp=sharing)!
+See most recent [BOM](https://docs.google.com/spreadsheets/d/1Z4y59K8bY3r_442I70xe564zAFuP0pVIFEJ6bNZaCi0/edit?usp=sharing)!
 
 ![bom](media/BOM.png)
+
+Note that the actual cost of this project is reflected in the first group of items totalling `590 USD`. For users such as myself who did not own any hobbyist components before this project, I have included an expanded list of required purchases.
 
 ### Assembly Instructions (COMING SOON)
 
