@@ -37,6 +37,7 @@ Table of Contents
      * [Gait](#gait)
   * [How To Run](#how-to-run)
      * [Dependencies](#dependencies)
+     * [Hardware](https://github.com/moribots/spot_mini_mini/tree/spot/spot_real)
      * [Joystick Control with ROS](#joystick-control-with-ros)
      * [Testing Environment (Non-Joystick)](#testing-environment-non-joystick)
      * [Reinforcement Learning Agent Training](#reinforcement-learning-agent-training)
