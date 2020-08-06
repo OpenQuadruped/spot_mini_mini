@@ -46,7 +46,7 @@ actions_to_filter = 2
 
 
 class SpotCommander():
-    def __init__(self, Agent=False):
+    def __init__(self, Agent=False, contacts=False):
 
         rospy.init_node('Policies', anonymous=True)
         # self.movetypes = [
@@ -69,9 +69,9 @@ class SpotCommander():
         self.BaseStepVelocity = 0.01
         self.StepVelocity = 0.01
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.03
+        self.BaseClearanceHeight = 0.045
         self.BasePenetrationDepth = 0.005
-        self.ClearanceHeight = 0.03
+        self.ClearanceHeight = 0.045
         self.PenetrationDepth = 0.005
 
         # Time
@@ -96,7 +96,7 @@ class SpotCommander():
         self.bzg = BezierGait(dt=self.dt, Tswing=0.2)
 
         if self.Agent:
-            self.load_spot()
+            self.load_spot(contacts)
         # cmd_cb from mini_cmd topic
         self.sub_cmd = rospy.Subscriber('mini_cmd', MiniCmd, self.cmd_cb)
         self.sub_jb = rospy.Subscriber('joybuttons', JoyButtons, self.jb_cb)
@@ -107,7 +107,7 @@ class SpotCommander():
         self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
         print("READY TO GO!")
 
-    def load_spot(self):
+    def load_spot(self, contacts):
         self.policy = Policy(state_dim=16, action_dim=15)
         self.normalizer = Normalizer(state_dim=16)
         env = spotBezierEnv(render=False,
@@ -116,7 +116,10 @@ class SpotCommander():
                             draw_foot_path=False)
         agent = ARSAgent(self.normalizer, self.policy, env)
         my_path = os.path.abspath(os.path.dirname(__file__))
-        models_path = os.path.join(my_path, "../models")
+        if contacts:
+            models_path = os.path.join(my_path, "../models/contact")
+        else:
+            models_path = os.path.join(my_path, "../models/no_contact")
         agent_num = 149
         file_name = "spot_ars_"
         if os.path.exists(models_path + "/" + file_name + str(agent_num) +
@@ -188,10 +191,10 @@ class SpotCommander():
         """ Turn joystick inputs into commands
         """
 
-        x_offset = -0.006
-        z_offset = -0.01
-        # x_offset = 0.0
-        # z_offset = 0.0
+        # x_offset = -0.006
+        # z_offset = -0.01
+        x_offset = 0.0
+        z_offset = 0.0
 
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = np.clip(
