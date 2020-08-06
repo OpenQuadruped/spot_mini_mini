@@ -13,7 +13,7 @@
 #define DEBUGSERIAL Serial
 
 bool ESTOPPED = false;
-int max_speed = 2e3; // doesn't really mean anything, theoretically deg/sec
+int max_speed = 1e3; // doesn't really mean anything, theoretically deg/sec
 double last_estop = millis();
 static unsigned long prev_publish_time;
 const int ledPin = 13;
