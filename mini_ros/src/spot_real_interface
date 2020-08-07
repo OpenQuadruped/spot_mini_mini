@@ -201,7 +201,7 @@ class SpotCommander():
 
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = self.BaseStepVelocity
-            self.StepPeriod = np.clip(
+            self.SwingPeriod = np.clip(
                 self.BaseSwingPeriod +
                 (-self.mini_cmd.faster + -self.mini_cmd.slower) * SV_SCALE,
                 0.1, 0.3)
