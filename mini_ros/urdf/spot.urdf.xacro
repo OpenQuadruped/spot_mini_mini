@@ -6,10 +6,10 @@
 
   <!-- Robot description -->
   <!-- STATIC Links -->
-  <link name="base_footprint"/>
+  <link name="base_link"/>
 
   <!-- MAIN BODY -->
-  <xacro:mesh_link name="base_link"
+  <xacro:mesh_link name="base_inertia"
               origin_rpy="0 0 ${pi/2}" origin_xyz="-0.16 0.035 -0.045"
               i_rpy="0 0 0" i_xyz="0 0 0"
               mass="0.6"
@@ -443,7 +443,7 @@
 <!-- FOOTPRINT TO MAIN BODY-->
 <xacro:frame_joint name="base_base" type="fixed"
                   origin_rpy="0 0 0" origin_xyz="0 0 0"
-                  parent="base_footprint" child="base_link"/>
+                  parent="base_link" child="base_inertia"/>
 <!-- MAIN BODY TO BATTERY -->
 <xacro:frame_joint name="base_battery" type="fixed"
                   origin_rpy="0 0 0" origin_xyz="-0.01 0 -0.0225"
