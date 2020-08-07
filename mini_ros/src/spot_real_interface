@@ -28,7 +28,7 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 STEPLENGTH_SCALE = 0.06
 Z_SCALE_CTRL = 0.15
 RPY_SCALE = 0.6
-SV_SCALE = 0.1
+SV_SCALE = 0.05
 CHPD_SCALE = 0.0005
 YAW_SCALE = 1.25
 
@@ -190,7 +190,7 @@ class SpotCommander():
         """ Turn joystick inputs into commands
         """
 
-        x_offset = -0.000
+        x_offset = -0.006
         z_offset = 0.00
         # x_offset = 0.0
         # z_offset = 0.0
