@@ -86,7 +86,7 @@ namespace ros_srl
 
             {
                 nh_.initNode();
-                nh_.getHardware()->setBaud(1000000);
+                nh_.getHardware()->setBaud(500000);
 
                 nh_.subscribe(ja_sub_);
 

@@ -5,7 +5,7 @@
 <!-- Sensor Interface Node -->
 <node pkg="rosserial_python" type="serial_node.py" name="serial_node">
     <param name="port" value="/dev/ttyS0"/> <!-- HW Serial -->
-    <param name="baud" value="1000000"/>  <!-- must match Teensy -->
+    <param name="baud" value="500000"/>  <!-- must match Teensy -->
   </node>
 
 </launch>
