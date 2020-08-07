@@ -143,33 +143,33 @@ void setup() {
 
   // SERVOS
   // Shoulders
-  FL_Shoulder.Initialize(2, 135, 135, -7.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
+  FL_Shoulder.Initialize(2, 135, 135, -8.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
   FL_Shoulder.SetGoal(135, max_speed / max_speed);
-  FR_Shoulder.Initialize(5, 135, 135, -5.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
+  FR_Shoulder.Initialize(5, 135, 135, -6.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
   FR_Shoulder.SetGoal(135, max_speed / max_speed);
   BL_Shoulder.Initialize(8, 135, 135, -3.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
   BL_Shoulder.SetGoal(135, max_speed / max_speed);
-  BR_Shoulder.Initialize(11, 135, 135, -6.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
+  BR_Shoulder.Initialize(11, 135, 135, -8.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
   BR_Shoulder.SetGoal(135, max_speed / max_speed);
 
   //Elbows
-  FL_Elbow.Initialize(3, 135, 135, -4.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
+  FL_Elbow.Initialize(3, 135, 135, -3.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
   FL_Elbow.SetGoal(135, max_speed / max_speed);
-  FR_Elbow.Initialize(6, 135, 135, -7.5, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
+  FR_Elbow.Initialize(6, 135, 135, -8.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
   FR_Elbow.SetGoal(135, max_speed / max_speed);
-  BL_Elbow.Initialize(9, 135, 135, 0.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
+  BL_Elbow.Initialize(9, 135, 135, 1.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
   BL_Elbow.SetGoal(135, max_speed / max_speed);
-  BR_Elbow.Initialize(12, 135, 135, 9.5, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
+  BR_Elbow.Initialize(12, 135, 135, 10.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
   BR_Elbow.SetGoal(135, max_speed / max_speed);
 
   //Wrists
-  FL_Wrist.Initialize(4, 90, 90, -1.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
+  FL_Wrist.Initialize(4, 90, 90, 0.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
   FL_Wrist.SetGoal(90, max_speed / max_speed);
-  FR_Wrist.Initialize(7, 180, 180, 6.0, FR, Wrist); // 9 | 180 straight - 0 bent in
+  FR_Wrist.Initialize(7, 180, 180, 5.0, FR, Wrist); // 9 | 180 straight - 0 bent in
   FR_Wrist.SetGoal(180, max_speed / max_speed);
-  BL_Wrist.Initialize(10, 90, 90, 2.5, BL, Wrist); // 10 | 90 straight - 270 bent in
+  BL_Wrist.Initialize(10, 90, 90, 5.0, BL, Wrist); // 10 | 90 straight - 270 bent in
   BL_Wrist.SetGoal(90, max_speed / max_speed);
-  BR_Wrist.Initialize(13, 180, 180, 7.0, BR, Wrist); // 11 | 180 straight - 0 bent in
+  BR_Wrist.Initialize(13, 180, 180, 6.0, BR, Wrist); // 11 | 180 straight - 0 bent in
   BR_Wrist.SetGoal(180, max_speed / max_speed);
 
   // Contact Sensors
