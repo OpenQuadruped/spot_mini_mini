@@ -69,7 +69,8 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>
-
+  <exec_depend>hector_gazebo_plugins</exec_depend>
+  <exec_depend>hector_sensors_description</exec_depend>
   <test_depend>rostest</test_depend>
   <test_depend>rosunit</test_depend>
 
