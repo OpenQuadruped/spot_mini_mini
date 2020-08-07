@@ -126,8 +126,11 @@ def main():
         pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
         )
 
-        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth, SwingPeriod = g_u_i.UserInput(
         )
+
+        # Update Swing Period
+        bzg.Tswing = SwingPeriod
 
         yaw = env.return_yaw()
 
