@@ -4,7 +4,7 @@
   <!-- Include Macros -->
   <xacro:include filename="$(find mini_ros)/urdf/spot_macro.xacro" />
   <xacro:include filename="$(find mini_ros)/urdf/transmissions.xacro" />
-  <xacro:include filename="$(find mini_ros)/urdf/accessories.urdf.xacro" />
+  <!-- <xacro:include filename="$(find mini_ros)/urdf/accessories.urdf.xacro" /> -->
 
   <!-- Robot description -->
   <!-- STATIC Links -->

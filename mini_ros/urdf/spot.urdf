@@ -38,10 +38,11 @@
         <origin xyz="0 ${reflect*(width+.02)} 0.25" />
     </joint>
 </xacro:macro> -->
+  <!-- <xacro:include filename="$(find mini_ros)/urdf/accessories.urdf.xacro" /> -->
   <!-- Robot description -->
   <!-- STATIC Links -->
-  <link name="base_footprint"/>
-  <link name="base_link">
+  <link name="base_link"/>
+  <link name="base_inertia">
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="-0.16 0.035 -0.045"/>
       <geometry>
@@ -62,6 +63,9 @@
       <inertia ixx="0.0025" ixy="0" ixz="0" iyx="0" iyy="0.0011498" iyz="0" izx="0" izy="0" izz="0.0026498"/>
     </inertial>
   </link>
+  <gazebo reference="base_inertia">
+    <material>Gazebo/Orange</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="battery">
     <visual>
@@ -84,6 +88,9 @@
       <inertia ixx="0.000723366666667" ixy="0" ixz="0" iyx="0" iyy="9.93333333333e-05" iyz="0" izx="0" izy="0" izz="0.000777633333333"/>
     </inertial>
   </link>
+  <gazebo reference="battery">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="chassis_left">
     <visual>
@@ -106,6 +113,9 @@
       <inertia ixx="1.878e-05" ixy="0" ixz="0" iyx="0" iyy="3.03e-06" iyz="0" izx="0" izy="0" izz="2.175e-05"/>
     </inertial>
   </link>
+  <gazebo reference="chassis_left">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="chassis_right">
     <visual>
@@ -128,6 +138,9 @@
       <inertia ixx="1.878e-05" ixy="0" ixz="0" iyx="0" iyy="3.03e-06" iyz="0" izx="0" izy="0" izz="2.175e-05"/>
     </inertial>
   </link>
+  <gazebo reference="chassis_right">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="front">
     <visual>
@@ -150,6 +163,9 @@
       <inertia ixx="7.70833333333e-05" ixy="0" ixz="0" iyx="0" iyy="0.000168508333333" iyz="0" izx="0" izy="0" izz="0.000125175"/>
     </inertial>
   </link>
+  <gazebo reference="front">
+    <material>Gazebo/Orange</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="back">
     <visual>
@@ -172,6 +188,9 @@
       <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="0.000168508333333" iyz="0" izx="0" izy="0" izz="0.000155175"/>
     </inertial>
   </link>
+  <gazebo reference="back">
+    <material>Gazebo/Orange</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="front_bracket">
     <visual>
@@ -194,6 +213,9 @@
       <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="6.54166666667e-05" iyz="0" izx="0" izy="0" izz="5.20833333333e-05"/>
     </inertial>
   </link>
+  <gazebo reference="front_bracket">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="back_bracket">
     <visual>
@@ -216,6 +238,9 @@
       <inertia ixx="0.000107083333333" ixy="0" ixz="0" iyx="0" iyy="6.54166666667e-05" iyz="0" izx="0" izy="0" izz="5.20833333333e-05"/>
     </inertial>
   </link>
+  <gazebo reference="back_bracket">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <!-- m to mm -->
   <link name="front_left_hip">
     <visual>
@@ -233,17 +258,20 @@
     </collision>
     <inertial>
       <mass value="0.2"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0.075 0"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
+  <gazebo reference="front_left_hip">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_front_left_hip" type="revolute">
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="0.0915 0.0394 0.022"/>
     <parent link="front_bracket"/>
     <child link="front_left_hip"/>
-    <limit effort="1000.0" lower="-1.04" upper="1.04" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.04" upper="1.04" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="front_left_upper_leg">
@@ -262,17 +290,20 @@
     </collision>
     <inertial>
       <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.005 0.0175 -0.055"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
     </inertial>
   </link>
+  <gazebo reference="front_left_upper_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_front_left_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0.0015 0.045 -0.0087"/>
     <parent link="front_left_hip"/>
     <child link="front_left_upper_leg"/>
-    <limit effort="1000.0" lower="-1.57079632679" upper="2.59" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.57079632679" upper="2.59" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="front_left_lower_leg">
@@ -291,17 +322,20 @@
     </collision>
     <inertial>
       <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.01 0 -0.06"/>
       <!-- Inertial Axes -->
       <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
+  <gazebo reference="front_left_lower_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_front_left_lower_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.005 0.018 -0.109"/>
     <parent link="front_left_upper_leg"/>
     <child link="front_left_lower_leg"/>
-    <limit effort="1000.0" lower="-2.9" upper="1.57079632679" velocity="0.7"/>
+    <limit effort="4.0" lower="-2.9" upper="1.57079632679" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="front_left_foot">
@@ -326,6 +360,15 @@
       <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
+  <gazebo reference="front_left_foot">
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <mu1>0.8</mu1>
+    <mu2>0.8</mu2>
+    <maxVel>0.0</maxVel>
+    <minDepth>0.001</minDepth>
+    <material>Gazebo/Orange</material>
+  </gazebo>
   <joint name="front_left_leg_foot" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 -0.1265"/>
     <parent link="front_left_lower_leg"/>
@@ -347,17 +390,20 @@
     </collision>
     <inertial>
       <mass value="0.2"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0.075 0"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
+  <gazebo reference="back_left_hip">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_back_left_hip" type="revolute">
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="-0.1365 0.0394 0.022"/>
     <parent link="back_bracket"/>
     <child link="back_left_hip"/>
-    <limit effort="1000.0" lower="-1.04" upper="1.04" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.04" upper="1.04" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="back_left_upper_leg">
@@ -376,17 +422,20 @@
     </collision>
     <inertial>
       <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.005 0.0175 -0.055"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
     </inertial>
   </link>
+  <gazebo reference="back_left_upper_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_back_left_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0.0015 0.045 -0.0087"/>
     <parent link="back_left_hip"/>
     <child link="back_left_upper_leg"/>
-    <limit effort="1000.0" lower="-1.57079632679" upper="2.59" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.57079632679" upper="2.59" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="back_left_lower_leg">
@@ -405,17 +454,20 @@
     </collision>
     <inertial>
       <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.01 0 -0.06"/>
       <!-- Inertial Axes -->
       <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
+  <gazebo reference="back_left_lower_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_back_left_lower_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.005 0.018 -0.109"/>
     <parent link="back_left_upper_leg"/>
     <child link="back_left_lower_leg"/>
-    <limit effort="1000.0" lower="-2.9" upper="1.57079632679" velocity="0.7"/>
+    <limit effort="4.0" lower="-2.9" upper="1.57079632679" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="back_left_foot">
@@ -440,6 +492,15 @@
       <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
+  <gazebo reference="back_left_foot">
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <mu1>0.8</mu1>
+    <mu2>0.8</mu2>
+    <maxVel>0.0</maxVel>
+    <minDepth>0.001</minDepth>
+    <material>Gazebo/Orange</material>
+  </gazebo>
   <joint name="back_left_leg_foot" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 -0.1265"/>
     <parent link="back_left_lower_leg"/>
@@ -461,17 +522,20 @@
     </collision>
     <inertial>
       <mass value="0.2"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 -0.075 0"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
+  <gazebo reference="front_right_hip">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_front_right_hip" type="revolute">
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="0.0915 -0.0394 0.022"/>
     <parent link="front_bracket"/>
     <child link="front_right_hip"/>
-    <limit effort="1000.0" lower="-1.04" upper="1.04" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.04" upper="1.04" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="front_right_upper_leg">
@@ -490,17 +554,20 @@
     </collision>
     <inertial>
       <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.005 -0.0175 -0.055"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
     </inertial>
   </link>
+  <gazebo reference="front_right_upper_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_front_right_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0.0015 -0.045 -0.0087"/>
     <parent link="front_right_hip"/>
     <child link="front_right_upper_leg"/>
-    <limit effort="1000.0" lower="-1.57079632679" upper="2.59" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.57079632679" upper="2.59" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="front_right_lower_leg">
@@ -519,17 +586,20 @@
     </collision>
     <inertial>
       <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.01 0 -0.06"/>
       <!-- Inertial Axes -->
       <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
+  <gazebo reference="front_right_lower_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_front_right_lower_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.005 -0.018 -0.109"/>
     <parent link="front_right_upper_leg"/>
     <child link="front_right_lower_leg"/>
-    <limit effort="1000.0" lower="-2.9" upper="1.57079632679" velocity="0.7"/>
+    <limit effort="4.0" lower="-2.9" upper="1.57079632679" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="front_right_foot">
@@ -554,6 +624,15 @@
       <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
+  <gazebo reference="front_right_foot">
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <mu1>0.8</mu1>
+    <mu2>0.8</mu2>
+    <maxVel>0.0</maxVel>
+    <minDepth>0.001</minDepth>
+    <material>Gazebo/Orange</material>
+  </gazebo>
   <joint name="front_right_leg_foot" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 -0.1265"/>
     <parent link="front_right_lower_leg"/>
@@ -575,17 +654,20 @@
     </collision>
     <inertial>
       <mass value="0.2"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 -0.075 0"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000140833333333" ixy="0" ixz="0" iyx="0" iyy="0.000112083333333" iyz="0" izx="0" izy="0" izz="0.000112083333333"/>
     </inertial>
   </link>
+  <gazebo reference="back_right_hip">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_back_right_hip" type="revolute">
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="-0.1365 -0.0394 0.022"/>
     <parent link="back_bracket"/>
     <child link="back_right_hip"/>
-    <limit effort="1000.0" lower="-1.04" upper="1.04" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.04" upper="1.04" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="back_right_upper_leg">
@@ -604,17 +686,20 @@
     </collision>
     <inertial>
       <mass value="0.13"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.005 -0.0175 -0.055"/>
       <!-- Inertial Axes -->
       <inertia ixx="0.000144354166667" ixy="0" ixz="0" iyx="0" iyy="0.000144354166667" iyz="0" izx="0" izy="0" izz="2.65416666667e-05"/>
     </inertial>
   </link>
+  <gazebo reference="back_right_upper_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_back_right_upper_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="0.0015 -0.045 -0.0087"/>
     <parent link="back_right_hip"/>
     <child link="back_right_upper_leg"/>
-    <limit effort="1000.0" lower="-1.57079632679" upper="2.59" velocity="0.7"/>
+    <limit effort="4.0" lower="-1.57079632679" upper="2.59" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="back_right_lower_leg">
@@ -633,17 +718,20 @@
     </collision>
     <inertial>
       <mass value="0.05"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.01 0 -0.06"/>
       <!-- Inertial Axes -->
       <inertia ixx="6.51041666667e-05" ixy="0" ixz="0" iyx="0" iyy="6.51041666667e-05" iyz="0" izx="0" izy="0" izz="1.02083333333e-05"/>
     </inertial>
   </link>
+  <gazebo reference="back_right_lower_leg">
+    <material>Gazebo/Black</material>
+  </gazebo>
   <joint name="motor_back_right_lower_leg" type="revolute">
     <axis xyz="0 1 0"/>
     <origin rpy="0 0 0" xyz="-0.005 -0.018 -0.109"/>
     <parent link="back_right_upper_leg"/>
     <child link="back_right_lower_leg"/>
-    <limit effort="1000.0" lower="-2.9" upper="1.57079632679" velocity="0.7"/>
+    <limit effort="4.0" lower="-2.9" upper="1.57079632679" velocity="4.0"/>
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
   <link name="back_right_foot">
@@ -668,6 +756,15 @@
       <inertia ixx="3.52083333333e-06" ixy="0" ixz="0" iyx="0" iyy="2.80208333333e-06" iyz="0" izx="0" izy="0" izz="2.80208333333e-06"/>
     </inertial>
   </link>
+  <gazebo reference="back_right_foot">
+    <kp>1000000.0</kp>
+    <kd>1.0</kd>
+    <mu1>0.8</mu1>
+    <mu2>0.8</mu2>
+    <maxVel>0.0</maxVel>
+    <minDepth>0.001</minDepth>
+    <material>Gazebo/Orange</material>
+  </gazebo>
   <joint name="back_right_leg_foot" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 -0.1265"/>
     <parent link="back_right_lower_leg"/>
@@ -675,8 +772,8 @@
   </joint>
   <joint name="base_base" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
-    <parent link="base_footprint"/>
-    <child link="base_link"/>
+    <parent link="base_link"/>
+    <child link="base_inertia"/>
   </joint>
   <joint name="base_battery" type="fixed">
     <origin rpy="0 0 0" xyz="-0.01 0 -0.0225"/>
@@ -713,4 +810,130 @@
     <parent link="base_link"/>
     <child link="back_bracket"/>
   </joint>
+  <transmission name="front_left_hip_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_front_left_hip">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_left_hip_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="front_left_upper_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_front_left_lower_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_left_upper_leg_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="front_left_lower_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_front_left_upper_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_left_lower_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="front_right_hip_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_front_right_hip">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_right_hip_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="front_right_upper_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_front_right_lower_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_right_upper_leg_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="front_right_lower_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_front_right_upper_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="front_right_lower_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="back_left_hip_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_back_left_hip">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="back_left_hip_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="back_left_upper_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_back_left_lower_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="back_left_upper_leg_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="back_left_lower_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_back_left_upper_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="back_left_lower_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="back_right_hip_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_back_right_hip">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="back_right_hip_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="back_right_upper_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_back_right_lower_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="back_right_upper_leg_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="back_right_lower_leg_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_back_right_upper_leg">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="back_right_lower_joint_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <gazebo>
+    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
 </robot>
+
