@@ -145,11 +145,11 @@ void setup() {
   // Shoulders
   FL_Shoulder.Initialize(2, 135, 135, -7.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
   FL_Shoulder.SetGoal(135, max_speed / max_speed);
-  FR_Shoulder.Initialize(5, 135, 135, -3.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
+  FR_Shoulder.Initialize(5, 135, 135, -5.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
   FR_Shoulder.SetGoal(135, max_speed / max_speed);
   BL_Shoulder.Initialize(8, 135, 135, -3.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
   BL_Shoulder.SetGoal(135, max_speed / max_speed);
-  BR_Shoulder.Initialize(11, 135, 135, -5.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
+  BR_Shoulder.Initialize(11, 135, 135, -6.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
   BR_Shoulder.SetGoal(135, max_speed / max_speed);
 
   //Elbows
