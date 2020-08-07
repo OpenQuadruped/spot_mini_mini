@@ -65,16 +65,16 @@ class SpotCommander():
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
         # FIXED
-        self.BaseStepVelocity = 0.1
-        self.StepVelocity = self.BaseStepVelocity
+        self.BaseStepVelocity = 0.01
+        self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
         # Stock, use Bumpers to change
         self.BaseSwingPeriod = 0.2
-        self.SwingPeriod = self.BaseSwingPeriod
+        self.SwingPeriod = copy.deepcopy(self.BaseSwingPeriod)
         # Stock, use arrow pads to change
         self.BaseClearanceHeight = 0.045
         self.BasePenetrationDepth = 0.005
-        self.ClearanceHeight = self.BaseClearanceHeight
-        self.PenetrationDepth = self.BasePenetrationDepth
+        self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
+        self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
 
         # Time
         self.time = rospy.get_time()
@@ -196,9 +196,9 @@ class SpotCommander():
         # z_offset = 0.0
 
         if self.mini_cmd.motion != "Stop":
-            self.StepVelocity = self.BaseStepVelocity
+            self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
             self.SwingPeriod = np.clip(
-                self.BaseSwingPeriod +
+                copy.deepcopy(self.BaseSwingPeriod) +
                 (-self.mini_cmd.faster + -self.mini_cmd.slower) * SV_SCALE,
                 0.1, 0.3)
             if self.mini_cmd.movement == "Stepping":
@@ -217,9 +217,9 @@ class SpotCommander():
                 LateralFraction = 0.0
                 YawRate = 0.0
                 # RESET
-                self.ClearanceHeight = self.BaseClearanceHeight
-                self.PenetrationDepth = self.BasePenetrationDepth
-                self.StepVelocity = self.BaseStepVelocity
+                self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
+                self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
+                self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
                 # x offset
                 pos = np.array(
                     [x_offset, 0.0, self.mini_cmd.z * Z_SCALE_CTRL + z_offset])
@@ -246,10 +246,10 @@ class SpotCommander():
 
         # Manual Reset
         if self.jb.left_bump or self.jb.right_bump:
-            self.ClearanceHeight = self.BaseClearanceHeight
-            self.PenetrationDepth = self.BasePenetrationDepth
-            self.StepVelocity = self.BaseStepVelocity
-            self.SwingPeriod = self.BaseSwingPeriod
+            self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
+            self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
+            self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
+            self.SwingPeriod = copy.deepcopy(self.BaseSwingPeriod)
 
         # OPTIONAL: Agent
         if self.Agent:
