@@ -3,6 +3,7 @@
 
   <!-- Include Macros -->
   <xacro:include filename="$(find mini_ros)/urdf/spot_macro.xacro" />
+  <xacro:include filename="$(find mini_ros)/urdf/transmissions.xacro" />
 
   <!-- Robot description -->
   <!-- STATIC Links -->
@@ -473,5 +474,13 @@
                   origin_rpy="0 0 0" origin_xyz="0 0 0"
                   parent="base_link" child="back_bracket"/>
      
-  
+<xacro:quadruped_transmission leg="front_left"/>
+<xacro:quadruped_transmission leg="front_right"/>
+<xacro:quadruped_transmission leg="back_left"/>
+<xacro:quadruped_transmission leg="back_right"/>  
+<gazebo>
+	<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+			<legacyModeNS>true</legacyModeNS>
+	</plugin>
+</gazebo>
 </robot>
