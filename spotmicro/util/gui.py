@@ -25,7 +25,7 @@ class GUI:
         self.yawId = pb.addUserDebugParameter("yaw", -np.pi / 4, np.pi / 4, 0.)
         self.StepLengthID = pb.addUserDebugParameter("Step Length", -0.1, 0.1,
                                                      0.0)
-        self.YawRateId = pb.addUserDebugParameter("Yaw Rate", -1.0, 1.0, 0.)
+        self.YawRateId = pb.addUserDebugParameter("Yaw Rate", -2.0, 2.0, 0.)
         self.LateralFractionId = pb.addUserDebugParameter(
             "Lateral Fraction", -np.pi / 2.0, np.pi / 2.0, 0.)
         self.StepVelocityId = pb.addUserDebugParameter("Step Velocity", 0.001,
