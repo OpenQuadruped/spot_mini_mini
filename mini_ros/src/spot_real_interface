@@ -29,7 +29,7 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 STEPLENGTH_SCALE = 0.06
 Z_SCALE_CTRL = 0.12
 RPY_SCALE = 0.6
-SV_SCALE = 1.0
+SV_SCALE = 0.1
 CHPD_SCALE = 0.0005
 YAW_SCALE = 1.0
 
@@ -65,14 +65,17 @@ class SpotCommander():
         self.mini_cmd.z = 0.0
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
-        # Stock, use bumper btns to change
-        self.BaseStepVelocity = 0.01
-        self.StepVelocity = 0.01
+        # FIXED
+        self.BaseStepVelocity = 0.1
+        self.StepVelocity = self.BaseStepVelocity
+        # Stock, use Bumpers to change
+        self.BaseSwingPeriod = 0.2
+        self.SwingPeriod = self.BaseSwingPeriod
         # Stock, use arrow pads to change
         self.BaseClearanceHeight = 0.04
-        self.BasePenetrationDepth = 0.001
-        self.ClearanceHeight = 0.04
-        self.PenetrationDepth = 0.001
+        self.BasePenetrationDepth = 0.005
+        self.ClearanceHeight = self.BaseClearanceHeight
+        self.PenetrationDepth = self.BasePenetrationDepth
 
         # Time
         self.time = rospy.get_time()
@@ -86,7 +89,7 @@ class SpotCommander():
         # Serial Talker
         self.TI = TeensyInterface()
 
-        self.spot = SpotModel(foot_y=0.18)
+        self.spot = SpotModel()
 
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
@@ -197,10 +200,11 @@ class SpotCommander():
         # z_offset = 0.0
 
         if self.mini_cmd.motion != "Stop":
-            self.StepVelocity = np.clip(
-                self.BaseStepVelocity +
-                (self.mini_cmd.faster + self.mini_cmd.slower) * SV_SCALE,
-                0.001, 1.5)
+            self.StepVelocity = self.BaseStepVelocity
+            self.StepPeriod = np.clip(
+                self.BaseSwingPeriod +
+                (-self.mini_cmd.faster + -self.mini_cmd.slower) * SV_SCALE,
+                0.1, 0.3)
             if self.mini_cmd.movement == "Stepping":
                 StepLength = self.mini_cmd.x_velocity + abs(
                     self.mini_cmd.y_velocity * 0.66)
@@ -236,6 +240,7 @@ class SpotCommander():
             self.ClearanceHeight = self.BaseClearanceHeight
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
+            self.SwingPeriod = self.BaseSwingPeriod
             pos = np.array([x_offset, 0.0, z_offset])
             orn = np.array([0.0, 0.0, 0.0])
 
@@ -248,6 +253,7 @@ class SpotCommander():
             self.ClearanceHeight = self.BaseClearanceHeight
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
+            self.SwingPeriod = self.BaseSwingPeriod
 
         # OPTIONAL: Agent
         if self.Agent:
@@ -276,6 +282,9 @@ class SpotCommander():
         dt = rospy.get_time() - self.time
         # print("dt: {}".format(dt))
         self.time = rospy.get_time()
+
+        # Update Step Period
+        self.bzg.Tswing = self.SwingPeriod
 
         self.T_bf = self.bzg.GenerateTrajectory(StepLength, LateralFraction,
                                                 YawRate, self.StepVelocity,

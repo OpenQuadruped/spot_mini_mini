@@ -30,6 +30,8 @@ class GUI:
             "Lateral Fraction", -np.pi / 2.0, np.pi / 2.0, 0.)
         self.StepVelocityId = pb.addUserDebugParameter("Step Velocity", 0.001,
                                                        3., 0.1)
+        self.SwingPeriodId = pb.addUserDebugParameter("Swing Period", 0.1, 0.4,
+                                                      0.2)
 
         self.ClearanceHeightId = pb.addUserDebugParameter(
             "Clearance Height", 0.0, 0.1, 0.045)
@@ -80,5 +82,6 @@ class GUI:
         StepVelocity = pb.readUserDebugParameter(self.StepVelocityId)
         ClearanceHeight = pb.readUserDebugParameter(self.ClearanceHeightId)
         PenetrationDepth = pb.readUserDebugParameter(self.PenetrationDepthId)
+        SwingPeriod = pb.readUserDebugParameter(self.SwingPeriodId)
 
-        return pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth
+        return pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth, SwingPeriod
