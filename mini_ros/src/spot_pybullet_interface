@@ -26,12 +26,23 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 
-STEPLENGTH_SCALE = 0.05
-Z_SCALE = 0.08
-RPY_SCALE = 0.5
-SV_SCALE = 1.0
+# Controller Params
+STEPLENGTH_SCALE = 0.06
+Z_SCALE_CTRL = 0.12
+RPY_SCALE = 0.6
+SV_SCALE = 0.1
 CHPD_SCALE = 0.0005
-YAW_SCALE = 2.0
+YAW_SCALE = 1.5
+
+# AGENT PARAMS
+CD_SCALE = 0.05
+SLV_SCALE = 0.05
+RESIDUALS_SCALE = 0.03
+Z_SCALE = 0.05
+# Filter actions
+alpha = 0.7
+# Added this to avoid filtering residuals
+# -1 for all
 
 
 class SpotCommander():
@@ -54,14 +65,17 @@ class SpotCommander():
         self.mini_cmd.z = 0.0
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
-        # Stock, use bumper btns to change
-        self.BaseStepVelocity = 0.8
-        self.StepVelocity = 0.8
+        # FIXED
+        self.BaseStepVelocity = 0.1
+        self.StepVelocity = self.BaseStepVelocity
+        # Stock, use Bumpers to change
+        self.BaseSwingPeriod = 0.2
+        self.SwingPeriod = self.BaseSwingPeriod
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.02
+        self.BaseClearanceHeight = 0.04
         self.BasePenetrationDepth = 0.005
-        self.ClearanceHeight = 0.02
-        self.PenetrationDepth = 0.005
+        self.ClearanceHeight = self.BaseClearanceHeight
+        self.PenetrationDepth = self.BasePenetrationDepth
 
         self.load_spot()
         # mini_cmd_cb from mini_cmd topic
@@ -134,20 +148,21 @@ class SpotCommander():
         """
 
         if self.mini_cmd.motion != "Stop":
-            self.StepVelocity = np.clip(
-                self.BaseStepVelocity +
-                (self.mini_cmd.faster + self.mini_cmd.slower) * SV_SCALE, 0.1,
-                1.5)
+            self.StepVelocity = self.BaseStepVelocity
+            self.SwingPeriod = np.clip(
+                self.BaseSwingPeriod +
+                (-self.mini_cmd.faster + -self.mini_cmd.slower) * SV_SCALE,
+                0.1, 0.3)
             if self.mini_cmd.movement == "Stepping":
                 StepLength = self.mini_cmd.x_velocity + abs(
                     self.mini_cmd.y_velocity * 0.66)
                 StepLength = np.clip(StepLength, -1.0, 1.0)
                 StepLength *= STEPLENGTH_SCALE
-                if StepLength < 0.0:
-                    self.mini_cmd.z = 0.5
                 LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
                 YawRate = self.mini_cmd.rate * YAW_SCALE
-                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
+                # x offset
+                pos = np.array(
+                    [0.0, 0.0, self.mini_cmd.z * Z_SCALE_CTRL])
                 orn = np.array([0.0, 0.0, 0.0])
             else:
                 StepLength = 0.0
@@ -157,7 +172,9 @@ class SpotCommander():
                 self.ClearanceHeight = self.BaseClearanceHeight
                 self.PenetrationDepth = self.BasePenetrationDepth
                 self.StepVelocity = self.BaseStepVelocity
-                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE])
+                # x offset
+                pos = np.array(
+                    [0.0, 0.0, self.mini_cmd.z * Z_SCALE_CTRL])
                 orn = np.array([
                     self.mini_cmd.roll * RPY_SCALE,
                     self.mini_cmd.pitch * RPY_SCALE,
@@ -171,6 +188,7 @@ class SpotCommander():
             self.ClearanceHeight = self.BaseClearanceHeight
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
+            self.SwingPeriod = self.BaseSwingPeriod
             pos = np.array([0.0, 0.0, 0.0])
             orn = np.array([0.0, 0.0, 0.0])
 
@@ -183,6 +201,9 @@ class SpotCommander():
             self.ClearanceHeight = self.BaseClearanceHeight
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
+            self.SwingPeriod = self.BaseSwingPeriod
+            self.env.reset()
+
 
         # print("SL: {} \tSV: {} \nLAT: {} \tYAW: {}".format(
         #     StepLength, self.StepVelocity, LateralFraction, YawRate))
@@ -195,6 +216,9 @@ class SpotCommander():
         dt = rospy.get_time() - self.time
         # print("dt: {}".format(dt))
         self.time = rospy.get_time()
+
+        # Update Step Period
+        self.bzg.Tswing = self.SwingPeriod
 
         self.T_bf = self.bzg.GenerateTrajectory(StepLength, LateralFraction,
                                                 YawRate, self.StepVelocity,

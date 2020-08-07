@@ -21,17 +21,16 @@ sys.path.append('../../')
 
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
-from spot_real.Control.RPi.lib.Teensy_Interface import TeensyInterface
 from spot_bullet.src.ars_lib.ars import ARSAgent, Normalizer, Policy
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
 # Controller Params
 STEPLENGTH_SCALE = 0.06
-Z_SCALE_CTRL = 0.12
+Z_SCALE_CTRL = 0.15
 RPY_SCALE = 0.6
 SV_SCALE = 0.1
 CHPD_SCALE = 0.0005
-YAW_SCALE = 1.5
+YAW_SCALE = 1.25
 
 # AGENT PARAMS
 CD_SCALE = 0.05
@@ -72,7 +71,7 @@ class SpotCommander():
         self.BaseSwingPeriod = 0.2
         self.SwingPeriod = self.BaseSwingPeriod
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.04
+        self.BaseClearanceHeight = 0.045
         self.BasePenetrationDepth = 0.005
         self.ClearanceHeight = self.BaseClearanceHeight
         self.PenetrationDepth = self.BasePenetrationDepth
@@ -85,9 +84,6 @@ class SpotCommander():
 
         # IMU: R, P, Ax, Ay, Az, Gx, Gy, Gz
         self.imu = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-        # Serial Talker
-        self.TI = TeensyInterface()
 
         self.spot = SpotModel()
 
