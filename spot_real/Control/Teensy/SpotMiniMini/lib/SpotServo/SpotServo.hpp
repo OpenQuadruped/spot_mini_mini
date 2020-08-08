@@ -28,7 +28,7 @@ public:
     /// \param goal_pose_: the desired motor position in degrees
     /// \param desired_speed_: the desired motor speed (deg/sec) while reaching this goal
     /// \param step_or_view_: operation mode, stepping or viewing.
-    void SetGoal(const double & goal_pose_, const double & desired_speed_, const bool & step_or_view_ = false);
+    void SetGoal(const double & goal_pose_, const double & desired_speed_, const bool & step_or_view_ = true);
 
     /// \brief returns joint_type
     /// \returns: joint_type
