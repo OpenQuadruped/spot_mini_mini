@@ -1,7 +1,7 @@
 <launch>
  <!-- Minitaur State Machine Node-->
   <node name="spot_sm" pkg="mini_ros" type="spot_sm" output="screen">
-    <param name="frequency" value="600.0" type="double"/>
+    <param name="frequency" value="120.0" type="double"/>
   </node>
 
  <!-- Joystick Node -->
@@ -13,7 +13,7 @@
 
  <!-- Teleop Node -->
  <node name="spot_teleop" pkg="mini_ros" type="teleop_node" output="screen">
-  <param name="frequency" value="600.0" type="double"/>
+  <param name="frequency" value="120.0" type="double"/>
   <param name="axis_linear_x" value="4" type="int"/>
   <param name="axis_linear_y" value="3" type="int"/>
   <param name="axis_linear_z" value="1" type="int"/>
