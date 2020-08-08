@@ -196,7 +196,7 @@ class SpotCommander():
         # z_offset = 0.0
 
         # Move Type
-        step_or_view = False
+        step_or_view = True
 
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
