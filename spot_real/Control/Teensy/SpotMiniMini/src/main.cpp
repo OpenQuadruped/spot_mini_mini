@@ -118,11 +118,11 @@ void command_servos(const LegJoints & legjoint, const bool & step_or_view)
   w_dist /= scaling_factor;
 
   double s_speed = max_speed * s_dist;
-  s_speed = max(s_speed, max_speed);
+  s_speed = max(s_speed, max_speed / 10.0);
   double e_speed = max_speed * e_dist;
-  e_speed = max(e_speed, max_speed);
+  e_speed = max(e_speed, max_speed / 10.0);
   double w_speed = max_speed * w_dist;
-  w_speed = max(w_speed, max_speed);
+  w_speed = max(w_speed, max_speed / 10.0);
 
   (*Shoulders[leg]).SetGoal(Shoulder_angle, s_speed, step_or_view);
   (*Elbows[leg]).SetGoal(Elbow_angle, e_speed, step_or_view);
