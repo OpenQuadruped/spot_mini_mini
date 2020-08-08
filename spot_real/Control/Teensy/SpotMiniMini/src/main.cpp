@@ -107,19 +107,26 @@ void command_servos(const LegJoints & legjoint, const bool & step_or_view)
   double Elbow_angle = util.angleConversion(legjoint.elbow, elbow_home, legjoint.legtype, Elbow);
   double Wrist_angle = util.angleConversion(legjoint.wrist, wrist_home, legjoint.legtype, Wrist);
 
-  double h_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
-  double s_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
+  double s_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
+  double e_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
   double w_dist = abs(Wrist_angle - (*Wrists[leg]).GetPoseEstimate());
 
-  double scaling_factor = util.max(h_dist, s_dist, w_dist);
+  double scaling_factor = util.max(s_dist, e_dist, w_dist);
 
-  h_dist /= scaling_factor;
   s_dist /= scaling_factor;
+  e_dist /= scaling_factor;
   w_dist /= scaling_factor;
 
-  (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist, step_or_view);
-  (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist, step_or_view);
-  (*Wrists[leg]).SetGoal(Wrist_angle, max_speed * w_dist, step_or_view);
+  double s_speed = max_speed * s_dist;
+  s_speed = max(s_speed, max_speed);
+  double e_speed = max_speed * e_dist;
+  e_speed = max(e_speed, max_speed);
+  double w_speed = max_speed * w_dist;
+  w_speed = max(w_speed, max_speed);
+
+  (*Shoulders[leg]).SetGoal(Shoulder_angle, s_speed, step_or_view);
+  (*Elbows[leg]).SetGoal(Elbow_angle, e_speed, step_or_view);
+  (*Wrists[leg]).SetGoal(Wrist_angle, w_speed, step_or_view);
   
 }
 
