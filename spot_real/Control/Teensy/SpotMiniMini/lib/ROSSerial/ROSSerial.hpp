@@ -47,6 +47,9 @@ namespace ros_srl
         unsigned long prev_resetter_time_;
         // joint msg flag
         bool joints_cmd_active_ = false;
+        // move type
+        // False is step, True is view
+        bool step_or_view = false;
         // joint msgs
         LegType fl_leg = FL;
         LegType fr_leg = FR;
@@ -73,6 +76,7 @@ namespace ros_srl
             FR_.FillLegJoint(ja_msg.frs, ja_msg.fre, ja_msg.frw);
             BL_.FillLegJoint(ja_msg.bls, ja_msg.ble, ja_msg.blw);
             BR_.FillLegJoint(ja_msg.brs, ja_msg.bre, ja_msg.brw);
+            step_or_view = ja_msg.step_or_view;
             // flag
             joints_cmd_active_ = true;
         }
@@ -96,12 +100,13 @@ namespace ros_srl
                 nh_.loginfo("SPOT MINI MINI ROS CLIENT CONNECTED");
             }
 
-            void returnJoints(LegJoints & FL_ref,  LegJoints & FR_ref, LegJoints & BL_ref, LegJoints & BR_ref)
+            void returnJoints(LegJoints & FL_ref,  LegJoints & FR_ref, LegJoints & BL_ref, LegJoints & BR_ref, bool & step_or_view_)
             {
                 FL_ref = FL_;
                 FR_ref = FR_;
                 BL_ref = BL_;
-                BR_ref = BR_;        
+                BR_ref = BR_;
+                step_or_view_ = step_or_view;
             }
 
             bool jointsInputIsActive()

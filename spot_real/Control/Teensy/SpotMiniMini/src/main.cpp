@@ -13,7 +13,7 @@
 #define DEBUGSERIAL Serial
 
 bool ESTOPPED = false;
-int max_speed = 1e3; // doesn't really mean anything, theoretically deg/sec
+int max_speed = 250; // doesn't really mean anything, theoretically deg/sec
 double last_estop = millis();
 static unsigned long prev_publish_time;
 const int ledPin = 13;
@@ -80,7 +80,7 @@ void update_servos()
     BR_Wrist.update_clk();
 }
 
-void command_servos(const LegJoints & legjoint)
+void command_servos(const LegJoints & legjoint, const bool & step_or_view)
 {
   int leg = -1;
 
@@ -117,9 +117,9 @@ void command_servos(const LegJoints & legjoint)
   s_dist /= scaling_factor;
   w_dist /= scaling_factor;
 
-  (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist);
-  (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist);
-  (*Wrists[leg]).SetGoal(Wrist_angle, max_speed * w_dist);
+  (*Shoulders[leg]).SetGoal(Shoulder_angle, max_speed * h_dist, step_or_view);
+  (*Elbows[leg]).SetGoal(Elbow_angle, max_speed * s_dist, step_or_view);
+  (*Wrists[leg]).SetGoal(Wrist_angle, max_speed * w_dist, step_or_view);
   
 }
 
@@ -219,11 +219,12 @@ void loop()
   // Command Servos
   if (ros_serial.jointsInputIsActive())
   {
-    ros_serial.returnJoints(FL_, FR_, BL_, BR_);
-    command_servos(FL_);
-    command_servos(FR_);
-    command_servos(BL_);
-    command_servos(BR_);
+    bool step_or_view = false;
+    ros_serial.returnJoints(FL_, FR_, BL_, BR_, step_or_view);
+    command_servos(FL_, step_or_view);
+    command_servos(FR_, step_or_view);
+    command_servos(BL_, step_or_view);
+    command_servos(BR_, step_or_view);
   }
 
   // Update ROS Node (spinOnce etc...)

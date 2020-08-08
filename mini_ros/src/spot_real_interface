@@ -195,6 +195,9 @@ class SpotCommander():
         # x_offset = 0.0
         # z_offset = 0.0
 
+        # Move Type
+        step_or_view = False
+
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
             self.SwingPeriod = np.clip(
@@ -212,6 +215,7 @@ class SpotCommander():
                 pos = np.array(
                     [x_offset, 0.0, self.mini_cmd.z * Z_SCALE_CTRL + z_offset])
                 orn = np.array([0.0, 0.0, 0.0])
+                step_or_view = False
             else:
                 StepLength = 0.0
                 LateralFraction = 0.0
@@ -228,6 +232,7 @@ class SpotCommander():
                     self.mini_cmd.pitch * RPY_SCALE,
                     self.mini_cmd.yaw * RPY_SCALE
                 ])
+                step_or_view = True
         else:
             StepLength = 0.0
             LateralFraction = 0.0
@@ -317,6 +322,9 @@ class SpotCommander():
         ja_msg.brs = np.degrees(joint_angles[3][0])
         ja_msg.bre = np.degrees(joint_angles[3][1])
         ja_msg.brw = np.degrees(joint_angles[3][2])
+
+        # Move Type
+        ja_msg.step_or_view = step_or_view
 
         self.ja_pub.publish(ja_msg)
 

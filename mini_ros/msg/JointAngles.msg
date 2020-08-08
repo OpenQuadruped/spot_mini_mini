@@ -1,31 +1,36 @@
 # FL
-# Shoulder
+# Shoulder or x
 float32 fls
-# Elbow
+# Elbow or y
 float32 fle
-# Wrist
+# Wrist or z
 float32 flw
 
 # FR
-# Shoulder
+# Shoulder or x
 float32 frs
-# Elbow
+# Elbow or y
 float32 fre
-# Wrist
+# Wrist or z
 float32 frw
 
 # BL
-# Shoulder
+# Shoulder or x
 float32 bls
-# Elbow
+# Elbow or y
 float32 ble
-# Wrist
+# Wrist or z
 float32 blw
 
 # BR
-# Shoulder
+# Shoulder or x
 float32 brs
-# Elbow
+# Elbow or y
 float32 bre
-# Wrist
+# Wrist or z
 float32 brw
+
+# Move Type (for servo smoothness)
+# step is 0
+# view is 1
+bool step_or_view

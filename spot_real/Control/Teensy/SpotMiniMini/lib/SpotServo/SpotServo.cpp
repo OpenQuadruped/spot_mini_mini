@@ -20,7 +20,7 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 	last_actuated = millis();
 }
 
-void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_)
+void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_, const bool & step_or_view_)
 {
 	// Catch for invalid command (used by calibration node to single out motors)
 	// Only update if valid command
@@ -64,23 +64,34 @@ double SpotServo::GetPoseEstimate()
 
 void SpotServo::update_clk()
 {
-	// Only perform update if loop rate is met
-	if(millis() - last_actuated > wait_time)
+	// Viewing Mode
+	if (step_or_view)
 	{
-		// Only update position if not within threshold
-		if(abs(current_pose - goal_pose) > error_threshold)
+		// Only perform update if loop rate is met
+		if(millis() - last_actuated > wait_time)
 		{
-			// returns 1.0 * sign of goal_pose - current_pose
-			double direction = 1.0;
-			if (goal_pose - current_pose < 0.0)
+			// Only update position if not within threshold
+			if(abs(current_pose - goal_pose) > error_threshold)
 			{
-				direction = -1.0;
+				// returns 1.0 * sign of goal_pose - current_pose
+				double direction = 1.0;
+				if (goal_pose - current_pose < 0.0)
+				{
+					direction = -1.0;
+				}
+				current_pose += direction * (wait_time / 1000.0) * desired_speed;
+				int pwm = (current_pose) * conv_slope + conv_intcpt;
+				servo.writeMicroseconds(pwm);
+				last_actuated = millis();
 			}
-			current_pose += direction * (wait_time / 1000.0) * desired_speed;
-			int pwm = (current_pose) * conv_slope + conv_intcpt;
-			servo.writeMicroseconds(pwm);
-			last_actuated = millis();
 		}
+	// Stepping Mode
+	} else
+	{
+		// Instant move
+		int pwm = (goal_pose) * conv_slope + conv_intcpt;
+		current_pose = goal_pose;
+		servo.writeMicroseconds(pwm);
 	}
 
 }
