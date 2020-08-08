@@ -37,7 +37,7 @@ namespace spot
     struct SpotCommand
     {
         Motion motion = Stop;
-        Movement movement = Stepping;
+        Movement movement = Viewing;
         double x_velocity = 0.0;
         double y_velocity = 0.0;
         double rate = 0.0;

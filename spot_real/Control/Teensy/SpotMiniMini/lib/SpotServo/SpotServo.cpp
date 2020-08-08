@@ -22,11 +22,15 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 
 void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_, const bool & step_or_view_)
 {
+	// Update Move Type
+	step_or_view = step_or_view_;
+
 	// Catch for invalid command (used by calibration node to single out motors)
 	// Only update if valid command
 	if (goal_pose_ > -998)
 	{
 		goal_pose = goal_pose_;
+		// Add Offset
 		goal_pose += offset;
 		
 		// cpp would be std::clamp() with include cmath
