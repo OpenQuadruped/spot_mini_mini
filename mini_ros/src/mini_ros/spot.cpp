@@ -14,7 +14,7 @@ namespace spot
         cmd.yaw = 0.0;
         cmd.z = 0.0;
 		cmd.motion = Stop;
-		cmd.movement = Stepping;
+		cmd.movement = Viewing;
 	}
 
 	void Spot::update_command(const double & vx, const double & vy, const double & z,
