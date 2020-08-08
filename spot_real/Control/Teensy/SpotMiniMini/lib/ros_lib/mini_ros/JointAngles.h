@@ -36,6 +36,8 @@ namespace mini_ros
       _bre_type bre;
       typedef float _brw_type;
       _brw_type brw;
+      typedef bool _step_or_view_type;
+      _step_or_view_type step_or_view;
 
     JointAngles():
       fls(0),
@@ -49,7 +51,8 @@ namespace mini_ros
       blw(0),
       brs(0),
       bre(0),
-      brw(0)
+      brw(0),
+      step_or_view(0)
     {
     }
 
@@ -176,6 +179,13 @@ namespace mini_ros
       *(outbuffer + offset + 2) = (u_brw.base >> (8 * 2)) & 0xFF;
       *(outbuffer + offset + 3) = (u_brw.base >> (8 * 3)) & 0xFF;
       offset += sizeof(this->brw);
+      union {
+        bool real;
+        uint8_t base;
+      } u_step_or_view;
+      u_step_or_view.real = this->step_or_view;
+      *(outbuffer + offset + 0) = (u_step_or_view.base >> (8 * 0)) & 0xFF;
+      offset += sizeof(this->step_or_view);
       return offset;
     }
 
@@ -314,11 +324,19 @@ namespace mini_ros
       u_brw.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       this->brw = u_brw.real;
       offset += sizeof(this->brw);
+      union {
+        bool real;
+        uint8_t base;
+      } u_step_or_view;
+      u_step_or_view.base = 0;
+      u_step_or_view.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      this->step_or_view = u_step_or_view.real;
+      offset += sizeof(this->step_or_view);
      return offset;
     }
 
     const char * getType(){ return "mini_ros/JointAngles"; };
-    const char * getMD5(){ return "059a17abbdac0e317e37cf3a10e8b58e"; };
+    const char * getMD5(){ return "54bfcd55046a61d9df3827d322506389"; };
 
   };
 
