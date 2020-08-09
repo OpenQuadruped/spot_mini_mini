@@ -71,7 +71,7 @@ class SpotCommander():
         self.BaseSwingPeriod = 0.2
         self.SwingPeriod = copy.deepcopy(self.BaseSwingPeriod)
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.035
+        self.BaseClearanceHeight = 0.04
         self.BasePenetrationDepth = 0.001
         self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
         self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)

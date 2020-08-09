@@ -13,9 +13,9 @@ class SpotModel:
                  wrist_length=0.125,
                  hip_x=0.23,
                  hip_y=0.075,
-                 foot_x=0.23,
+                 foot_x=0.26,
                  foot_y=0.185,
-                 height=0.185,
+                 height=0.165,
                  shoulder_lim=[-0.548, 0.548],
                  elbow_lim=[-2.17, 0.97],
                  wrist_lim=[-0.1, 2.59]):
