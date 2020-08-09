@@ -49,8 +49,10 @@ public:
     /// \brief Perform one motor update, potentially sending a new motor command, and updating the time-step.
     void update_clk();
 
-    /// \brief Detach the motor
-    void detach();
+    /// \brief Check if goal position reached
+    bool GoalReached();
+
+
 
 private:
     // Intrinsic Parameters

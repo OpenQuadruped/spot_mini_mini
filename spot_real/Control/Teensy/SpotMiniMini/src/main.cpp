@@ -13,7 +13,7 @@
 #define DEBUGSERIAL Serial
 
 bool ESTOPPED = false;
-int max_speed = 250; // doesn't really mean anything, theoretically deg/sec
+int max_speed = 400; // doesn't really mean anything, theoretically deg/sec
 double last_estop = millis();
 static unsigned long prev_publish_time;
 const int ledPin = 13;
@@ -38,27 +38,6 @@ LegJoints BL_ = LegJoints(bl_leg);
 LegJoints BR_ = LegJoints(br_leg);
 ros_srl::ROSSerial ros_serial;
 
-void detach_servos()
-{
-    // Shoulders
-    FL_Shoulder.detach();
-    FR_Shoulder.detach();
-    BL_Shoulder.detach();
-    BR_Shoulder.detach();
-
-    // Elbows
-    FL_Elbow.detach();
-    FR_Elbow.detach();
-    BL_Elbow.detach();
-    BR_Elbow.detach();
-
-    // Wrists
-    FL_Wrist.detach();
-    FR_Wrist.detach();
-    BL_Wrist.detach();
-    BR_Wrist.detach();
-}
-
 void update_servos()
 {
     // ShoulderS
@@ -80,7 +59,7 @@ void update_servos()
     BR_Wrist.update_clk();
 }
 
-void command_servos(const LegJoints & legjoint, const bool & step_or_view)
+void command_servos(const LegJoints & legjoint, const bool & step_or_view = true)
 {
   int leg = -1;
 
@@ -138,46 +117,66 @@ void update_sensors()
     BR_sensor.update_clk();
 }
 
+void set_stance(const double & shoulder_stance = 0.0, const double & elbow_stance = 0.0, const double & wrist_stance = 0.0)
+{
+  // Legs
+  FL_.FillLegJoint(shoulder_stance, elbow_stance, wrist_stance);
+  FR_.FillLegJoint(shoulder_stance, elbow_stance, wrist_stance);
+  BL_.FillLegJoint(shoulder_stance, elbow_stance, wrist_stance);
+  BR_.FillLegJoint(shoulder_stance, elbow_stance, wrist_stance);
+
+  command_servos(FL_);
+  command_servos(FR_);
+  command_servos(BL_);
+  command_servos(BR_);
+
+  // Loop until goal reached - check BR Wrist (last one)
+  while (!BR_Wrist.GoalReached())
+  {
+    update_servos();
+  }
+}
+
 // THIS ONLY RUNS ONCE
 void setup() {
 
   Serial.begin(9600);
 
-  pinMode(ledPin, OUTPUT);
-
   // IK - unused
   ik.Initialize(0.04, 0.1, 0.1);
 
-  // SERVOS
+  // SERVOS: Pin, StandAngle, HomeAngle, Offset, LegType, JointType
   // Shoulders
-  FL_Shoulder.Initialize(2, 135, 135, -8.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
-  FL_Shoulder.SetGoal(135, max_speed / max_speed);
-  FR_Shoulder.Initialize(5, 135, 135, -6.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
-  FR_Shoulder.SetGoal(135, max_speed / max_speed);
-  BL_Shoulder.Initialize(8, 135, 135, -3.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
-  BL_Shoulder.SetGoal(135, max_speed / max_speed);
-  BR_Shoulder.Initialize(11, 135, 135, -8.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
-  BR_Shoulder.SetGoal(135, max_speed / max_speed);
-
+  double shoulder_liedown = 0.0;
+  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -8.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
+  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -6.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
+  BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, -3.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
+  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -8.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
+  
   //Elbows
-  FL_Elbow.Initialize(3, 135, 135, -3.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
-  FL_Elbow.SetGoal(135, max_speed / max_speed);
-  FR_Elbow.Initialize(6, 135, 135, -8.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
-  FR_Elbow.SetGoal(135, max_speed / max_speed);
-  BL_Elbow.Initialize(9, 135, 135, 1.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
-  BL_Elbow.SetGoal(135, max_speed / max_speed);
-  BR_Elbow.Initialize(12, 135, 135, 10.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
-  BR_Elbow.SetGoal(135, max_speed / max_speed);
+  double elbow_liedown = 95.7;
+  FL_Elbow.Initialize(3, 135 + elbow_liedown, 135, -3.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
+  FR_Elbow.Initialize(6, 135 - elbow_liedown, 135, -8.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
+  BL_Elbow.Initialize(9, 135 + elbow_liedown, 135, 1.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
+  BR_Elbow.Initialize(12, 135 - elbow_liedown, 135, 10.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
 
   //Wrists
-  FL_Wrist.Initialize(4, 90, 90, 0.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
-  FL_Wrist.SetGoal(90, max_speed / max_speed);
-  FR_Wrist.Initialize(7, 180, 180, 5.0, FR, Wrist); // 9 | 180 straight - 0 bent in
-  FR_Wrist.SetGoal(180, max_speed / max_speed);
-  BL_Wrist.Initialize(10, 90, 90, 5.0, BL, Wrist); // 10 | 90 straight - 270 bent in
-  BL_Wrist.SetGoal(90, max_speed / max_speed);
-  BR_Wrist.Initialize(13, 180, 180, 6.0, BR, Wrist); // 11 | 180 straight - 0 bent in
-  BR_Wrist.SetGoal(180, max_speed / max_speed);
+  double wrist_liedown = 156.8;
+  FL_Wrist.Initialize(4, 90 + wrist_liedown, 90, 0.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
+  FR_Wrist.Initialize(7, 180 - wrist_liedown, 180, 5.0, FR, Wrist); // 9 | 180 straight - 0 bent in
+  BL_Wrist.Initialize(10, 90 + wrist_liedown, 90, 5.0, BL, Wrist); // 10 | 90 straight - 270 bent in
+  BR_Wrist.Initialize(13, 180 - wrist_liedown, 180, 6.0, BR, Wrist); // 11 | 180 straight - 0 bent in
+
+  // Move to Crouching Stance
+  delay(2000);
+  double shoulder_stance = 0.0;
+  double elbow_stance =  41.0;
+  double wrist_stance = -76.3;
+  set_stance(shoulder_stance, elbow_stance, wrist_stance);
+
+  // Move to Extended stance
+  delay(2000);
+  set_stance();
 
   // Contact Sensors
   FL_sensor.Initialize(A9, 17);
@@ -187,6 +186,15 @@ void setup() {
 
   // IMU
   imu_sensor.Initialize();
+
+  // Move back to Crouch and then back to Extended to indicate end of init
+  // Move to Crouching Stance
+  delay(200);
+  set_stance(shoulder_stance, elbow_stance, wrist_stance);
+
+  // Move to Extended stance
+  delay(2000);
+  set_stance();
 
   last_estop = millis();
 
@@ -218,8 +226,6 @@ void loop()
 
   if(!ESTOPPED){
     update_servos();
-  } else {
-    detach_servos();
   }
   update_sensors();
   
