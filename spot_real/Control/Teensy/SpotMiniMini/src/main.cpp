@@ -137,6 +137,43 @@ void set_stance(const double & shoulder_stance = 0.0, const double & elbow_stanc
   }
 }
 
+void run_sequence()
+{
+  // Move to Crouching Stance
+  delay(2000);
+  double shoulder_stance = 0.0;
+  double elbow_stance =  41.0;
+  double wrist_stance = -76.3;
+  set_stance(shoulder_stance, elbow_stance, wrist_stance);
+
+  // Contact Sensors
+  FL_sensor.Initialize(A9, 17);
+  FR_sensor.Initialize(A8, 16);
+  BL_sensor.Initialize(A7, 15);
+  BR_sensor.Initialize(A6, 14);
+
+  // IMU
+  imu_sensor.Initialize();
+
+  // Move to Extended stance
+  delay(100);
+  set_stance();
+
+  // Indicate end of init
+  // Move to Crouching Stance
+  delay(100);
+  set_stance(shoulder_stance, elbow_stance, wrist_stance);
+}
+
+void calibration_sequence()
+{
+
+  // Move to Extended stance
+  delay(2000);
+  set_stance();
+
+}
+
 // THIS ONLY RUNS ONCE
 void setup() {
 
@@ -149,52 +186,27 @@ void setup() {
   // Shoulders
   double shoulder_liedown = 0.0;
   FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -8.0, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
-  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -6.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
+  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -5.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
   BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, -3.0, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
-  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -8.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
+  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -6.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
   
   //Elbows
   double elbow_liedown = 95.7;
   FL_Elbow.Initialize(3, 135 + elbow_liedown, 135, -3.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
   FR_Elbow.Initialize(6, 135 - elbow_liedown, 135, -8.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
-  BL_Elbow.Initialize(9, 135 + elbow_liedown, 135, 1.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
-  BR_Elbow.Initialize(12, 135 - elbow_liedown, 135, 10.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
+  BL_Elbow.Initialize(9, 135 + elbow_liedown, 135, 0.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
+  BR_Elbow.Initialize(12, 135 - elbow_liedown, 135, 8.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
 
   //Wrists
   double wrist_liedown = 156.8;
-  FL_Wrist.Initialize(4, 90 + wrist_liedown, 90, 0.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
+  FL_Wrist.Initialize(4, 90 + wrist_liedown, 90, -0.5, FL, Wrist);  // 8 | 90 straight - 270 bent in
   FR_Wrist.Initialize(7, 180 - wrist_liedown, 180, 5.0, FR, Wrist); // 9 | 180 straight - 0 bent in
-  BL_Wrist.Initialize(10, 90 + wrist_liedown, 90, 5.0, BL, Wrist); // 10 | 90 straight - 270 bent in
-  BR_Wrist.Initialize(13, 180 - wrist_liedown, 180, 6.0, BR, Wrist); // 11 | 180 straight - 0 bent in
+  BL_Wrist.Initialize(10, 90 + wrist_liedown, 90, 3.0, BL, Wrist); // 10 | 90 straight - 270 bent in
+  BR_Wrist.Initialize(13, 180 - wrist_liedown, 180, 7.5, BR, Wrist); // 11 | 180 straight - 0 bent in 
 
-  // Move to Crouching Stance
-  delay(2000);
-  double shoulder_stance = 0.0;
-  double elbow_stance =  41.0;
-  double wrist_stance = -76.3;
-  set_stance(shoulder_stance, elbow_stance, wrist_stance);
-
-  // Move to Extended stance
-  delay(2000);
-  set_stance();
-
-  // Contact Sensors
-  FL_sensor.Initialize(A9, 17);
-  FR_sensor.Initialize(A8, 16);
-  BL_sensor.Initialize(A7, 15);
-  BR_sensor.Initialize(A6, 14);
-
-  // IMU
-  imu_sensor.Initialize();
-
-  // Move back to Crouch and then back to Extended to indicate end of init
-  // Move to Crouching Stance
-  delay(200);
-  set_stance(shoulder_stance, elbow_stance, wrist_stance);
-
-  // Move to Extended stance
-  delay(2000);
-  set_stance();
+  // pick one or the other
+  run_sequence();
+  // calibration_sequence();
 
   last_estop = millis();
 
