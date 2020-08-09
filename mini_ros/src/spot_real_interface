@@ -196,7 +196,10 @@ class SpotCommander():
         # z_offset = 0.0
 
         # Move Type
-        step_or_view = False
+        if self.mini_cmd.movement == "Stepping":
+            step_or_view = False
+        else:
+            step_or_view = True
 
         if self.mini_cmd.motion != "Stop":
             self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
@@ -215,7 +218,6 @@ class SpotCommander():
                 pos = np.array(
                     [x_offset, 0.0, self.mini_cmd.z * Z_SCALE_CTRL + z_offset])
                 orn = np.array([0.0, 0.0, 0.0])
-                step_or_view = False
             else:
                 StepLength = 0.0
                 LateralFraction = 0.0
@@ -232,7 +234,6 @@ class SpotCommander():
                     self.mini_cmd.pitch * RPY_SCALE,
                     self.mini_cmd.yaw * RPY_SCALE
                 ])
-                step_or_view = True
         else:
             StepLength = 0.0
             LateralFraction = 0.0
