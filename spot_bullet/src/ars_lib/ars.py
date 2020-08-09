@@ -428,8 +428,9 @@ class ARSAgent():
             )
 
             if self.g_u_i:
-                pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = self.g_u_i.UserInput(
+                pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth, SwingPeriod = self.g_u_i.UserInput(
                 )
+                self.TGP.Tswing = SwingPeriod
 
             self.env.spot.GetExternalObservations(self.TGP, self.smach)
 
