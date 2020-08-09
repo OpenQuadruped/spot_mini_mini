@@ -52,6 +52,9 @@ public:
     /// \brief Check if goal position reached
     bool GoalReached();
 
+    /// \biref Actuate motors
+    void actuate();
+
 
 
 private:

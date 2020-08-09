@@ -13,7 +13,8 @@
 #define DEBUGSERIAL Serial
 
 bool ESTOPPED = false;
-int max_speed = 400; // doesn't really mean anything, theoretically deg/sec
+int viewing_speed = 400; // doesn't really mean anything, theoretically deg/sec
+int walking_speed = 1500; // doesn't really mean anything, theoretically deg/sec
 double last_estop = millis();
 static unsigned long prev_publish_time;
 const int ledPin = 13;
@@ -96,12 +97,24 @@ void command_servos(const LegJoints & legjoint, const bool & step_or_view = true
   e_dist /= scaling_factor;
   w_dist /= scaling_factor;
 
-  double s_speed = max_speed * s_dist;
-  s_speed = max(s_speed, max_speed / 10.0);
-  double e_speed = max_speed * e_dist;
-  e_speed = max(e_speed, max_speed / 10.0);
-  double w_speed = max_speed * w_dist;
-  w_speed = max(w_speed, max_speed / 10.0);
+  double s_speed = 0.0;
+  double e_speed = 0.0;
+  double w_speed = 0.0;
+
+  if (step_or_view)
+  {
+    s_speed = viewing_speed * s_dist;
+    s_speed = max(s_speed, viewing_speed / 10.0);
+    e_speed = viewing_speed * e_dist;
+    e_speed = max(e_speed, viewing_speed / 10.0);
+    w_speed = viewing_speed * w_dist;
+    w_speed = max(w_speed, viewing_speed / 10.0);
+  } else
+  {
+    s_speed = walking_speed * s_dist;
+    e_speed = walking_speed * e_dist;
+    w_speed = walking_speed * w_dist;
+  }
 
   (*Shoulders[leg]).SetGoal(Shoulder_angle, s_speed, step_or_view);
   (*Elbows[leg]).SetGoal(Elbow_angle, e_speed, step_or_view);

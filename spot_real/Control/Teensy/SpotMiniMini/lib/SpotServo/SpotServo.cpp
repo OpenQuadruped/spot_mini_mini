@@ -66,43 +66,38 @@ double SpotServo::GetPoseEstimate()
 	return current_pose - offset;
 }
 
-void SpotServo::update_clk()
+void SpotServo::actuate()
 {
-	// Viewing Mode
-	if (step_or_view)
+	// Only update position if not within threshold
+	if(!GoalReached())
 	{
-		// Only perform update if loop rate is met
-		if(millis() - last_actuated > wait_time)
+		// returns 1.0 * sign of goal_pose - current_pose
+		double direction = 1.0;
+		if (goal_pose - current_pose < 0.0)
 		{
-			// Only update position if not within threshold
-			if(!GoalReached())
-			{
-				// returns 1.0 * sign of goal_pose - current_pose
-				double direction = 1.0;
-				if (goal_pose - current_pose < 0.0)
-				{
-					direction = -1.0;
-				}
-				current_pose += direction * (wait_time / 1000.0) * desired_speed;
-				int pwm = (current_pose) * conv_slope + conv_intcpt;
-				servo.writeMicroseconds(pwm);
-				last_actuated = millis();
-			} else
-			// if we are at small error thresh, actuate directly
-			{
-				int pwm = (goal_pose) * conv_slope + conv_intcpt;
-				current_pose = goal_pose;
-				servo.writeMicroseconds(pwm);
-				last_actuated = millis();
-			}
+			direction = -1.0;
 		}
-	// Stepping Mode
+		current_pose += direction * (wait_time / 1000.0) * desired_speed;
+		int pwm = (current_pose) * conv_slope + conv_intcpt;
+		servo.writeMicroseconds(pwm);
+		last_actuated = millis();
 	} else
+	// if we are at small error thresh, actuate directly
 	{
-		// Instant move
 		int pwm = (goal_pose) * conv_slope + conv_intcpt;
 		current_pose = goal_pose;
 		servo.writeMicroseconds(pwm);
+		last_actuated = millis();
+	}
+
+}
+
+void SpotServo::update_clk()
+{
+	// Only perform update if loop rate is met - or instantly if walking
+	if ((millis() - last_actuated > wait_time ) or !step_or_view)
+	{
+		actuate();
 	}
 
 }
