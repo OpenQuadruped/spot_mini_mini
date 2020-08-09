@@ -17,7 +17,7 @@ class GUI:
 
         self.xId = pb.addUserDebugParameter("x", -0.10, 0.10, 0.)
         self.yId = pb.addUserDebugParameter("y", -0.10, 0.10, 0.)
-        self.zId = pb.addUserDebugParameter("z", -0.10, 0.10, 0.)
+        self.zId = pb.addUserDebugParameter("z", -0.10, 0.15, 0.)
         self.rollId = pb.addUserDebugParameter("roll", -np.pi / 4, np.pi / 4,
                                                0.)
         self.pitchId = pb.addUserDebugParameter("pitch", -np.pi / 4, np.pi / 4,
