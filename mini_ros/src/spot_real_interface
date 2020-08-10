@@ -190,8 +190,8 @@ class SpotCommander():
         """ Turn joystick inputs into commands
         """
 
-        x_offset = -0.002
-        z_offset = 0.003
+        x_offset = -0.006
+        z_offset = 0.01
         # x_offset = 0.0
         # z_offset = 0.0
 
