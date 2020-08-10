@@ -65,7 +65,7 @@ class SpotCommander():
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
         # FIXED
-        self.BaseStepVelocity = 0.01
+        self.BaseStepVelocity = 0.001
         self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
         # Stock, use Bumpers to change
         self.BaseSwingPeriod = 0.2
