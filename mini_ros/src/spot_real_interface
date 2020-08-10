@@ -72,7 +72,7 @@ class SpotCommander():
         self.SwingPeriod = copy.deepcopy(self.BaseSwingPeriod)
         # Stock, use arrow pads to change
         self.BaseClearanceHeight = 0.04
-        self.BasePenetrationDepth = 0.005
+        self.BasePenetrationDepth = 0.003
         self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
         self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
 
@@ -190,8 +190,8 @@ class SpotCommander():
         """ Turn joystick inputs into commands
         """
 
-        x_offset = -0.00
-        z_offset = 0.00
+        x_offset = -0.002
+        z_offset = 0.003
         # x_offset = 0.0
         # z_offset = 0.0
 
