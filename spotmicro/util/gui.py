@@ -29,14 +29,14 @@ class GUI:
         self.LateralFractionId = pb.addUserDebugParameter(
             "Lateral Fraction", -np.pi / 2.0, np.pi / 2.0, 0.)
         self.StepVelocityId = pb.addUserDebugParameter("Step Velocity", 0.001,
-                                                       3., 0.1)
+                                                       3., 0.001)
         self.SwingPeriodId = pb.addUserDebugParameter("Swing Period", 0.1, 0.4,
                                                       0.2)
 
         self.ClearanceHeightId = pb.addUserDebugParameter(
             "Clearance Height", 0.0, 0.1, 0.045)
         self.PenetrationDepthId = pb.addUserDebugParameter(
-            "Penetration Depth", 0.0, 0.05, 0.005)
+            "Penetration Depth", 0.0, 0.05, 0.003)
 
         self.quadruped = quadruped
 
