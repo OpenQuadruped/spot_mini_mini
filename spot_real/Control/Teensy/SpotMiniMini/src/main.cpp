@@ -216,17 +216,17 @@ void setup() {
   BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -4.0, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
   //Elbows
   double elbow_liedown = 95.7;
-  FL_Elbow.Initialize(3, 135 + elbow_liedown, 135, -2.5, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
+  FL_Elbow.Initialize(3, 135 + elbow_liedown, 135, -1.0, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
   FR_Elbow.Initialize(6, 135 - elbow_liedown, 135, -10.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
-  BL_Elbow.Initialize(9, 135 + elbow_liedown, 135, 2.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
-  BR_Elbow.Initialize(12, 135 - elbow_liedown, 135, 6.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
+  BL_Elbow.Initialize(9, 135 + elbow_liedown, 135, 1.0, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
+  BR_Elbow.Initialize(12, 135 - elbow_liedown, 135, 8.0, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
 
   //Wrists
   double wrist_liedown = 156.8;
-  FL_Wrist.Initialize(4, 90 + wrist_liedown, 90, -6.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
-  FR_Wrist.Initialize(7, 180 - wrist_liedown, 180, 10.0, FR, Wrist); // 9 | 180 straight - 0 bent in
-  BL_Wrist.Initialize(10, 90 + wrist_liedown, 90, 3.0, BL, Wrist); // 10 | 90 straight - 270 bent in
-  BR_Wrist.Initialize(13, 180 - wrist_liedown, 180, 6.5, BR, Wrist); // 11 | 180 straight - 0 bent in
+  FL_Wrist.Initialize(4, 90 + wrist_liedown, 90, -3.5, FL, Wrist);  // 8 | 90 straight - 270 bent in
+  FR_Wrist.Initialize(7, 180 - wrist_liedown, 180, 7.5, FR, Wrist); // 9 | 180 straight - 0 bent in
+  BL_Wrist.Initialize(10, 90 + wrist_liedown, 90, 2.75, BL, Wrist); // 10 | 90 straight - 270 bent in
+  BR_Wrist.Initialize(13, 180 - wrist_liedown, 180, 8.5, BR, Wrist); // 11 | 180 straight - 0 bent in
 
   // pick one
   run_sequence();
