@@ -1,2 +1,2 @@
 int8 servo_num
-int8 servo_pulse
+int32 servo_pulse
