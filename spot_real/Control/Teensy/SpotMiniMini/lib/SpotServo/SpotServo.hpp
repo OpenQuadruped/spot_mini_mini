@@ -100,6 +100,9 @@ private:
 
     // False is step, True is view
     bool step_or_view = false;
+
+    // indicated servo mode
+    bool calibrating = false;
 };
     
 

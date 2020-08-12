@@ -186,7 +186,15 @@ void straight_calibration_sequence()
 {
 
   // Move to Extended stance
-  delay(10000);
+  // Contact Sensors
+  FL_sensor.Initialize(A9, 17);
+  FR_sensor.Initialize(A8, 16);
+  BL_sensor.Initialize(A7, 15);
+  BR_sensor.Initialize(A6, 14);
+
+  // IMU
+  imu_sensor.Initialize();
+
   set_stance();
 
 }
@@ -200,6 +208,15 @@ void lie_calibration_sequence()
   double elbow_stance =  90.0;
   double wrist_stance = -170.3;
   set_stance(shoulder_stance, elbow_stance, wrist_stance, shoulder_stance, elbow_stance, wrist_stance);
+
+  // Contact Sensors
+  FL_sensor.Initialize(A9, 17);
+  FR_sensor.Initialize(A8, 16);
+  BL_sensor.Initialize(A7, 15);
+  BR_sensor.Initialize(A6, 14);
+
+  // IMU
+  imu_sensor.Initialize();
 
 }
 
