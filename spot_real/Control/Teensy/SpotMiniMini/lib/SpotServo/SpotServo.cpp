@@ -27,6 +27,8 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 
 void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_, const bool & step_or_view_)
 {
+	// remove calibrating flag
+	calibrating = false;
 	// Update Move Type
 	step_or_view = step_or_view_;
 
@@ -99,10 +101,13 @@ void SpotServo::actuate()
 
 void SpotServo::update_clk()
 {
-	// Only perform update if loop rate is met - or instantly if walking
-	if ((millis() - last_actuated > wait_time ) or !step_or_view)
+	if (!calibrating)
 	{
-		actuate();
+		// Only perform update if loop rate is met - or instantly if walking
+		if ((millis() - last_actuated > wait_time ) or !step_or_view)
+		{
+			actuate();
+		}
 	}
 
 }
@@ -115,4 +120,5 @@ bool SpotServo::GoalReached()
 void SpotServo::writePulse(const int & pulse)
 {
 	servo.writeMicroseconds(pulse);
+	calibrating = true;
 }
