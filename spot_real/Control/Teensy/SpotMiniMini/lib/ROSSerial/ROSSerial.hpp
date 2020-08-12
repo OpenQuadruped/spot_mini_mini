@@ -85,9 +85,6 @@ namespace ros_srl
             step_or_view = ja_msg.step_or_view;
             // flag
             joints_cmd_active_ = true;
-
-            // disable joint pulse flag
-            joints_pulse_active_ = false;
         }
 
         void JointPulseCallback(const mini_ros::JointPulse& jp_msg)
