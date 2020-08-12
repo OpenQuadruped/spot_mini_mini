@@ -3,11 +3,16 @@
 using namespace std;
 
 // Spot Full Constructor
-void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_)
+void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_,
+						   const int & min_pwm_, const int & max_pwm_)
 {
+	// use defaults for servo attach
+	servo.attach(servo_pin, min_pwm, max_pwm);
+	// these are not really min and max, just used for interpolation
+	min_pwm = min_pwm_;
+	max_pwm = max_pwm_;
 	conv_slope = (max_pwm - min_pwm) / (control_range - 0.0);
 	conv_intcpt = max_pwm - conv_slope * control_range;
-	servo.attach(servo_pin, min_pwm, max_pwm);
 	offset = offset_;
 	home_angle = home_angle_;
 	leg_type = leg_type_;
@@ -15,7 +20,7 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 	stand_angle = stand_angle_;
 	goal_pose = stand_angle + offset;
 	current_pose = stand_angle + offset;
-	int pwm = (goal_pose) * conv_slope + conv_intcpt;
+	int pwm = round((goal_pose) * conv_slope + conv_intcpt);
 	servo.writeMicroseconds(pwm);
 	last_actuated = millis();
 }
@@ -78,13 +83,13 @@ void SpotServo::actuate()
 			direction = -1.0;
 		}
 		current_pose += direction * (wait_time / 1000.0) * desired_speed;
-		int pwm = (current_pose) * conv_slope + conv_intcpt;
+		int pwm = round((current_pose) * conv_slope + conv_intcpt);
 		servo.writeMicroseconds(pwm);
 		last_actuated = millis();
 	} else
 	// if we are at small error thresh, actuate directly
 	{
-		int pwm = (goal_pose) * conv_slope + conv_intcpt;
+		int pwm = round((goal_pose) * conv_slope + conv_intcpt);
 		current_pose = goal_pose;
 		servo.writeMicroseconds(pwm);
 		last_actuated = millis();
@@ -105,4 +110,9 @@ void SpotServo::update_clk()
 bool SpotServo::GoalReached()
 {
 	return (abs(current_pose - goal_pose) < error_threshold);
+}
+
+void SpotServo::writePulse(const int & pulse)
+{
+	servo.writeMicroseconds(pulse);
 }

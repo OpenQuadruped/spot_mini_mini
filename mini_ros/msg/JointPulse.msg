@@ -1,0 +1,2 @@
+int8 servo_num
+float32 servo_pulse

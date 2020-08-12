@@ -69,6 +69,7 @@ add_message_files(
   ContactData.msg
   BezierData.msg
   JointAngles.msg
+  JointPulse.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -8,7 +8,7 @@ SUBSCRIBERS:
 from __future__ import division
 import rospy
 from mini_ros.srv import CalibServo, CalibServoResponse
-from mini_ros.msg import JointAngles
+from mini_ros.msg import JointPulse
 import numpy as np
 
 import sys
@@ -28,7 +28,7 @@ class ServoCalibrator():
 
         self.serv = rospy.Service('servo_calibrator', CalibServo,
                                   self.calib_service_cb)
-        self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
+        self.jp_pub = rospy.Publisher('spot/pulse', JointPulse, queue_size=1)
 
     def calib_service_cb(self, req):
         """ Requests a servo to be moved to a certain position
@@ -37,32 +37,12 @@ class ServoCalibrator():
             Returns: response
         """
         try:
-            # 4 will indicate calibration request, 100 is servo speed
-            ja_msg = JointAngles()
+            jp_msg = JointPulse()
 
-            # Set all joints to -999, will do nothing.
-            # Set servo_num at desired angle in deg, will go to that angle
-            req.servo_num, req.servo_angle
-            joint_angles = np.ones(12) * -999
-            joint_angles[req.servo_num] = req.servo_angle
+            jp_msg.servo_num = req.servo_num
+            jp_msg.servo_pulse = req.servo_pulse
 
-            ja_msg.fls = joint_angles[0]
-            ja_msg.fle = joint_angles[1]
-            ja_msg.flw = joint_angles[2]
-
-            ja_msg.frs = joint_angles[3]
-            ja_msg.fre = joint_angles[4]
-            ja_msg.frw = joint_angles[5]
-
-            ja_msg.bls = joint_angles[6]
-            ja_msg.ble = joint_angles[7]
-            ja_msg.blw = joint_angles[8]
-
-            ja_msg.brs = joint_angles[9]
-            ja_msg.bre = joint_angles[10]
-            ja_msg.brw = joint_angles[11]
-
-            self.ja_pub.publish(ja_msg)
+            self.jp_pub.publish(jp_msg)
             response = "Servo Command Sent."
         except rospy.ROSInterruptException:
             response = "FAILED to send Servo Command"
@@ -72,7 +52,9 @@ class ServoCalibrator():
 def main():
     """ The main() function. """
     srv_calib = ServoCalibrator()
-    rospy.loginfo("Use The servo_calibrator service (Unit is Deg).")
+    rospy.loginfo(
+        "Use The servo_calibrator service (Pulse Width Unit is us (nominal ~500-2500))."
+    )
     while not rospy.is_shutdown():
         rospy.spin()
 

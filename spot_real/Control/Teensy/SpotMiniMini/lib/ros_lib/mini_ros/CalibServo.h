@@ -15,12 +15,12 @@ static const char CALIBSERVO[] = "mini_ros/CalibServo";
     public:
       typedef int8_t _servo_num_type;
       _servo_num_type servo_num;
-      typedef float _servo_angle_type;
-      _servo_angle_type servo_angle;
+      typedef float _servo_pulse_type;
+      _servo_pulse_type servo_pulse;
 
     CalibServoRequest():
       servo_num(0),
-      servo_angle(0)
+      servo_pulse(0)
     {
     }
 
@@ -37,13 +37,13 @@ static const char CALIBSERVO[] = "mini_ros/CalibServo";
       union {
         float real;
         uint32_t base;
-      } u_servo_angle;
-      u_servo_angle.real = this->servo_angle;
-      *(outbuffer + offset + 0) = (u_servo_angle.base >> (8 * 0)) & 0xFF;
-      *(outbuffer + offset + 1) = (u_servo_angle.base >> (8 * 1)) & 0xFF;
-      *(outbuffer + offset + 2) = (u_servo_angle.base >> (8 * 2)) & 0xFF;
-      *(outbuffer + offset + 3) = (u_servo_angle.base >> (8 * 3)) & 0xFF;
-      offset += sizeof(this->servo_angle);
+      } u_servo_pulse;
+      u_servo_pulse.real = this->servo_pulse;
+      *(outbuffer + offset + 0) = (u_servo_pulse.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_servo_pulse.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_servo_pulse.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_servo_pulse.base >> (8 * 3)) & 0xFF;
+      offset += sizeof(this->servo_pulse);
       return offset;
     }
 
@@ -61,19 +61,19 @@ static const char CALIBSERVO[] = "mini_ros/CalibServo";
       union {
         float real;
         uint32_t base;
-      } u_servo_angle;
-      u_servo_angle.base = 0;
-      u_servo_angle.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
-      u_servo_angle.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
-      u_servo_angle.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
-      u_servo_angle.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
-      this->servo_angle = u_servo_angle.real;
-      offset += sizeof(this->servo_angle);
+      } u_servo_pulse;
+      u_servo_pulse.base = 0;
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
+      this->servo_pulse = u_servo_pulse.real;
+      offset += sizeof(this->servo_pulse);
      return offset;
     }
 
     const char * getType(){ return CALIBSERVO; };
-    const char * getMD5(){ return "7aff9fa3a5043af717272f94b89deff9"; };
+    const char * getMD5(){ return "1574113cb18f1cd631371e1f06d15c02"; };
 
   };
 

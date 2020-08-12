@@ -9,6 +9,7 @@
 #include <mini_ros/ContactData.h>
 #include <mini_ros/IMUdata.h>
 #include <mini_ros/JointAngles.h>
+#include <mini_ros/JointPulse.h>
 #include <SpotServo.hpp>
 #include <IMU.hpp>
 
@@ -42,11 +43,16 @@ namespace ros_srl
 
         // Joint Angle Subscriber
         ros::Subscriber<mini_ros::JointAngles, ROSSerial> ja_sub_;
+        ros::Subscriber<mini_ros::JointPulse, ROSSerial> jp_sub_;
         // joint msg timer
         unsigned long prev_joints_time_;
         unsigned long prev_resetter_time_;
-        // joint msg flag
+        // joint cmd msg flag
         bool joints_cmd_active_ = false;
+        // joint pulse msg flag
+        bool joints_pulse_active_ = false;
+        int joint_num = -1;
+        int pulse = 1250;
         // move type
         // False is step, True is view
         bool step_or_view = false;
@@ -79,20 +85,35 @@ namespace ros_srl
             step_or_view = ja_msg.step_or_view;
             // flag
             joints_cmd_active_ = true;
+
+            // disable joint pulse flag
+            joints_pulse_active_ = false;
+        }
+
+        void JointPulseCallback(const mini_ros::JointPulse& jp_msg)
+        {
+            joint_num = jp_msg.servo_num;
+            pulse = jp_msg.servo_pulse;
+            // flag
+            joints_pulse_active_ = true;
+
+            // disable joint cmd flag
+            joints_cmd_active_ = false;
         }
 
         public:
             ROSSerial():
                 ja_sub_("spot/joints", &ROSSerial::JointCommandCallback, this),
+                jp_sub_("spot/pulse", &ROSSerial::JointPulseCallback, this),
                 imu_pub_("spot/imu", &imu_msg_),
-                contact_pub_("spot/contact", &contact_msg_),
-                joints_cmd_active_(false)
+                contact_pub_("spot/contact", &contact_msg_)
 
             {
                 nh_.initNode();
                 nh_.getHardware()->setBaud(500000);
 
                 nh_.subscribe(ja_sub_);
+                nh_.subscribe(jp_sub_);
 
                 nh_.advertise(imu_pub_);
                 nh_.advertise(contact_pub_);
@@ -112,6 +133,28 @@ namespace ros_srl
             bool jointsInputIsActive()
             {
                 return joints_cmd_active_;
+            }
+
+            bool jointsPulseIsActive()
+            {
+                return joints_pulse_active_;
+            }
+
+            int returnPulse()
+            {
+                return pulse;
+            }
+
+            int returnServoNum()
+            {
+                return joint_num;
+            }
+
+            void resetPulseTopic()
+            {
+                joints_pulse_active_ = false;
+                pulse = 1250;
+                joint_num = -1;
             }
 
             void run()
