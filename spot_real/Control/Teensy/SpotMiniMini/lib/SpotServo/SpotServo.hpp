@@ -86,7 +86,7 @@ private:
     // Servo's PWM range (usec)
     // NOTE: This is unique to your servos, VERY IMPORTANT
     int min_pwm = 500;
-    int max_pwm = 2400;
+    int max_pwm = 2500;
 
     // Interpolation to convert from deg to usec
     double conv_slope = 0.0;
