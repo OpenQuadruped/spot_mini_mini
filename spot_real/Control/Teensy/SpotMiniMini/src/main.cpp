@@ -210,23 +210,23 @@ void setup() {
   // SERVOS: Pin, StandAngle, HomeAngle, Offset, LegType, JointType
   // Shoulders
   double shoulder_liedown = 0.0;
-  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -12.5, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
-  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -10.0, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
+  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -13.5, FL, Shoulder);  // 0 | 135 mid - 0 out - 270 in
+  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -11.5, FR, Shoulder); // 1 | 135 mid - 270 out - 0 in
   BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, -1.5, BL, Shoulder);  // 2 | 135 mid - 0 out - 270 in
-  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -9.5, BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
+  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -10., BR, Shoulder);  // 3 | 135 mid - 270 out - 0 in
   //Elbows
   double elbow_liedown = 95.7;
-  FL_Elbow.Initialize(3, 135 + elbow_liedown, 135, -7.75, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
+  FL_Elbow.Initialize(3, 135 + elbow_liedown, 135, -9.75, FL, Elbow);  // 4 | 135  mid - 0 in front - 270 behind
   FR_Elbow.Initialize(6, 135 - elbow_liedown, 135, -15.0, FR, Elbow); // 5 | 135  mid - 0 in behind - 270 in front
   BL_Elbow.Initialize(9, 135 + elbow_liedown, 135, -5.75, BL, Elbow);  // 6 | 135  mid - 0 in front - 270 behind
-  BR_Elbow.Initialize(12, 135 - elbow_liedown, 135, -0.5, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
+  BR_Elbow.Initialize(12, 135 - elbow_liedown, 135, 1.5, BR, Elbow); // 7 | 135  mid - 0 in behind - 270 in front
 
   //Wrists
   double wrist_liedown = 156.8;
   FL_Wrist.Initialize(4, 90 + wrist_liedown, 90, -7.0, FL, Wrist);  // 8 | 90 straight - 270 bent in
   FR_Wrist.Initialize(7, 180 - wrist_liedown, 180, -2.0, FR, Wrist); // 9 | 180 straight - 0 bent in
   BL_Wrist.Initialize(10, 90 + wrist_liedown, 90, -1.5, BL, Wrist); // 10 | 90 straight - 270 bent in
-  BR_Wrist.Initialize(13, 180 - wrist_liedown, 180, -3.0, BR, Wrist); // 11 | 180 straight - 0 bent in
+  BR_Wrist.Initialize(13, 180 - wrist_liedown, 180, -3.5, BR, Wrist); // 11 | 180 straight - 0 bent in
 
   // pick one
   run_sequence();
