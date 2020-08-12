@@ -15,7 +15,7 @@ static const char CALIBSERVO[] = "mini_ros/CalibServo";
     public:
       typedef int8_t _servo_num_type;
       _servo_num_type servo_num;
-      typedef int8_t _servo_pulse_type;
+      typedef int32_t _servo_pulse_type;
       _servo_pulse_type servo_pulse;
 
     CalibServoRequest():
@@ -35,11 +35,14 @@ static const char CALIBSERVO[] = "mini_ros/CalibServo";
       *(outbuffer + offset + 0) = (u_servo_num.base >> (8 * 0)) & 0xFF;
       offset += sizeof(this->servo_num);
       union {
-        int8_t real;
-        uint8_t base;
+        int32_t real;
+        uint32_t base;
       } u_servo_pulse;
       u_servo_pulse.real = this->servo_pulse;
       *(outbuffer + offset + 0) = (u_servo_pulse.base >> (8 * 0)) & 0xFF;
+      *(outbuffer + offset + 1) = (u_servo_pulse.base >> (8 * 1)) & 0xFF;
+      *(outbuffer + offset + 2) = (u_servo_pulse.base >> (8 * 2)) & 0xFF;
+      *(outbuffer + offset + 3) = (u_servo_pulse.base >> (8 * 3)) & 0xFF;
       offset += sizeof(this->servo_pulse);
       return offset;
     }
@@ -56,18 +59,21 @@ static const char CALIBSERVO[] = "mini_ros/CalibServo";
       this->servo_num = u_servo_num.real;
       offset += sizeof(this->servo_num);
       union {
-        int8_t real;
-        uint8_t base;
+        int32_t real;
+        uint32_t base;
       } u_servo_pulse;
       u_servo_pulse.base = 0;
-      u_servo_pulse.base |= ((uint8_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 0))) << (8 * 0);
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 1))) << (8 * 1);
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 2))) << (8 * 2);
+      u_servo_pulse.base |= ((uint32_t) (*(inbuffer + offset + 3))) << (8 * 3);
       this->servo_pulse = u_servo_pulse.real;
       offset += sizeof(this->servo_pulse);
      return offset;
     }
 
     const char * getType(){ return CALIBSERVO; };
-    const char * getMD5(){ return "42dfa34047444088cca83fbace0272c8"; };
+    const char * getMD5(){ return "372c64510294fc8eec78b728b048d2c9"; };
 
   };
 
