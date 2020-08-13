@@ -40,14 +40,7 @@ void SpotServo::SetGoal(const double & goal_pose_, const double & desired_speed_
 		// Add Offset
 		goal_pose += offset;
 		
-		// cpp would be std::clamp() with include cmath
-		if (goal_pose < 0.0)
-		{
-			goal_pose = 0.0;
-		} else if (goal_pose > control_range)
-		{
-			goal_pose = control_range;
-		}
+		// TODO: ADD JOINT LIM 
 
 		desired_speed = desired_speed_;
 	}
