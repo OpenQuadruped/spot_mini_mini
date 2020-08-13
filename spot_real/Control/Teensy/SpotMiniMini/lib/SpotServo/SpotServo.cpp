@@ -4,15 +4,15 @@ using namespace std;
 
 // Spot Full Constructor
 void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_,
-						   const int & min_pwm_, const int & max_pwm_)
+						   const int & min_pwm_, const int & max_pwm_, const double & ang_min_pwm, const double & ang_max_pwm)
 {
 	// use defaults for servo attach
 	servo.attach(servo_pin, min_pwm, max_pwm);
 	// these are not really min and max, just used for interpolation
 	min_pwm = min_pwm_;
 	max_pwm = max_pwm_;
-	conv_slope = (max_pwm - min_pwm) / (control_range - 0.0);
-	conv_intcpt = max_pwm - conv_slope * control_range;
+	conv_slope = (max_pwm - min_pwm) / (ang_max_pwm - ang_min_pwm);
+	conv_intcpt = max_pwm - conv_slope * ang_max_pwm;
 	offset = offset_;
 	home_angle = home_angle_;
 	leg_type = leg_type_;

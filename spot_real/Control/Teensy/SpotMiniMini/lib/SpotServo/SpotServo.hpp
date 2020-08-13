@@ -24,7 +24,7 @@ public:
     /// \param leg_type_: Front Left, Front Right, Back Left, or Back Right leg (see enum)
     /// \param joint_type_: Shoulder, Elbow or Wrist (see enum)
     void Initialize(const int & servo_pin, const double & stand_angle_, const double & home_angle_, const double & offset_, const LegType & leg_type_, const JointType & joint_type_,
-                    const int & min_pwm_ = 500, const int & max_pwm_ = 2500);
+                    const int & min_pwm_ = 500, const int & max_pwm_ = 2500, const double & ang_min_pwm = 0.0, const double & ang_max_pwm = 270.0);
 
     /// \brief Commands a motor to move to a certain goal instantly when stepping, and slowly when viewing
     /// \param goal_pose_: the desired motor position in degrees
