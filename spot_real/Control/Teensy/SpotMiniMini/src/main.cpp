@@ -251,9 +251,9 @@ void setup() {
   // SERVOS: Pin, StandAngle, HomeAngle, Offset, LegType, JointType, min_pwm, max_pwm, min_pwm_angle, max_pwm_angle
   // Shoulders
   double shoulder_liedown = 0.0;
-  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -7.0, FL, Shoulder, 500, 2400);  // 0 | 135 mid - 0 out - 270 in
-  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -5.25, FR, Shoulder, 500, 2400); // 1 | 135 mid - 270 out - 0 in
-  BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, 6.25, BL, Shoulder, 500, 2400);  // 2 | 135 mid - 0 out - 270 in
+  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -7.25, FL, Shoulder, 500, 2400);  // 0 | 135 mid - 0 out - 270 in
+  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -5.5, FR, Shoulder, 500, 2400); // 1 | 135 mid - 270 out - 0 in
+  BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, 6.0, BL, Shoulder, 500, 2400);  // 2 | 135 mid - 0 out - 270 in
   BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -4.0, BR, Shoulder, 500, 2400);  // 3 | 135 mid - 270 out - 0 in
   
   //Elbows
@@ -264,8 +264,8 @@ void setup() {
   BR_Elbow.Initialize(12, elbow_liedown, 0, 0.0, BR, Elbow, 1505, 850, 0.0, 90.0); // 7 | 135  mid - 0 in behind - 270 in front
 
   //Wrists
-  double wrist_liedown = -170.0;
-  FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1120, 1765, 0.0, -90.0);  // 8 | 90 straight - 270 bent in
+  double wrist_liedown = -160.0;
+  FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1120, 1767, 0.0, -90.0);  // 8 | 90 straight - 270 bent in
   FR_Wrist.Initialize(7, wrist_liedown, 0, 0.0, FR, Wrist, 1815, 1155, 0.0, -90.0); // 9 | 180 straight - 0 bent in
   BL_Wrist.Initialize(10, wrist_liedown, 0, 0.0, BL, Wrist, 1145, 1800, 0.0, -90.0); // 10 | 90 straight - 270 bent in
   BR_Wrist.Initialize(13, wrist_liedown, 0, 0.0, BR, Wrist, 1813, 1158, 0.0, -90.0); // 11 | 180 straight - 0 bent in

@@ -11,7 +11,7 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 	// these are not really min and max, just used for interpolation
 	min_pwm = min_pwm_;
 	max_pwm = max_pwm_;
-	conv_slope = (max_pwm - min_pwm) / (ang_max_pwm - ang_min_pwm);
+	conv_slope = (double)(max_pwm - min_pwm) / (ang_max_pwm - ang_min_pwm);
 	conv_intcpt = max_pwm - conv_slope * ang_max_pwm;
 	offset = offset_;
 	home_angle = home_angle_;
