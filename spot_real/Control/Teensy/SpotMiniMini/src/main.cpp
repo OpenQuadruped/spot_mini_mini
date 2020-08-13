@@ -251,8 +251,8 @@ void setup() {
   // SERVOS: Pin, StandAngle, HomeAngle, Offset, LegType, JointType, min_pwm, max_pwm, min_pwm_angle, max_pwm_angle
   // Shoulders
   double shoulder_liedown = 0.0;
-  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -6.5, FL, Shoulder, 500, 2400);  // 0 | 135 mid - 0 out - 270 in
-  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -5.0, FR, Shoulder, 500, 2400); // 1 | 135 mid - 270 out - 0 in
+  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -7.0, FL, Shoulder, 500, 2400);  // 0 | 135 mid - 0 out - 270 in
+  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -4.75, FR, Shoulder, 500, 2400); // 1 | 135 mid - 270 out - 0 in
   BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, 6.5, BL, Shoulder, 500, 2400);  // 2 | 135 mid - 0 out - 270 in
   BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -4.0, BR, Shoulder, 500, 2400);  // 3 | 135 mid - 270 out - 0 in
   

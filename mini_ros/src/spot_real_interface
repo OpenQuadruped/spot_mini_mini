@@ -27,7 +27,7 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 # Controller Params
 STEPLENGTH_SCALE = 0.05
 Z_SCALE_CTRL = 0.15
-RPY_SCALE = 0.6
+RPY_SCALE = 0.785
 SV_SCALE = 0.05
 CHPD_SCALE = 0.0005
 YAW_SCALE = 1.25
