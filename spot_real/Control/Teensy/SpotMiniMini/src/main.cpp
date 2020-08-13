@@ -12,7 +12,7 @@
 
 #define DEBUGSERIAL Serial
 
-// IMPORTANT - CALIBRATION VS RUN PARAMS
+// NOTE: IMPORTANT - CALIBRATION VS RUN PARAMS
 /* Instructions:
         - When assembling your servos, use NOMINAL_PWM mode, and be sure to enter the
           appropriate degree and pwm range too.
@@ -23,7 +23,7 @@
         - RUN is used when you are finished calibrating, and are ready to run normal operations.
 */
 enum MODE {NOMINAL_PWM, STRAIGHT_LEGS, LIEDOWN, PERPENDICULAR_LEGS, RUN};
-MODE spot_mode = STRAIGHT_LEGS;
+MODE spot_mode = RUN;
 
 bool ESTOPPED = false;
 int viewing_speed = 400; // doesn't really mean anything, theoretically deg/sec
@@ -97,8 +97,8 @@ void command_servos(const LegJoints & legjoint, const bool & step_or_view = true
   double wrist_home = (*Wrists[leg]).return_home();
 
   double Shoulder_angle = util.angleConversion(legjoint.shoulder, shoulder_home, legjoint.legtype, Shoulder);
-  double Elbow_angle = util.angleConversion(legjoint.elbow, elbow_home, legjoint.legtype, Elbow);
-  double Wrist_angle = util.angleConversion(legjoint.wrist, wrist_home, legjoint.legtype, Wrist);
+  double Elbow_angle = legjoint.elbow;
+  double Wrist_angle = legjoint.wrist;
 
   double s_dist = abs(Shoulder_angle - (*Shoulders[leg]).GetPoseEstimate());
   double e_dist = abs(Elbow_angle - (*Elbows[leg]).GetPoseEstimate());
@@ -251,10 +251,10 @@ void setup() {
   // SERVOS: Pin, StandAngle, HomeAngle, Offset, LegType, JointType, min_pwm, max_pwm, min_pwm_angle, max_pwm_angle
   // Shoulders
   double shoulder_liedown = 0.0;
-  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -10.0, FL, Shoulder, 500, 2500);  // 0 | 135 mid - 0 out - 270 in
-  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -6.0, FR, Shoulder, 500, 2500); // 1 | 135 mid - 270 out - 0 in
-  BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, 0.0, BL, Shoulder, 500, 2500);  // 2 | 135 mid - 0 out - 270 in
-  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -6.0, BR, Shoulder, 500, 2500);  // 3 | 135 mid - 270 out - 0 in
+  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -6.5, FL, Shoulder, 500, 2400);  // 0 | 135 mid - 0 out - 270 in
+  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -5.0, FR, Shoulder, 500, 2400); // 1 | 135 mid - 270 out - 0 in
+  BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, 6.5, BL, Shoulder, 500, 2400);  // 2 | 135 mid - 0 out - 270 in
+  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -4.0, BR, Shoulder, 500, 2400);  // 3 | 135 mid - 270 out - 0 in
   
   //Elbows
   double elbow_liedown = 90.0;
