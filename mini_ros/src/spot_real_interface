@@ -26,7 +26,7 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
 # Controller Params
 STEPLENGTH_SCALE = 0.05
-Z_SCALE_CTRL = 0.15
+Z_SCALE_CTRL = 0.17
 RPY_SCALE = 0.785
 SV_SCALE = 0.05
 CHPD_SCALE = 0.0005
@@ -85,7 +85,7 @@ class SpotCommander():
         # IMU: R, P, Ax, Ay, Az, Gx, Gy, Gz
         self.imu = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        self.spot = SpotModel()
+        self.spot = SpotModel(foot_y=0.17)
 
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
