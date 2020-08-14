@@ -9,19 +9,23 @@ from collections import OrderedDict
 class SpotModel:
     def __init__(self,
                  shoulder_length=0.055,
-                 elbow_length=0.109868,
-                 wrist_length=0.125,
+                 elbow_length=0.10652,
+                 wrist_length=0.145,
                  hip_x=0.23,
                  hip_y=0.075,
                  foot_x=0.23,
                  foot_y=0.185,
                  height=0.185,
+                 com_offset=0.018,
                  shoulder_lim=[-0.548, 0.548],
                  elbow_lim=[-2.17, 0.97],
                  wrist_lim=[-0.1, 2.59]):
         """
         Spot Micro Kinematics
         """
+        # COM offset in x direction
+        self.com_offset = com_offset
+
         # Leg Parameters
         self.shoulder_length = shoulder_length
         self.elbow_length = elbow_length
@@ -177,6 +181,9 @@ class SpotModel:
 
         # Following steps in attached document: SpotBodyIK.
         # TODO: LINK DOC
+
+        # Modify x by com offset
+        pos[0] += self.com_offset
 
         # 4 legs, 3 joints per leg
         joint_angles = np.zeros((4, 3))
