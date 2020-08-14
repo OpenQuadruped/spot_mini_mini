@@ -85,7 +85,7 @@ class SpotCommander():
         # IMU: R, P, Ax, Ay, Az, Gx, Gy, Gz
         self.imu = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        self.spot = SpotModel()
+        self.spot = SpotModel(height=0.2)
 
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
