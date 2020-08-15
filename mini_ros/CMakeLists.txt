@@ -67,7 +67,7 @@ add_message_files(
   JoyButtons.msg
   IMUdata.msg
   ContactData.msg
-  BezierData.msg
+  AgentData.msg
   JointAngles.msg
   JointPulse.msg
 )
