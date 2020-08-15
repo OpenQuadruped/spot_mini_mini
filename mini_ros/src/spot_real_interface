@@ -79,6 +79,8 @@ class SpotCommander():
         # Time
         self.time = rospy.get_time()
 
+        self.enable_contact = contacts
+
         # Contacts: FL, FR, BL, BR
         self.contacts = [0, 0, 0, 0]
 
@@ -259,14 +261,15 @@ class SpotCommander():
         # OPTIONAL: Agent
         if self.Agent:
             phases = copy.deepcopy(self.bzg.Phases)
-            # Total 16
+            # Total 12
             state = []
             # r, p, gz, gy, gz, ax, ay, az (8)
             state.extend(self.imu)
             # FL, FR, BL, BR (4)
             state.extend(phases)
             # FL, FR, BL, BR (4)
-            state.extend(self.contacts)
+            if self.enable_contact:
+                state.extend(self.contacts)
             self.normalizer.observe(state)
             # Don't normalize contacts
             state[:-4] = self.normalizer.normalize(state)[:-4]
