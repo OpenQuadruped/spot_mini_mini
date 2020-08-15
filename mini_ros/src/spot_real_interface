@@ -119,9 +119,11 @@ class SpotCommander():
         my_path = os.path.abspath(os.path.dirname(__file__))
         print("MY PATH: {}".format(my_path))
         if contacts:
-            models_path = os.path.join(my_path, "../models/contact")
+            models_path = os.path.join(my_path,
+                                       "../../spot_bullet/models/contact")
         else:
-            models_path = os.path.join(my_path, "../models/no_contact")
+            models_path = os.path.join(my_path,
+                                       "../../spot_bullet/models/no_contact")
         file_name = "spot_ars_"
         if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                           "_policy"):
@@ -226,7 +228,8 @@ class SpotCommander():
                 YawRate = 0.0
                 # RESET
                 self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
-                self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
+                self.PenetrationDepth = copy.deepcopy(
+                    self.BasePenetrationDepth)
                 self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
                 # x offset
                 pos = np.array(
