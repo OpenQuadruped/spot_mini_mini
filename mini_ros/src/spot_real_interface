@@ -45,7 +45,7 @@ actions_to_filter = 2
 
 
 class SpotCommander():
-    def __init__(self, Agent=False, contacts=False):
+    def __init__(self, Agent=True, contacts=False):
 
         rospy.init_node('Policies', anonymous=True)
         # self.movetypes = [
@@ -71,7 +71,7 @@ class SpotCommander():
         self.BaseSwingPeriod = 0.2
         self.SwingPeriod = copy.deepcopy(self.BaseSwingPeriod)
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.03
+        self.BaseClearanceHeight = 0.035
         self.BasePenetrationDepth = 0.003
         self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
         self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
@@ -106,9 +106,9 @@ class SpotCommander():
         self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
         print("READY TO GO!")
 
-    def load_spot(self, contacts):
-        self.policy = Policy(state_dim=16, action_dim=15)
-        self.normalizer = Normalizer(state_dim=16)
+    def load_spot(self, contacts, state_dim=12, action_dim=14, agent_num=109):
+        self.policy = Policy(state_dim=state_dim, action_dim=action_dim)
+        self.normalizer = Normalizer(state_dim=state_dim)
         env = spotBezierEnv(render=False,
                             on_rack=False,
                             height_field=False,
@@ -119,7 +119,6 @@ class SpotCommander():
             models_path = os.path.join(my_path, "../models/contact")
         else:
             models_path = os.path.join(my_path, "../models/no_contact")
-        agent_num = 149
         file_name = "spot_ars_"
         if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                           "_policy"):
@@ -128,7 +127,7 @@ class SpotCommander():
             agent.policy.episode_steps = np.inf
             self.policy = agent.policy
 
-        self.action = np.zeros(15)
+        self.action = np.zeros(action_dim)
         self.old_act = self.action[:actions_to_filter]
 
     def imu_cb(self, imu):
