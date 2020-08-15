@@ -265,7 +265,7 @@ void setup() {
 
   //Wrists
   double wrist_liedown = -160.0;
-  FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1755, 2345, -90.0, -166.0);  // 8 | 90 straight - 270 bent in
+  FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1755, 2320, -90.0, -166.0);  // 8 | 90 straight - 270 bent in
   FR_Wrist.Initialize(7, wrist_liedown, 0, 0.0, FR, Wrist, 1810, 1160, 0.0, -90.0); // 9 | 180 straight - 0 bent in
   BL_Wrist.Initialize(10, wrist_liedown, 0, 0.0, BL, Wrist, 1145, 1800, 0.0, -90.0); // 10 | 90 straight - 270 bent in
   BR_Wrist.Initialize(13, wrist_liedown, 0, 0.0, BR, Wrist, 1810, 1153, 0.0, -90.0); // 11 | 180 straight - 0 bent in
