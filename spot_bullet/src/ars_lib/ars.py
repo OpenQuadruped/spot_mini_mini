@@ -24,8 +24,8 @@ _EXPLORE_TG = 4
 # Params for TG
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
-RESIDUALS_SCALE = 0.03
-Z_SCALE = 0.05
+RESIDUALS_SCALE = 0.06
+Z_SCALE = 0.1
 
 # Filter actions
 alpha = 0.7
