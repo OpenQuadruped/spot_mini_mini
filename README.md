@@ -9,7 +9,9 @@
 
 <!-- ![SIK](spot_bullet/media/spot-mini-mini.gif) -->
 
-![Hello](spot_real/media/spot_hello.gif)
+<p float="left">
+  <img src="spot_real/media/spot_hello.gif" width="670" />
+</p>
 
 **Featured in [Robotics Weekly](https://weeklyrobotics.com/weekly-robotics-98) and [Mithi's Robotics Coursework](https://github.com/mithi/robotics-coursework/#hands-on-and-blogs)!**
 
@@ -26,7 +28,10 @@ You'll notice that there are gifs of the original `SpotMicro` as well a new vers
 
 If you don't need a Gym environment, that's okay too! `env_tester.py` works without RL or Gym, it is designed to accept any gait implementation, and provides a GUI for testing it out! In my case, I've implemented a 12-point Bezier gait.
 
-![DEMO](spot_real/media/spot_demo.gif)
+
+<p float="left">
+  <img src="spot_real/media/spot_demo.gif" width="670" />
+</p>
 
 **Read the [docs](https://spot-mini-mini.readthedocs.io/en/latest/index.html)!**
 
