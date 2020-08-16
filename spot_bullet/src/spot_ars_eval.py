@@ -24,7 +24,11 @@ parser.add_argument("-hf",
                     "--HeightField",
                     help="Use HeightField",
                     action='store_true')
-parser.add_argument("-r",
+parser.add_argument("-dr",
+                    "--DontRender",
+                    help="Don't Render environment",
+                    action='store_true')
+parser.add_argument("-ren",
                     "--DebugRack",
                     help="Put Spot on an Elevated Rack",
                     action='store_true')
@@ -77,6 +81,11 @@ def main():
     else:
         contacts = True
 
+    if ARGS.DontRender:
+        render = False
+    else:
+        render = True
+
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
     results_path = os.path.join(my_path, "../results")
@@ -91,7 +100,7 @@ def main():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    env = spotBezierEnv(render=True,
+    env = spotBezierEnv(render=render,
                         on_rack=on_rack,
                         height_field=height_field,
                         draw_foot_path=draw_foot_path,
