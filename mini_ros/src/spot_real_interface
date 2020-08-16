@@ -99,11 +99,22 @@ class SpotCommander():
         if self.Agent:
             self.load_spot(contacts)
         # cmd_cb from mini_cmd topic
-        self.sub_cmd = rospy.Subscriber('mini_cmd', MiniCmd, self.cmd_cb)
-        self.sub_jb = rospy.Subscriber('joybuttons', JoyButtons, self.jb_cb)
-        self.sub_imu = rospy.Subscriber('spot/imu', IMUdata, self.imu_cb)
-        self.sub_cnt = rospy.Subscriber('spot/contact', ContactData,
-                                        self.cnt_cb)
+        self.sub_cmd = rospy.Subscriber('mini_cmd',
+                                        MiniCmd,
+                                        self.cmd_cb,
+                                        queue_size=1)
+        self.sub_jb = rospy.Subscriber('joybuttons',
+                                       JoyButtons,
+                                       self.jb_cb,
+                                       queue_size=1)
+        self.sub_imu = rospy.Subscriber('spot/imu',
+                                        IMUdata,
+                                        self.imu_cb,
+                                        queue_size=1)
+        self.sub_cnt = rospy.Subscriber('spot/contact',
+                                        ContactData,
+                                        self.cnt_cb,
+                                        queue_size=1)
         self.ag_pub = rospy.Publisher('spot/agent', AgentData, queue_size=1)
         self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
         print("READY TO GO!")
