@@ -4,14 +4,12 @@
 [![Documentation Status](https://readthedocs.org/projects/spot-mini-mini/badge/?version=latest)](https://spot-mini-mini.readthedocs.io/en/latest/?badge=latest)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/moribots/spot_mini_mini/graphs/commit-activity)
 [![PR](https://camo.githubusercontent.com/f96261621753dacf526590825b84f87ccb1db0e6/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5052732d77656c636f6d652d627269676874677265656e2e7376673f7374796c653d666c6174)](https://github.com/moribots/spot_mini_mini/pulls)
-[![Open Source Love png2](https://badges.frapsoft.com/os/v2/open-source.png?v=103)](https://github.com/moribots)
+[![Open Source Love png2](https://camo.githubusercontent.com/60dcf2177b53824e7912a6adfb3ff5e318d14ae4/68747470733a2f2f6261646765732e66726170736f66742e636f6d2f6f732f76312f6f70656e2d736f757263652e706e673f763d313033)](https://github.com/moribots)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/moribots/spot_mini_mini/blob/spot/LICENSE)
 
 <!-- ![SIK](spot_bullet/media/spot-mini-mini.gif) -->
-<p float="left">
-  <img src="spot_bullet/media/spot_new_demo.gif" width="335" />
-  <img src="spot_real/media/full_control.gif" width="335" />
-</p>
+
+![Hello](spot_real/media/spot_hello.gif)
 
 **Featured in [Robotics Weekly](https://weeklyrobotics.com/weekly-robotics-98) and [Mithi's Robotics Coursework](https://github.com/mithi/robotics-coursework/#hands-on-and-blogs)!**
 
@@ -22,6 +20,11 @@ As part of the [Spot Micro](https://spotmicroai.readthedocs.io/en/latest/) commu
 You'll notice that there are gifs of the original `SpotMicro` as well a new version designed for added real world fidelity. The default branch simulates the new version, but you can work with `SpotMicro` in the [spotmicroai](https://github.com/moribots/spot_mini_mini/tree/spotmicroai) branch of this repo. The new version also has a more reliable URDF, with more accurate inertial calculations.
 
 If you don't need a Gym environment, that's okay too! `env_tester.py` works without RL or Gym, it is designed to accept any gait implementation, and provides a GUI for testing it out! In my case, I've implemented a 12-point Bezier gait.
+
+<p float="left">
+  <img src="spot_bullet/media/spot_new_demo.gif" width="335" />
+  <img src="spot_real/media/full_control.gif" width="335" />
+</p>
 
 ![DEMO](spot_real/media/spot_demo.gif)
 
