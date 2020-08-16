@@ -128,13 +128,14 @@ class SpotCommander():
                             draw_foot_path=False)
         agent = ARSAgent(self.normalizer, self.policy, env)
         my_path = os.path.abspath(os.path.dirname(__file__))
-        print("MY PATH: {}".format(my_path))
         if contacts:
             models_path = os.path.join(my_path,
                                        "../../spot_bullet/models/contact")
         else:
             models_path = os.path.join(my_path,
                                        "../../spot_bullet/models/no_contact")
+
+        print("MODEL PATH: {}".format(my_path))
         file_name = "spot_ars_"
         if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                           "_policy"):
