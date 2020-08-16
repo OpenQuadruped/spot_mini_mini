@@ -155,8 +155,10 @@ class SpotCommander():
         try:
             # Update imu
             self.imu = [
-                imu.roll, imu.pitch, imu.gyro_x, imu.gyro_y, imu.gyro_z,
-                imu.acc_x, imu.acc_y, imu.acc_z
+                imu.roll, imu.pitch,
+                np.radians(imu.gyro_x),
+                np.radians(imu.gyro_y),
+                np.radians(imu.gyro_z), imu.acc_x, imu.acc_y, imu.acc_z - 9.81
             ]
             # log input data as debug-level message
             rospy.logdebug(imu)
