@@ -655,7 +655,7 @@ class ARSAgent():
         :param filename: the name of the file where the policy is saved
         """
         with open(filename + '_policy', 'wb') as filehandle:
-            pickle.dump(self.policy, filehandle)
+            pickle.dump(self.policy.theta, filehandle)
 
     def load(self, filename):
         """ Load the Policy
@@ -663,4 +663,4 @@ class ARSAgent():
         :param filename: the name of the file where the policy is saved
         """
         with open(filename + '_policy', 'rb') as filehandle:
-            self.policy = pickle.load(filehandle)
+            self.policy.theta = pickle.load(filehandle)
