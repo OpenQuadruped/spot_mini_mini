@@ -122,7 +122,7 @@ class SpotCommander():
         self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
         print("READY TO GO!")
 
-    def load_spot(self, contacts, state_dim=9, action_dim=14, agent_num=109):
+    def load_spot(self, contacts, state_dim=9, action_dim=14, agent_num=0):
         self.policy = Policy(state_dim=state_dim, action_dim=action_dim)
         self.normalizer = Normalizer(state_dim=state_dim)
         env = spotBezierEnv(render=False,
