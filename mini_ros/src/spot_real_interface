@@ -52,6 +52,7 @@ class SpotCommander():
         #     "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
         # ]
         self.Agent = Agent
+        self.agent_num = rospy.get_param("~agent_num")
         self.movetypes = ["Stop"]
         self.mini_cmd = MiniCmd()
         self.jb = JoyButtons()
@@ -99,7 +100,7 @@ class SpotCommander():
         self.bzg = BezierGait(dt=self.dt, Tswing=0.2)
 
         if self.Agent:
-            self.load_spot(contacts)
+            self.load_spot(contacts, agent_num=self.agent_num)
         # cmd_cb from mini_cmd topic
         self.sub_cmd = rospy.Subscriber('mini_cmd',
                                         MiniCmd,

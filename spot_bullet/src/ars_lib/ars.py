@@ -187,15 +187,16 @@ def ParallelWorker(childPipe, env, nb_states):
                 action[2:] *= RESIDUALS_SCALE
 
                 # Add DELTA to XYZ Foot Poses
-                T_bf["FL"][:3, 3] += action[2:5]
-                T_bf["FR"][:3, 3] += action[5:8]
-                T_bf["BL"][:3, 3] += action[8:11]
-                T_bf["BR"][:3, 3] += action[11:14]
+                T_bf_copy = copy.deepcopy(T_bf)
+                T_bf_copy["FL"][:3, 3] += action[2:5]
+                T_bf_copy["FR"][:3, 3] += action[5:8]
+                T_bf_copy["BL"][:3, 3] += action[8:11]
+                T_bf_copy["BR"][:3, 3] += action[11:14]
 
                 # Adjust Body Height with action!
                 pos[2] += action[1] * Z_SCALE
 
-                joint_angles = spot.IK(orn, pos, T_bf)
+                joint_angles = spot.IK(orn, pos, T_bf_copy)
                 # Pass Joint Angles
                 env.pass_joint_angles(joint_angles.reshape(-1))
                 # Perform action
@@ -493,16 +494,17 @@ class ARSAgent():
             action[2:] *= RESIDUALS_SCALE
 
             # Add DELTA to XYZ Foot Poses
-            T_bf["FL"][:3, 3] += action[2:5]
-            T_bf["FR"][:3, 3] += action[5:8]
-            T_bf["BL"][:3, 3] += action[8:11]
-            T_bf["BR"][:3, 3] += action[11:14]
+            T_bf_copy = copy.deepcopy(T_bf)
+            T_bf_copy["FL"][:3, 3] += action[2:5]
+            T_bf_copy["FR"][:3, 3] += action[5:8]
+            T_bf_copy["BL"][:3, 3] += action[8:11]
+            T_bf_copy["BR"][:3, 3] += action[11:14]
 
             # Adjust Height!
             pos[2] += action[1] * Z_SCALE
             heightmod.append(action[1] * Z_SCALE)
 
-            joint_angles = self.spot.IK(orn, pos, T_bf)
+            joint_angles = self.spot.IK(orn, pos, T_bf_copy)
             # Pass Joint Angles
             self.env.pass_joint_angles(joint_angles.reshape(-1))
 

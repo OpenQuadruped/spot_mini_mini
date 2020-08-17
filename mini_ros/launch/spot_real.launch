@@ -25,6 +25,9 @@
 </node>
 
 <!-- Policy Node -->
+<arg name="agent_num" default="0" doc="Agent Number for ARS (GMBC) Policy. Default (0) Loads no Agent. Policy numbers start at 9 and increase by 10. E.G: 9...19...29..."/> 
+<param name="agent_num" value="$(eval arg('agent_num'))" />
+<!-- the above is equivalent to $(eval agent_num) but I left it in to acknowledge that both options exist -->
 <node name="spot_real" pkg="mini_ros" type="spot_real_interface" output="screen"/>
 
 <!-- Sensor Interface Node -->
