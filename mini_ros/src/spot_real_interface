@@ -36,7 +36,7 @@ YAW_SCALE = 1.25
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
 RESIDUALS_SCALE = 0.06
-Z_SCALE = 0.1
+Z_SCALE = 0.05
 # Filter actions
 alpha = 0.7
 # Added this to avoid filtering residuals
@@ -121,7 +121,7 @@ class SpotCommander():
         self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
         print("READY TO GO!")
 
-    def load_spot(self, contacts, state_dim=12, action_dim=14, agent_num=109):
+    def load_spot(self, contacts, state_dim=9, action_dim=14, agent_num=109):
         self.policy = Policy(state_dim=state_dim, action_dim=action_dim)
         self.normalizer = Normalizer(state_dim=state_dim)
         env = spotBezierEnv(render=False,
@@ -160,7 +160,7 @@ class SpotCommander():
                 imu.roll, imu.pitch,
                 np.radians(imu.gyro_x),
                 np.radians(imu.gyro_y),
-                np.radians(imu.gyro_z), imu.acc_x, imu.acc_y, imu.acc_z - 9.81
+                np.radians(imu.gyro_z)
             ]
             # log input data as debug-level message
             rospy.logdebug(imu)
