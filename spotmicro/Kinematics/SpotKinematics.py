@@ -188,7 +188,7 @@ class SpotModel:
         # 4 legs, 3 joints per leg
         joint_angles = np.zeros((4, 3))
 
-        print("T_bf: {}".format(T_bf))
+        # print("T_bf: {}".format(T_bf))
 
         # Steps 1 and 2 of pipeline here
         HipToFoot = self.HipToFoot(orn, pos, T_bf)
@@ -201,6 +201,6 @@ class SpotModel:
             # Step 3, compute joint angles from T_hf for each leg
             joint_angles[i, :] = self.Legs[key].solve(p_hf)
 
-        print("-----------------------------")
+        # print("-----------------------------")
 
         return joint_angles
