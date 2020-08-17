@@ -41,7 +41,7 @@ class BezierStepper():
         self.StepVelocity = StepVelocity
         self.StepVelocity_LIMITS = [0.1, 1.5]
         self.ClearanceHeight = ClearanceHeight
-        self.ClearanceHeight_LIMITS = [0.0, 0.05]
+        self.ClearanceHeight_LIMITS = [0.0, 0.04]
         self.PenetrationDepth = PenetrationDepth
         self.PenetrationDepth_LIMITS = [0.0, 0.02]
 

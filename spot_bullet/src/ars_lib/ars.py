@@ -25,7 +25,7 @@ _EXPLORE_TG = 4
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
 RESIDUALS_SCALE = 0.06
-Z_SCALE = 0.1
+Z_SCALE = 0.05
 
 # Filter actions
 alpha = 0.7
@@ -184,11 +184,13 @@ def ParallelWorker(childPipe, env, nb_states):
                                                   PenetrationDepth, contacts)
                     action[:] = 0.0
 
+                action[2:] *= RESIDUALS_SCALE
+
                 # Add DELTA to XYZ Foot Poses
-                T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
-                T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
-                T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
-                T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
+                T_bf["FL"][:3, 3] += action[2:5]
+                T_bf["FR"][:3, 3] += action[5:8]
+                T_bf["BL"][:3, 3] += action[8:11]
+                T_bf["BR"][:3, 3] += action[11:14]
 
                 # Adjust Body Height with action!
                 pos[2] += action[1] * Z_SCALE
@@ -488,11 +490,13 @@ class ARSAgent():
                                                    PenetrationDepth, contacts)
                 action[:] = 0.0
 
+            action[2:] *= RESIDUALS_SCALE
+
             # Add DELTA to XYZ Foot Poses
-            T_bf["FL"][3, :3] += action[2:5] * RESIDUALS_SCALE
-            T_bf["FR"][3, :3] += action[5:8] * RESIDUALS_SCALE
-            T_bf["BL"][3, :3] += action[8:11] * RESIDUALS_SCALE
-            T_bf["BR"][3, :3] += action[11:14] * RESIDUALS_SCALE
+            T_bf["FL"][:3, 3] += action[2:5]
+            T_bf["FR"][:3, 3] += action[5:8]
+            T_bf["BL"][:3, 3] += action[8:11]
+            T_bf["BR"][:3, 3] += action[11:14]
 
             # Adjust Height!
             pos[2] += action[1] * Z_SCALE
@@ -506,6 +510,7 @@ class ARSAgent():
             next_state, reward, done, _ = self.env.step(action)
             sum_rewards += reward
             timesteps += 1
+            # print("ACTION: {}".format(action))
         # plt.plot()
         # plt.plot(sl, label="Step Len")
         # plt.plot(sv, label="Step Vel")
