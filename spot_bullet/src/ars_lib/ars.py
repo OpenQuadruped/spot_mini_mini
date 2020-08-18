@@ -24,7 +24,7 @@ _EXPLORE_TG = 4
 # Params for TG
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
-RESIDUALS_SCALE = 0.06
+RESIDUALS_SCALE = 0.03
 Z_SCALE = 0.05
 
 # Filter actions
@@ -32,7 +32,7 @@ alpha = 0.7
 
 # Added this to avoid filtering residuals
 # -1 for all
-actions_to_filter = 2
+actions_to_filter = 14
 
 # For auto yaw control
 P_yaw = 5.0
@@ -194,7 +194,7 @@ def ParallelWorker(childPipe, env, nb_states):
                 T_bf_copy["BR"][:3, 3] += action[11:14]
 
                 # Adjust Body Height with action!
-                pos[2] += action[1] * Z_SCALE
+                pos[2] += abs(action[1]) * Z_SCALE
 
                 joint_angles = spot.IK(orn, pos, T_bf_copy)
                 # Pass Joint Angles
@@ -501,7 +501,7 @@ class ARSAgent():
             T_bf_copy["BR"][:3, 3] += action[11:14]
 
             # Adjust Height!
-            pos[2] += action[1] * Z_SCALE
+            pos[2] += abs(action[1]) * Z_SCALE
             heightmod.append(action[1] * Z_SCALE)
 
             joint_angles = self.spot.IK(orn, pos, T_bf_copy)
@@ -513,6 +513,8 @@ class ARSAgent():
             sum_rewards += reward
             timesteps += 1
             # print("ACTION: {}".format(action))
+            # print("STATE: {}".format(state))
+            # print("POLICY: {}".format(self.policy.theta.shape))
         # plt.plot()
         # plt.plot(sl, label="Step Len")
         # plt.plot(sv, label="Step Vel")
