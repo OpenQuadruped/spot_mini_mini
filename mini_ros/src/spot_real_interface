@@ -142,7 +142,7 @@ class SpotCommander():
         file_name = "spot_ars_"
         if os.path.exists(models_path + "/" + file_name + str(agent_num) +
                           "_policy"):
-            print("Loading Existing agent")
+            print("Loading Existing agent: {}".format(agent_num))
             agent.load(models_path + "/" + file_name + str(agent_num))
             agent.policy.episode_steps = np.inf
             self.policy = agent.policy
