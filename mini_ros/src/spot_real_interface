@@ -41,7 +41,7 @@ Z_SCALE = 0.05
 alpha = 0.7
 # Added this to avoid filtering residuals
 # -1 for all
-actions_to_filter = 2
+actions_to_filter = 14
 
 
 class SpotCommander():
