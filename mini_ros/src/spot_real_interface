@@ -35,7 +35,7 @@ YAW_SCALE = 1.25
 # AGENT PARAMS
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
-RESIDUALS_SCALE = 0.06
+RESIDUALS_SCALE = 0.03
 Z_SCALE = 0.05
 # Filter actions
 alpha = 0.7
@@ -329,13 +329,14 @@ class SpotCommander():
         # OPTIONAL: Agent
         if self.Agent and self.mini_cmd.motion != "Stop":
             # Add DELTA to XYZ Foot Poses
-            self.T_bf["FL"][3, :3] += self.action[2:5] * RESIDUALS_SCALE
-            self.T_bf["FR"][3, :3] += self.action[5:8] * RESIDUALS_SCALE
-            self.T_bf["BL"][3, :3] += self.action[8:11] * RESIDUALS_SCALE
-            self.T_bf["BR"][3, :3] += self.action[11:14] * RESIDUALS_SCALE
-            pos[2] += self.action[1] * Z_SCALE
+            T_bf_copy = copy.deepcopy(self.T_bf)
+            T_bf_copy["FL"][:3, 3] += self.action[2:5]
+            T_bf_copy["FR"][:3, 3] += self.action[5:8]
+            T_bf_copy["BL"][:3, 3] += self.action[8:11]
+            T_bf_copy["BR"][:3, 3] += self.action[11:14]
+            pos[2] += abs(self.action[1]) * Z_SCALE
 
-        joint_angles = self.spot.IK(orn, pos, self.T_bf)
+        joint_angles = self.spot.IK(orn, pos, T_bf_copy)
 
         ja_msg = JointAngles()
 
