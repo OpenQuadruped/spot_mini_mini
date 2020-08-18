@@ -52,7 +52,7 @@ class SpotCommander():
         #     "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
         # ]
         self.Agent = Agent
-        self.agent_num = rospy.get_param("~agent_num")
+        self.agent_num = rospy.get_param("agent_num")
         self.movetypes = ["Stop"]
         self.mini_cmd = MiniCmd()
         self.jb = JoyButtons()
