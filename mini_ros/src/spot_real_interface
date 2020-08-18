@@ -122,7 +122,7 @@ class SpotCommander():
         self.ja_pub = rospy.Publisher('spot/joints', JointAngles, queue_size=1)
         print("READY TO GO!")
 
-    def load_spot(self, contacts, state_dim=9, action_dim=14, agent_num=0):
+    def load_spot(self, contacts, state_dim=12, action_dim=14, agent_num=0):
         self.policy = Policy(state_dim=state_dim, action_dim=action_dim)
         self.normalizer = Normalizer(state_dim=state_dim)
         env = spotBezierEnv(render=False,
@@ -161,7 +161,7 @@ class SpotCommander():
                 imu.roll, imu.pitch,
                 np.radians(imu.gyro_x),
                 np.radians(imu.gyro_y),
-                np.radians(imu.gyro_z)
+                np.radians(imu.gyro_z), imu.acc_x, imu.acc_y, imu.acc_z - 9.81
             ]
             # log input data as debug-level message
             rospy.logdebug(imu)
