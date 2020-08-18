@@ -329,6 +329,7 @@ class SpotCommander():
         T_bf_copy = copy.deepcopy(self.T_bf)
         # OPTIONAL: Agent
         if self.Agent and self.mini_cmd.motion != "Stop":
+            self.action[2:] *= RESIDUALS_SCALE
             # Add DELTA to XYZ Foot Poses
             T_bf_copy["FL"][:3, 3] += self.action[2:5]
             T_bf_copy["FR"][:3, 3] += self.action[5:8]
