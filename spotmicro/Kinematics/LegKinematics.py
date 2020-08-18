@@ -32,7 +32,7 @@ class LegIK():
                  2 * self.wrist_length * self.elbow_length)
         if D > 1 or D < -1:
             # DOMAIN BREACHED
-            print("---------DOMAIN BREACH---------")
+            # print("---------DOMAIN BREACH---------")
             D = np.clip(D, -1.0, 1.0)
             return D
         else:
@@ -65,7 +65,7 @@ class LegIK():
         wrist_angle = np.arctan2(-np.sqrt(1 - D**2), D)
         sqrt_component = y**2 + (-z)**2 - self.shoulder_length**2
         if sqrt_component < 0.0:
-            print("NEGATIVE SQRT")
+            # print("NEGATIVE SQRT")
             sqrt_component = 0.0
         shoulder_angle = -np.arctan2(z, y) - np.arctan2(
             np.sqrt(sqrt_component), -self.shoulder_length)
