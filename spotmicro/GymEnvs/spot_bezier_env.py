@@ -43,7 +43,7 @@ class spotBezierEnv(spotGymEnv):
     }
 
     def __init__(self,
-                 distance_weight=0.0,
+                 distance_weight=1.0,
                  rotation_weight=0.0,
                  energy_weight=0.000,
                  shake_weight=0.00,
