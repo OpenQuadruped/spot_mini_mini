@@ -24,7 +24,7 @@ _EXPLORE_TG = 4
 # Params for TG
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
-RESIDUALS_SCALE = 0.01
+RESIDUALS_SCALE = 0.015
 Z_SCALE = 0.05
 
 # Filter actions
@@ -136,7 +136,7 @@ def ParallelWorker(childPipe, env, nb_states):
                 state = env.return_state()
                 normalizer.observe(state)
                 # NOTE: Don't normalize contacts - must stay 0/1
-                state[:-4] = normalizer.normalize(state)[:-4]
+                state = normalizer.normalize(state)
                 action = policy.evaluate(state, delta, direction)
 
                 contacts = state[-4:]
@@ -441,7 +441,7 @@ class ARSAgent():
             state = self.env.return_state()
             self.normalizer.observe(state)
             # Don't normalize contacts
-            state[:-4] = self.normalizer.normalize(state)[:-4]
+            state = self.normalizer.normalize(state)
             action = self.policy.evaluate(state, delta, direction)
             action = np.tanh(action)
             # EXP FILTER

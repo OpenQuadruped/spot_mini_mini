@@ -49,7 +49,7 @@ class spotBezierEnv(spotGymEnv):
                  shake_weight=0.00,
                  drift_weight=0.0,
                  rp_weight=10.0,
-                 rate_weight=.1,
+                 rate_weight=.03,
                  urdf_root=pybullet_data.getDataPath(),
                  urdf_version=None,
                  distance_limit=float("inf"),
