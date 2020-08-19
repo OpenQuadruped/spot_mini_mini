@@ -37,6 +37,10 @@ actions_to_filter = 14
 # For auto yaw control
 P_yaw = 5.0
 
+# Cummulative timestep exponential reward
+# cum_dt_exp = 1.1
+cum_dt_exp = 0.0
+
 
 def butter_lowpass_filter(data, cutoff, fs, order=2):
     """ Pass two subsequent datapoints in here to be filtered
@@ -203,8 +207,8 @@ def ParallelWorker(childPipe, env, nb_states):
                 next_state, reward, done, _ = env.step(action)
                 sum_rewards += reward
                 timesteps += 1
-                # Divide reward by timesteps for normalized reward
-            childPipe.send([sum_rewards / timesteps])
+                # Divide reward by timesteps for normalized reward + add exponential surival reward
+            childPipe.send([(sum_rewards + timesteps**cum_dt_exp) / timesteps])
             continue
         if message == _CLOSE:
             childPipe.send(["close ok"])
@@ -400,8 +404,8 @@ class ARSAgent():
             reward = np.clip(reward, -self.max_action, self.max_action)
             sum_rewards += reward
             timesteps += 1
-            # Divide rewards by timesteps for reward-per-step
-        return sum_rewards / timesteps
+            # Divide rewards by timesteps for reward-per-step + exp survive rwd
+        return (sum_rewards + timesteps**cum_dt_exp) / timesteps
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
