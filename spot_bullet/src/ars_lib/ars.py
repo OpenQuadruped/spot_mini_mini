@@ -203,7 +203,8 @@ def ParallelWorker(childPipe, env, nb_states):
                 next_state, reward, done, _ = env.step(action)
                 sum_rewards += reward
                 timesteps += 1
-            childPipe.send([sum_rewards])
+                # Divide reward by timesteps for normalized reward
+            childPipe.send([sum_rewards / timesteps])
             continue
         if message == _CLOSE:
             childPipe.send(["close ok"])
@@ -399,7 +400,8 @@ class ARSAgent():
             reward = np.clip(reward, -self.max_action, self.max_action)
             sum_rewards += reward
             timesteps += 1
-        return sum_rewards
+            # Divide rewards by timesteps for reward-per-step
+        return sum_rewards / timesteps
 
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
