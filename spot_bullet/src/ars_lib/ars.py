@@ -24,7 +24,7 @@ _EXPLORE_TG = 4
 # Params for TG
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
-RESIDUALS_SCALE = 0.03
+RESIDUALS_SCALE = 0.01
 Z_SCALE = 0.05
 
 # Filter actions
@@ -219,7 +219,7 @@ class Policy():
             state_dim,
             action_dim,
             # how much weights are changed each step
-            learning_rate=0.02,
+            learning_rate=0.03,
             # number of random expl_noise variations generated
             # each step
             # each one will be run for 2 epochs, + and -
@@ -229,7 +229,7 @@ class Policy():
             # number of timesteps per episode per rollout
             episode_steps=5000,
             # weight of sampled exploration noise
-            expl_noise=0.01,
+            expl_noise=0.05,
             # for seed gen
             seed=0):
 
