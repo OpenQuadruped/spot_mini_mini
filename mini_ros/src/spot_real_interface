@@ -76,7 +76,7 @@ class SpotCommander():
         self.BasePenetrationDepth = 0.003
         self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
         self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
-        self.ClearanceHeight_LIMITS = [0.0, 0.05]
+        self.ClearanceHeight_LIMITS = [0.0, 0.04]
         self.PenetrationDepth_LIMITS = [0.0, 0.02]
 
         # Time
@@ -362,24 +362,24 @@ class SpotCommander():
 
         self.ja_pub.publish(ja_msg)
 
-        if self.Agent:
-            ad = AgentData()
-            ad.action0 = self.action[0]
-            ad.action1 = self.action[1]
-            ad.action2 = self.action[2]
-            ad.action3 = self.action[3]
-            ad.action4 = self.action[4]
-            ad.action5 = self.action[5]
-            ad.action6 = self.action[6]
-            ad.action7 = self.action[7]
-            ad.action8 = self.action[8]
-            ad.action9 = self.action[9]
-            ad.action10 = self.action[10]
-            ad.action11 = self.action[11]
-            ad.action12 = self.action[12]
-            ad.action13 = self.action[13]
+        # if self.Agent:
+        #     ad = AgentData()
+        #     ad.action0 = self.action[0]
+        #     ad.action1 = self.action[1]
+        #     ad.action2 = self.action[2]
+        #     ad.action3 = self.action[3]
+        #     ad.action4 = self.action[4]
+        #     ad.action5 = self.action[5]
+        #     ad.action6 = self.action[6]
+        #     ad.action7 = self.action[7]
+        #     ad.action8 = self.action[8]
+        #     ad.action9 = self.action[9]
+        #     ad.action10 = self.action[10]
+        #     ad.action11 = self.action[11]
+        #     ad.action12 = self.action[12]
+        #     ad.action13 = self.action[13]
 
-            self.ag_pub.publish(ad)
+        #     self.ag_pub.publish(ad)
 
 
 def main():
