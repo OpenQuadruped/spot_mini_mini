@@ -38,11 +38,10 @@ If you don't need a Gym environment, that's okay too! `env_tester.py` works with
 Table of Contents
 -----------------
   * [Motivation](#motivation)
-     * [Kinematics](#kinematics)
-     * [Reinforcement Learning](#reinforcement-learning)
-        * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
-        * [Drift Correction](#drift-correction)
-     * [Gait](#gait)
+  * [Kinematics](#kinematics)
+  * [Reinforcement Learning](#reinforcement-learning)
+    * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
+  * [Gait](#gait)
   * [How To Run](#how-to-run)
      * [Dependencies](#dependencies)
      * [Hardware](https://github.com/moribots/spot_mini_mini/tree/spot/spot_real)
