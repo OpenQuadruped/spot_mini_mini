@@ -115,6 +115,9 @@ def main():
     FR_phases = []
     BL_phases = []
     BR_phases = []
+
+    FL_Elbow = []
+
     yaw = 0.0
 
     print("STARTED SPOT TEST ENV")
@@ -161,6 +164,8 @@ def main():
                                       contacts)
         joint_angles = spot.IK(orn, pos, T_bf)
 
+        FL_Elbow.append(np.degrees(joint_angles[0][-1]))
+
         # for i, (key, Tbf_in) in enumerate(T_bf.items()):
         #     print("{}: \t Angle: {}".format(key, np.degrees(joint_angles[i])))
         # print("-------------------------")
@@ -183,16 +188,17 @@ def main():
             print("DONE")
             if ARGS.AutoReset:
                 env.reset()
-            # plt.plot()
-            # plt.plot(FL_phases, label="FL")
-            # plt.plot(FR_phases, label="FR")
-            # plt.plot(BL_phases, label="BL")
-            # plt.plot(BR_phases, label="BR")
-            # plt.xlabel("dt")
-            # plt.ylabel("value")
-            # plt.title("Leg Phases")
-            # plt.legend()
-            # plt.show()
+                plt.plot()
+                # plt.plot(FL_phases, label="FL")
+                # plt.plot(FR_phases, label="FR")
+                # plt.plot(BL_phases, label="BL")
+                # plt.plot(BR_phases, label="BR")
+                plt.plot(FL_Elbow, label="FL ELbow (Deg)")
+                plt.xlabel("dt")
+                plt.ylabel("value")
+                plt.title("Leg Phases")
+                plt.legend()
+                plt.show()
 
         # time.sleep(1.0)
 
