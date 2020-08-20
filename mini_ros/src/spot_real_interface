@@ -26,7 +26,7 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
 # Controller Params
 STEPLENGTH_SCALE = 0.05
-Z_SCALE_CTRL = 0.17
+Z_SCALE_CTRL = 0.0
 RPY_SCALE = 0.785
 SV_SCALE = 0.05
 CHPD_SCALE = 0.0005
@@ -36,7 +36,7 @@ YAW_SCALE = 1.25
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
 RESIDUALS_SCALE = 0.015
-Z_SCALE = 0.05
+Z_SCALE = 0.035
 # Filter actions
 alpha = 0.7
 # Added this to avoid filtering residuals
