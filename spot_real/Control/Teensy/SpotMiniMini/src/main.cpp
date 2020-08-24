@@ -259,20 +259,16 @@ void setup() {
   //Elbows
   double elbow_liedown = 90.0;
   FL_Elbow.Initialize(3, elbow_liedown, 0, 0.0, FL, Elbow, 1420, 2062, 0.0, 90.0);  // 4 | 135  mid - 0 in front - 270 behind
-  FR_Elbow.Initialize(6, elbow_liedown, 0, 0.0, FR, Elbow, 1398, 735, 0.0, 90.0); // 5 | 135  mid - 0 in behind - 270 in front
-  BL_Elbow.Initialize(9, elbow_liedown, 0, 0.0, BL, Elbow, 1470, 2095, 0.0, 90.0);  // 6 | 135  mid - 0 in front - 270 behind
+  FR_Elbow.Initialize(6, elbow_liedown, 0, 0.0, FR, Elbow, 1408, 740, 0.0, 90.0); // 5 | 135  mid - 0 in behind - 270 in front
+  BL_Elbow.Initialize(9, elbow_liedown, 0, 0.0, BL, Elbow, 1460, 2095, 0.0, 90.0);  // 6 | 135  mid - 0 in front - 270 behind
   BR_Elbow.Initialize(12, elbow_liedown, 0, 0.0, BR, Elbow, 1505, 850, 0.0, 90.0); // 7 | 135  mid - 0 in behind - 270 in front
 
   //Wrists
   double wrist_liedown = -160.0;
-  // FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1765, 2320, -90.0, -166.0);  // 8 | 90 straight - 270 bent in
-  // FR_Wrist.Initialize(7, wrist_liedown, 0, 0.0, FR, Wrist, 1810, 1160, 0.0, -90.0); // 9 | 180 straight - 0 bent in
-  // BL_Wrist.Initialize(10, wrist_liedown, 0, 0.0, BL, Wrist, 1125, 1770, 0.0, -90.0); // 10 | 90 straight - 270 bent in
-  // BR_Wrist.Initialize(13, wrist_liedown, 0, 0.0, BR, Wrist, 1840, 1148, 0.0, -90.0); // 11 | 180 straight - 0 bent in
-  FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1260, 2050, -90.0, -163.0);  // 8 | 90 straight - 270 bent in
-  FR_Wrist.Initialize(7, wrist_liedown, 0, 0.0, FR, Wrist, 1690, 900, -90.0, -160.0); // 9 | 180 straight - 0 bent in
-  BL_Wrist.Initialize(10, wrist_liedown, 0.0, 0.0, BL, Wrist, 1360, 2160, -90.0, -163.0); // 10 | 90 straight - 270 bent in
-  BR_Wrist.Initialize(13, wrist_liedown, 6.0, 0.0, BR, Wrist, 1625, 830, -90.0, -162.0); // 11 | 180 straight - 0 bent in
+  FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1755, 2320, -90.0, -166.0);  // 8 | 90 straight - 270 bent in
+  FR_Wrist.Initialize(7, wrist_liedown, 0, 0.0, FR, Wrist, 1800, 1150, 0.0, -90.0); // 9 | 180 straight - 0 bent in
+  BL_Wrist.Initialize(10, wrist_liedown, 0, 0.0, BL, Wrist, 1100, 1740, 0.0, -90.0); // 10 | 90 straight - 270 bent in
+  BR_Wrist.Initialize(13, wrist_liedown, 0, 0.0, BR, Wrist, 1788, 1155, 0.0, -90.0); // 11 | 180 straight - 0 bent in
 
   // Contact Sensors
   FL_sensor.Initialize(A9, 17);
