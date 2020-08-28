@@ -100,8 +100,8 @@ Here is the policy output for this demo. It's clearly biased on one end to accou
 #### Real World Validation
 Here are some experimental results where the agent is on the right.
 
-<img src="spot_real/media/V2_3.gif" alt="V" width="500"/>
-<img src="spot_real/media/T2_1.gif" alt="A" width="500"/>
+<img src="spot_real/media/V2_3.gif" alt="V" width="335"/>
+<img src="spot_real/media/T2_1.gif" alt="A" width="335"/>
 
 ### Gait
 
