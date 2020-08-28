@@ -41,6 +41,7 @@ Table of Contents
   * [Kinematics](#kinematics)
   * [Reinforcement Learning](#reinforcement-learning)
     * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
+    * [Real World Validation](#real-world-validation)
   * [Gait](#gait)
   * [How To Run](#how-to-run)
      * [Dependencies](#dependencies)
@@ -95,6 +96,12 @@ With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observati
 Here is the policy output for this demo. It's clearly biased on one end to account for Spot's drift:
 
 ![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png) -->
+
+#### Real World Validation
+Here are some experimental results where the agent is on the right.
+
+<img src="spot_real/media/V2_3.gif" alt="V" width="500"/>
+<img src="spot_real/media/T2_1.gif" alt="A" width="500"/>
 
 ### Gait
 
