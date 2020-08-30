@@ -24,7 +24,7 @@ As part of the [Spot Micro](https://spotmicroai.readthedocs.io/en/latest/) commu
   <img src="spot_real/media/full_control.gif" width="335" />
 </p>
 
-You'll notice that there are gifs of the original `SpotMicro` as well a new version designed for added real world fidelity. The default branch simulates the new version, but you can work with `SpotMicro` in the [spotmicroai](https://github.com/moribots/spot_mini_mini/tree/spotmicroai) branch of this repo. The new version also has a more reliable URDF, with more accurate inertial calculations.
+You'll notice that there are gifs of the original `SpotMicro` as well a new version designed for added real-world fidelity. The default branch simulates the new version, but you can work with `SpotMicro` in the [spotmicroai](https://github.com/moribots/spot_mini_mini/tree/spotmicroai) branch of this repo. The new version also has a more reliable URDF, with more accurate inertial calculations.
 
 If you don't need a Gym environment, that's okay too! `env_tester.py` works without RL or Gym, it is designed to accept any gait implementation, and provides a GUI for testing it out! In my case, I've implemented a 12-point Bezier gait.
 
@@ -64,7 +64,7 @@ Body manipulation with [leg IK](https://www.researchgate.net/publication/3203077
 ### Reinforcement Learning
 
 #### Stability on Difficult Terrain
-An interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself.For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
+An interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself. For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
 
 Here, the action space is 14-dimensional, consisting of `Clearance Height` (1), `Body Height` (1), and `Foot XYZ Residual` modulations (12). `Clearance Height` is treated through an exponential filter (`alpha = 0.7`), but all other actions are processed directly. These results were trained with only 149 epochs.
 
@@ -76,7 +76,7 @@ After training, the robot successfully navigates the terrain:
 
 ![NO_FALL](spot_bullet/media/spot_rough_ARS.gif)
 
-What's even better, is that the same agent `#149` is able to adapt to unseen commands, making high-level system integration straightforward. Here it is being teleoperated using `Forward`, `Lateral`, and `Yaw` commands.
+What's even better, is that the same agent `#149` can adapt to unseen commands, making high-level system integration straightforward. Here it is being teleoperated using `Forward`, `Lateral`, and `Yaw` commands.
 
 ![UNIVERSAL](spot_bullet/media/spot_universal.gif)
 
@@ -85,7 +85,7 @@ Here's an example of the new URDF being teleoperated with a trained agent on 2x 
 ![UNIVERSAL2](spot_bullet/media/spot_new_universal.gif)
 
 <!-- #### Drift Correction
-I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
+I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (roughly 1m per 2m forward):
 
 ![DRIFT](spot_bullet/media/spot_drift.gif)
 
@@ -211,7 +211,7 @@ Go to `spot_bullet/src` and do `./spot_ars_eval.py`. You may also use the follow
 -r, --DebugRack     Put Spot on an Elevated Rack
 -p, --DebugPath     Draw Spot's Foot Path
 -gui, --GUI         Control The Robot Yourself With a GUI
--a, --AgentNum      Agent Number To Load (followed by number)
+-a, --AgentNum      Agent Number To Load (followed by the number)
 ```
 
 ### Using Different Terrain
