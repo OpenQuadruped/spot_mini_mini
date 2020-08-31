@@ -63,7 +63,7 @@ Body manipulation with [leg IK](https://www.researchgate.net/publication/3203077
 
 ### Reinforcement Learning
 
-I'm using this platform to validate a novel Reinforcement Learning method for locomotion by myself and my co-authors Matthew Elwin & Ian Abraham. Instead of learning a gait from scratch, we propose using an existing scheme as a baseline over which we optimize via training. The method is called Gait Modulation with Bezier Curves, and we are currently validating our experimental results. Here's a sneak peak of what you can expect:
+I'm using this platform to validate a novel Reinforcement Learning method for locomotion by myself and my co-authors Matthew Elwin & Ian Abraham. Instead of learning a gait from scratch, we propose using an existing scheme as a baseline over which we optimize via training. The method is called `Gait Modulation with Bezier Curves`, and we are currently validating our experimental results. Here's a sneak peak of what you can expect:
 
 <p float="left">
   <img src="spot_real/media/V_descent.gif" width="335" />
