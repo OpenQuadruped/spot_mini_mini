@@ -36,7 +36,7 @@ YAW_SCALE = 1.25
 CD_SCALE = 0.05
 SLV_SCALE = 0.05
 RESIDUALS_SCALE = 0.015
-Z_SCALE = 0.005
+Z_SCALE = 0.035
 # Filter actions
 alpha = 0.7
 # Added this to avoid filtering residuals

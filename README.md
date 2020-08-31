@@ -63,8 +63,15 @@ Body manipulation with [leg IK](https://www.researchgate.net/publication/3203077
 
 ### Reinforcement Learning
 
+I'm using this platform to validate a novel Reinforcement Learning method for locomotion by myself and my co-authors Matthew Elwin & Ian Abraham. Instead of learning a gait from scratch, we propose using an existing scheme as a baseline over which we optimize via training. The method is called Gait Modulation with Bezier Curves, and we are currently validating our experimental results. Here's a sneak peak of what you can expect:
+
+<p float="left">
+  <img src="spot_real/media/V_descent.gif" width="335" />
+  <img src="spot_real/media/A_descent.gif" width="335" />
+</p>
+
 #### Stability on Difficult Terrain
-An interesting RL challenge was to induce stability on randomized and programmatically generated rough terrain. For this challenge, a simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself.For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
+During training, simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself. For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
 
 Here, the action space is 14-dimensional, consisting of `Clearance Height` (1), `Body Height` (1), and `Foot XYZ Residual` modulations (12). `Clearance Height` is treated through an exponential filter (`alpha = 0.7`), but all other actions are processed directly. These results were trained with only 149 epochs.
 
