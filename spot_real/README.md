@@ -89,6 +89,7 @@ During assembly, make sure the motors are powered and that you select `NOMINAL_P
 * Slot the belt around the lower leg (try to keep it parallel to the upper leg) and secure it through the upper leg with a 30mm M5 bolt. This should be easy if your idler is untentioned.
 * Tension your idler.
 * The leg should be fully extended, with the upper and lower leg being parallel to each other and perpendicular to the shoulder.
+* Once you're happy with this, fasten the servo cover onto the protruding motor, press-fit the bearing, and fasten the support bridge between the bearing and the shoulder joint.
 
 #### Inner Hips
 * Fasten two disc servo horns into the rear inner hip.
