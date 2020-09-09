@@ -55,7 +55,7 @@ See most recent [BOM](https://docs.google.com/spreadsheets/d/1Z4y59K8bY3r_442I70
 
 Note that the actual cost of this project is reflected in the first group of items totalling `590 USD`. For users such as myself who did not own any hobbyist components before this project, I have included an expanded list of required purchases.
 
-### Assembly Instructions (COMING SOON)
+### Assembly Instructions (MOSTLY COMPLETE)
 
 I'm in the middle of moving so it's difficult for me to get detailed images/instructions. For now, please consult the [CAD Model](https://cad.onshape.com/documents/9d0f96878c54300abf1157ac/w/c9cdf8daa98d8a0d7d50c8d3/e/fa0d7caf0ed2ef46834ecc24), which should be straightforward to look at and intuit.
 
@@ -95,4 +95,25 @@ During assembly, make sure the motors are powered and that you select `NOMINAL_P
 
 #### Covers
 
-### Motor Calibration Instructions (COMING SOON)
+### Motor Calibration Modes and Method
+
+Within `main.cpp` (runs on Teensy), you can select the following modes:
+
+* `NOMINAL_PWM`: Sets the motors to roughly the straight-leg position (see note above on different motor limits).
+* `STRAIGHT_LEGS`: Spot will start by lying down, and then extend its legs straight after a few seconds.
+* `LIEDOWN`: Spot will stay lying down.
+* `PERPENDICULAR_LEGS`: Spot will start by lying down, and then make its upper leg perpendicular to its shoulder, and its lower leg perpendicular to its upper leg. **NOTE: Make sure Spot is on a stand during this mode as it will fall over!**
+* `RUN`: Spot will start by lying down, and raise itself to its normal stance once all sensors/communications are ready. This is the default mode.
+
+Use any and all of these modes to help verify your motor calibration. The method is fairly basic, but can be cumbersome if your motors have nonlinearities like mine.
+
+After turning on Spot's power switch, and `ssh`-ing into the Raspberry Pi (assuming you've done all the standard ROS stuff: `source devel/setup.bash` and `catkin_make`), do: `roslaunch mini_ros spot_calibrate.launch`. This will establish the serial connection between the Pi and the Teensy, and you should be able to give Spot's joints PWM commands.
+
+#### Process for each joint:
+* After launching the calibration node, use `rosservice call /servo_calibrator <TAB> <TAB>` (the double `TAB` auto-completes the format) on each joint `0-11` and give it a few different PWM commands (carefully) to inspect its behavior.
+* Once you are familiar with the joint, hone in on a PWM command that sends it to two known and measurable positions (`0` or `90` degrees works great).
+* Record the PWM value and corresponding position for each joint in the `Initialize()` method for the joints in `main.cpp` in the following order: `[PWM0, PWM1, ANG0, ANG1]`.
+
+Here is an example for two joint calibrations I did (see highlighted portion for reference):
+
+[PWM Example](media/CalibratePWM.png)
