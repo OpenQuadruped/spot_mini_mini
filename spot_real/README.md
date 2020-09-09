@@ -116,4 +116,4 @@ After turning on Spot's power switch, and `ssh`-ing into the Raspberry Pi (assum
 
 Here is an example for two joint calibrations I did (see highlighted portion for reference):
 
-[PWM Example](media/CalibratePWM.png)
+![PWM Example](media/CalibratePWM.png)
