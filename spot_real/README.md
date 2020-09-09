@@ -107,7 +107,7 @@ During assembly, make sure the motors are powered and that you select `NOMINAL_P
 
 ### Motor Calibration Modes and Method
 
-Within `main.cpp` (runs on Teensy), you can select the following modes:
+Within [main.cpp](https://github.com/moribots/spot_mini_mini/blob/spot/spot_real/Control/Teensy/SpotMiniMini/src/main.cpp) (runs on Teensy), you can select the following modes:
 
 * `NOMINAL_PWM`: Sets the motors to roughly the straight-leg position (see note above on different motor limits).
 * `STRAIGHT_LEGS`: Spot will start by lying down, and then extend its legs straight after a few seconds.
