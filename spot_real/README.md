@@ -74,9 +74,7 @@ During assembly, make sure the motors are powered and that you select `NOMINAL_P
 * Fasten the adapter plate onto the main plate using 16mm M3 bolts.
 * Fasten the battery to the bottom of the main plate using the battery holder and some M3 bolts.
 * Fasten the Raspberry Pi and Spot Mini Mini boards onto the adapter plate using 8mm M2 bolts.
-* Do your wiring now to avoid a hassle later. **TODO: Wiring Instructions | (simple enough to figure out in the meantime)**.
-
-#### Inner Hips
+* Do your wiring now to avoid a hassle later. **TODO: Wiring Instructions - (simple enough to figure out in the meantime)**.
 
 #### Legs
 * Fasten two of your motors into each shoulder joint.
@@ -87,13 +85,25 @@ During assembly, make sure the motors are powered and that you select `NOMINAL_P
 * Fasten a disc servo horn onto the belt pulley.
 * Fasten the assembled pulley onto each leg's third motor. Place a bearing inside the pulley once this is done.
 * After placing a belt around the motor's pulley, press-fit the pulley onto the upper leg.
+* Press-fit two bearings into either side of the lower leg pulley.
 * Slot the belt around the lower leg (try to keep it parallel to the upper leg) and secure it through the upper leg with a 30mm M5 bolt. This should be easy if your idler is untentioned.
 * Tension your idler.
 * The leg should be fully extended, with the upper and lower leg being parallel to each other and perpendicular to the shoulder.
 
-#### Outer Hips
+#### Inner Hips
+* Fasten two disc servo horns into the rear inner hip.
+* Fasten the rear left and right legs to the rear inner hip, making sure the legs are parallel to the side of the body.
+* Fasten the rear inner hip to both side chassis brackets.
+* Slot the finished Main Body assembly into the chassis bracket lips. Secure with nuts and bolts.
+* Fasten the front inner hip to both side chassis brackets. The main body should now be fully secured.
+* Press-fit two bearings into the front inner hip.
 
-#### Covers
+#### Outer Hips
+* Fasten two disc servo horns into the front outer hip.
+* Fasten the front left and right legs to the front outer hip, making sure the legs are parallel to the side of the body.
+* After slotting M3 nuts into the front inner hip, secure the front outer hip assembly (with the legs) using 16mm M3 bolts. Note that the nubs on the shoulder joints should fit into the bearings.
+* Press-fit two bearings into the rear outer hip.
+* After slotting M3 nuts into the rear inner hip, secure the rear outer hip assembly (with the legs) using 16mm M3 bolts. Note that the nubs on the shoulder joints should fit into the bearings.
 
 ### Motor Calibration Modes and Method
 
@@ -111,7 +121,7 @@ After turning on Spot's power switch, and `ssh`-ing into the Raspberry Pi (assum
 
 #### Process for each joint:
 * After launching the calibration node, use `rosservice call /servo_calibrator <TAB> <TAB>` (the double `TAB` auto-completes the format) on each joint `0-11` and give it a few different PWM commands (carefully) to inspect its behavior.
-* Once you are familiar with the joint, hone in on a PWM command that sends it to two known and measurable positions (`0` or `90` degrees works great).
+* Once you are familiar with the joint, hone in on a PWM command that sends it to `two` known and measurable positions (`0` and `90` degrees works great - for the wrists, `165` degrees is also an option).
 * Record the PWM value and corresponding position for each joint in the `Initialize()` method for the joints in `main.cpp` in the following order: `[PWM0, PWM1, ANG0, ANG1]`.
 
 Here is an example for two joint calibrations I did (see highlighted portion for reference):
