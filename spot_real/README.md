@@ -16,7 +16,7 @@ The `RPi` directory has some testing scripts which you will most likely not use.
 
 #### Launch Instructions:
 
-After turning on Spot's power switch, and `ssh`-ing into the Raspberry Pi (assuming you've done all the standard ROS stuff: `source devel/setup.bash` and `catkin_make`), do: `roslaunch mini_ros spot_real.launch`. This will establish the serial connection between the Pi and the Teensy, and you should be able to give Spot joystick commands. Note that when you first activate Spot, his legs will go completely straight (if calibrated correctly), and when you launch the `ROS` executable, he will move into his 'home' position.
+After turning on Spot's power switch, and `ssh`-ing into the Raspberry Pi (assuming you've done all the standard ROS stuff: `source devel/setup.bash` and `catkin_make`), do: `roslaunch mini_ros spot_real.launch`. This will establish the serial connection between the Pi and the Teensy, and you should be able to give Spot joystick commands.
 
 
 ## Hardware
@@ -56,5 +56,43 @@ See most recent [BOM](https://docs.google.com/spreadsheets/d/1Z4y59K8bY3r_442I70
 Note that the actual cost of this project is reflected in the first group of items totalling `590 USD`. For users such as myself who did not own any hobbyist components before this project, I have included an expanded list of required purchases.
 
 ### Assembly Instructions (COMING SOON)
+
+I'm in the middle of moving so it's difficult for me to get detailed images/instructions. For now, please consult the [CAD Model](https://cad.onshape.com/documents/9d0f96878c54300abf1157ac/w/c9cdf8daa98d8a0d7d50c8d3/e/fa0d7caf0ed2ef46834ecc24), which should be straightforward to look at and intuit.
+
+During assembly, make sure the motors are powered and that you select `NOMINAL_PWM` mode in the `main.cpp` file that runs on the `Teensy`. **NOTE:** Be sure to consult `nominal_servo_pwm()` to input your correct servo angle and pwm ranges for a successful calibration. For example, I am using `270` degree motors with `500` min and `2500` max PWM.
+
+#### Recommended Order
+* Main Body
+* Legs
+* Inner Hips
+* Outer Hips
+* Covers
+
+#### Main Body
+* press-fit M3 nuts onto both sides of the main electronics plate, and M2 nuts onto the bottom of the adapter plate.
+* Fasten the IMU onto the middle of the electronics plate. Regardless of your make/model, calibrate it to make sure your inertial axes follow the right hand rule.
+* Fasten the adapter plate onto the main plate using 16mm M3 bolts.
+* Fasten the battery to the bottom of the main plate using the battery holder and some M3 bolts.
+* Fasten the Raspberry Pi and Spot Mini Mini boards onto the adapter plate using 8mm M2 bolts.
+* Do your wiring now to avoid a hassle later. **TODO: Wiring Instructions | (simple enough to figure out in the meantime)**.
+
+#### Inner Hips
+
+#### Legs
+* Fasten two of your motors into each shoulder joint.
+* Fasten a disc servo horn onto the upper leg.
+* Fasten the upper leg onto the shoulder motor (the one that does not have an opposing nub) through the disc horn. The upper leg should be perpendicular to the shoulder.
+* Squeeze in an M3 nut onto the floor of the inner upper leg and an M5 nut onto the idler adjustor. Then, fit a bearing onto the idler using an 8mm M5 bolt.
+* Push the idler onto the floor of the inner upper leg. While you're here, press-fit an M5 nut onto the bottom of the upper leg.
+* Fasten a disc servo horn onto the belt pulley.
+* Fasten the assembled pulley onto each leg's third motor. Place a bearing inside the pulley once this is done.
+* After placing a belt around the motor's pulley, press-fit the pulley onto the upper leg.
+* Slot the belt around the lower leg (try to keep it parallel to the upper leg) and secure it through the upper leg with a 30mm M5 bolt. This should be easy if your idler is untentioned.
+* Tension your idler.
+* The leg should be fully extended, with the upper and lower leg being parallel to each other and perpendicular to the shoulder.
+
+#### Outer Hips
+
+#### Covers
 
 ### Motor Calibration Instructions (COMING SOON)
