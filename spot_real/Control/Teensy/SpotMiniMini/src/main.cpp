@@ -245,56 +245,65 @@ void setup() {
 
   Serial.begin(9600);
 
-  // IK - unused
-  ik.Initialize(0.04, 0.1, 0.1);
-
-  // SERVOS: Pin, StandAngle, HomeAngle, Offset, LegType, JointType, min_pwm, max_pwm, min_pwm_angle, max_pwm_angle
-  // Shoulders
-  double shoulder_liedown = 0.0;
-  FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -7.25, FL, Shoulder, 500, 2400);  // 0 | 135 mid - 0 out - 270 in
-  FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -5.5, FR, Shoulder, 500, 2400); // 1 | 135 mid - 270 out - 0 in
-  BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, 5.75, BL, Shoulder, 500, 2400);  // 2 | 135 mid - 0 out - 270 in
-  BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -4.0, BR, Shoulder, 500, 2400);  // 3 | 135 mid - 270 out - 0 in
-  
-  //Elbows
-  double elbow_liedown = 90.0;
-  FL_Elbow.Initialize(3, elbow_liedown, 0, 0.0, FL, Elbow, 1410, 2062, 0.0, 90.0);  // 4 | 135  mid - 0 in front - 270 behind
-  FR_Elbow.Initialize(6, elbow_liedown, 0, 0.0, FR, Elbow, 1408, 733, 0.0, 90.0); // 5 | 135  mid - 0 in behind - 270 in front
-  BL_Elbow.Initialize(9, elbow_liedown, 0, 0.0, BL, Elbow, 1460, 2095, 0.0, 90.0);  // 6 | 135  mid - 0 in front - 270 behind
-  BR_Elbow.Initialize(12, elbow_liedown, 0, 0.0, BR, Elbow, 1505, 850, 0.0, 90.0); // 7 | 135  mid - 0 in behind - 270 in front
-
-  //Wrists
-  double wrist_liedown = -160.0;
-  FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1755, 2320, -90.0, -165.0);  // 8 | 90 straight - 270 bent in
-  FR_Wrist.Initialize(7, wrist_liedown, 0, 0.0, FR, Wrist, 1805, 1150, 0.0, -90.0); // 9 | 180 straight - 0 bent in
-  BL_Wrist.Initialize(10, wrist_liedown, 0, 0.0, BL, Wrist, 1100, 1733, 0.0, -90.0); // 10 | 90 straight - 270 bent in
-  BR_Wrist.Initialize(13, wrist_liedown, 0, 0.0, BR, Wrist, 1788, 1153, 0.0, -90.0); // 11 | 180 straight - 0 bent in
-
-  // Contact Sensors
-  FL_sensor.Initialize(A9, 17);
-  FR_sensor.Initialize(A8, 16);
-  BL_sensor.Initialize(A7, 15);
-  BR_sensor.Initialize(A6, 14);
-
-  // IMU
-  imu_sensor.Initialize();
-
   // NOTE: See top of file for spot_mode explanation:
+  // ONLY USE THIS MODE DURING ASSEMBLY
   if (spot_mode == NOMINAL_PWM)
   {
+    // Neutral Setting
     nominal_servo_pwm();
-  } else if (spot_mode == STRAIGHT_LEGS)
+    // Prevent Servo Updates
+    ESTOPPED = true;
+  } else 
   {
-    straight_calibration_sequence();
-  } else if (spot_mode == LIEDOWN)
-  {
-    lie_calibration_sequence();
-  } else if (spot_mode == PERPENDICULAR_LEGS)
-  {
-    perpendicular_calibration_sequence();
-  } else
-  {
-    run_sequence();
+
+    // IK - unused
+    ik.Initialize(0.04, 0.1, 0.1);
+
+    // SERVOS: Pin, StandAngle, HomeAngle, Offset, LegType, JointType, min_pwm, max_pwm, min_pwm_angle, max_pwm_angle
+    // Shoulders
+    double shoulder_liedown = 0.0;
+    FL_Shoulder.Initialize(2, 135 + shoulder_liedown, 135, -7.25, FL, Shoulder, 500, 2400);  // 0 | 135 mid - 0 out - 270 in
+    FR_Shoulder.Initialize(5, 135 - shoulder_liedown, 135, -5.5, FR, Shoulder, 500, 2400); // 1 | 135 mid - 270 out - 0 in
+    BL_Shoulder.Initialize(8, 135 + shoulder_liedown, 135, 5.75, BL, Shoulder, 500, 2400);  // 2 | 135 mid - 0 out - 270 in
+    BR_Shoulder.Initialize(11, 135 - shoulder_liedown, 135, -4.0, BR, Shoulder, 500, 2400);  // 3 | 135 mid - 270 out - 0 in
+    
+    //Elbows
+    double elbow_liedown = 90.0;
+    FL_Elbow.Initialize(3, elbow_liedown, 0, 0.0, FL, Elbow, 1410, 2062, 0.0, 90.0);  // 4 | 135  mid - 0 in front - 270 behind
+    FR_Elbow.Initialize(6, elbow_liedown, 0, 0.0, FR, Elbow, 1408, 733, 0.0, 90.0); // 5 | 135  mid - 0 in behind - 270 in front
+    BL_Elbow.Initialize(9, elbow_liedown, 0, 0.0, BL, Elbow, 1460, 2095, 0.0, 90.0);  // 6 | 135  mid - 0 in front - 270 behind
+    BR_Elbow.Initialize(12, elbow_liedown, 0, 0.0, BR, Elbow, 1505, 850, 0.0, 90.0); // 7 | 135  mid - 0 in behind - 270 in front
+
+    //Wrists
+    double wrist_liedown = -160.0;
+    FL_Wrist.Initialize(4, wrist_liedown, 0, 0.0, FL, Wrist, 1755, 2320, -90.0, -165.0);  // 8 | 90 straight - 270 bent in
+    FR_Wrist.Initialize(7, wrist_liedown, 0, 0.0, FR, Wrist, 1805, 1150, 0.0, -90.0); // 9 | 180 straight - 0 bent in
+    BL_Wrist.Initialize(10, wrist_liedown, 0, 0.0, BL, Wrist, 1100, 1733, 0.0, -90.0); // 10 | 90 straight - 270 bent in
+    BR_Wrist.Initialize(13, wrist_liedown, 0, 0.0, BR, Wrist, 1788, 1153, 0.0, -90.0); // 11 | 180 straight - 0 bent in
+
+    // Contact Sensors
+    FL_sensor.Initialize(A9, 17);
+    FR_sensor.Initialize(A8, 16);
+    BL_sensor.Initialize(A7, 15);
+    BR_sensor.Initialize(A6, 14);
+
+    // IMU
+    imu_sensor.Initialize();
+
+    // NOTE: See top of file for spot_mode explanation:
+    if (spot_mode == STRAIGHT_LEGS)
+    {
+      straight_calibration_sequence();
+    } else if (spot_mode == LIEDOWN)
+    {
+      lie_calibration_sequence();
+    } else if (spot_mode == PERPENDICULAR_LEGS)
+    {
+      perpendicular_calibration_sequence();
+    } else
+    {
+      run_sequence();
+    }
   }
 
   last_estop = millis();
@@ -325,9 +334,14 @@ void loop()
     prev_publish_time = micros();
   }
 
-  if(!ESTOPPED){
+  // Only allow controller commands if not E-STOPPED
+  // Direct pulse commands from calibration still allowed.
+  if(!ESTOPPED)
+  {
     update_servos();
   }
+
+  // Update Sensors
   update_sensors();
   
   // Command Servos
