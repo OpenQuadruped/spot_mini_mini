@@ -61,6 +61,12 @@ public:
     /// \param pulse: pulse width to write
     void writePulse(const int & pulse);
 
+    /// \brief Attach servo
+    /// \param servo_pin: pin number on Teensy 4.0 (see dataseet)
+    /// \param min_pwm: minimum us value
+    /// \param max_pwm: maximum us value
+    void AssemblyInit(const int & servo_pin, const int & min_pwm_, const int & max_pwm_);
+
 
 
 private:

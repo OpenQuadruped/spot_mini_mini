@@ -7,7 +7,7 @@ void SpotServo::Initialize(const int & servo_pin, const double & stand_angle_, c
 						   const int & min_pwm_, const int & max_pwm_, const double & ang_min_pwm, const double & ang_max_pwm)
 {
 	// use defaults for servo attach
-	servo.attach(servo_pin, min_pwm, max_pwm);
+	AssemblyInit(servo_pin, min_pwm, max_pwm);
 	// these are not really min and max, just used for interpolation
 	min_pwm = min_pwm_;
 	max_pwm = max_pwm_;
@@ -114,4 +114,10 @@ void SpotServo::writePulse(const int & pulse)
 {
 	servo.writeMicroseconds(pulse);
 	calibrating = true;
+}
+
+void SpotServo::AssemblyInit(const int & servo_pin, const int & min_pwm_, const int & max_pwm_)
+{
+	// use defaults for servo attach
+	servo.attach(servo_pin, min_pwm, max_pwm);
 }

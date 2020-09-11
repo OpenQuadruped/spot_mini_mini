@@ -168,7 +168,26 @@ void set_stance(const double & f_shoulder_stance = 0.0, const double & f_elbow_s
 // Set servo pwm values to nominal assuming 500~2500 range and 270 degree servos.
 void nominal_servo_pwm(const double & servo_range = 270, const int & min_pwm = 500, const int & max_pwm = 2500)
 {
-  // halfway
+  // Attach motors for assembly
+  // Shoulders
+  FL_Shoulder.AssemblyInit(2, min_pwm, max_pwm);
+  FR_Shoulder.AssemblyInit(5, min_pwm, max_pwm);
+  BL_Shoulder.AssemblyInit(8, min_pwm, max_pwm);
+  BR_Shoulder.AssemblyInit(11, min_pwm, max_pwm);
+  
+  //Elbows
+  FL_Elbow.AssemblyInit(3, min_pwm, max_pwm);
+  FR_Elbow.AssemblyInit(6, min_pwm, max_pwm);
+  BL_Elbow.AssemblyInit(9, min_pwm, max_pwm);
+  BR_Elbow.AssemblyInit(12, min_pwm, max_pwm);
+
+  //Wrists
+  FL_Wrist.AssemblyInit(4, min_pwm, max_pwm);
+  FR_Wrist.AssemblyInit(7, min_pwm, max_pwm);
+  BL_Wrist.AssemblyInit(10, min_pwm, max_pwm);
+  BR_Wrist.AssemblyInit(13, min_pwm, max_pwm);
+
+  // halfway for shoulder and elbow
   int halfway_pulse = round(0.5 * (max_pwm - min_pwm) + min_pwm); // 1500
   int shoulder_pulse = halfway_pulse; // 1500
   int elbow_pulse = halfway_pulse; // 1500
