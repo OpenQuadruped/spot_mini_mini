@@ -68,26 +68,29 @@ double SpotServo::GetPoseEstimate()
 
 void SpotServo::actuate()
 {
-	// Only update position if not within threshold
-	if(!GoalReached())
+	if (goal_pose > -998)
 	{
-		// returns 1.0 * sign of goal_pose - current_pose
-		double direction = 1.0;
-		if (goal_pose - current_pose < 0.0)
+		// Only update position if not within threshold
+		if(!GoalReached())
 		{
-			direction = -1.0;
+			// returns 1.0 * sign of goal_pose - current_pose
+			double direction = 1.0;
+			if (goal_pose - current_pose < 0.0)
+			{
+				direction = -1.0;
+			}
+			current_pose += direction * (wait_time / 1000.0) * desired_speed;
+			int pwm = round((current_pose) * conv_slope + conv_intcpt);
+			servo.writeMicroseconds(pwm);
+			last_actuated = millis();
+		} else
+		// if we are at small error thresh, actuate directly
+		{
+			int pwm = round((goal_pose) * conv_slope + conv_intcpt);
+			current_pose = goal_pose;
+			servo.writeMicroseconds(pwm);
+			last_actuated = millis();
 		}
-		current_pose += direction * (wait_time / 1000.0) * desired_speed;
-		int pwm = round((current_pose) * conv_slope + conv_intcpt);
-		servo.writeMicroseconds(pwm);
-		last_actuated = millis();
-	} else
-	// if we are at small error thresh, actuate directly
-	{
-		int pwm = round((goal_pose) * conv_slope + conv_intcpt);
-		current_pose = goal_pose;
-		servo.writeMicroseconds(pwm);
-		last_actuated = millis();
 	}
 
 }

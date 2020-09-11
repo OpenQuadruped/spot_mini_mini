@@ -260,7 +260,8 @@ void perpendicular_calibration_sequence()
 }
 
 // THIS ONLY RUNS ONCE
-void setup() {
+void setup()
+{
 
   Serial.begin(9600);
 

@@ -91,7 +91,7 @@ private:
     double stand_angle = 0.0;
 
     // Changeable Parameters
-    double goal_pose = 0.0; // deg
+    double goal_pose = -999; // deg
     double current_pose = 0.0; // deg
     double desired_speed = 0.0; // deg/sec
 
