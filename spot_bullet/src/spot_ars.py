@@ -162,12 +162,25 @@ def main():
             .format(t + 1, episode_num, episode_timesteps, episode_reward,
                     episode_reward / float(episode_timesteps)))
 
+        # Store Results (concat)
+        if episode_num == 0:
+            res = np.array(
+                [[episode_reward, episode_reward / float(episode_timesteps)]])
+        else:
+            new_res = np.array(
+                [[episode_reward, episode_reward / float(episode_timesteps)]])
+            res = np.concatenate((res, new_res))
+
+        # Also Save Results So Far (Overwrite)
+        # Results contain 2D numpy array of total reward for each ep
+        # and reward per timestep for each ep
+        np.save(results_path + "/" + str(file_name), res)
+
         # Evaluate episode
         if (episode_num + 1) % eval_freq == 0:
             if save_model:
                 agent.save(models_path + "/" + str(file_name) +
                            str(episode_num))
-                # replay_buffer.save(t)
 
         episode_num += 1
 

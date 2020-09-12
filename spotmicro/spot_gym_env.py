@@ -349,13 +349,14 @@ class spotGymEnv(gym.Env):
         if self._env_randomizer is not None:
             self._env_randomizer.randomize_env(self)
 
+            # Also update heightfield if wr are wholly randomizing
+            if self.height_field:
+                self.hf.UpdateHeightField()
+
         if desired_velocity is not None:
             self.desired_velocity = desired_velocity
         if desired_rate is not None:
             self.desired_rate = desired_rate
-
-        if self.height_field:
-            self.hf.UpdateHeightField()
 
         self._pybullet_client.setPhysicsEngineParameter(enableConeFriction=0)
         self._env_step_counter = 0
