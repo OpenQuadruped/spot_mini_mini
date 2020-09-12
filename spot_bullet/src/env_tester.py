@@ -13,6 +13,7 @@ from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.Kinematics.LieAlgebra import RPY
 from spotmicro.GaitGenerator.Bezier import BezierGait
+from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
 # TESTING
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
@@ -44,6 +45,10 @@ parser.add_argument("-ay",
 parser.add_argument("-ar",
                     "--AutoReset",
                     help="Automatically Reset Environment When Spot Falls",
+                    action='store_true')
+parser.add_argument("-dr",
+                    "--DontRandomize",
+                    help="Do NOT Randomize State and Environment.",
                     action='store_true')
 ARGS = parser.parse_args()
 
@@ -81,10 +86,16 @@ def main():
     else:
         height_field = False
 
+    if ARGS.DontRandomize:
+        env_randomizer = None
+    else:
+        env_randomizer = SpotEnvRandomizer()
+
     env = spotBezierEnv(render=True,
                         on_rack=on_rack,
                         height_field=height_field,
-                        draw_foot_path=draw_foot_path)
+                        draw_foot_path=draw_foot_path,
+                        env_randomizer=env_randomizer)
 
     # Set seeds
     env.seed(seed)
@@ -100,8 +111,7 @@ def main():
 
     g_u_i = GUI(env.spot.quadruped)
 
-    spot = SpotModel(
-    )
+    spot = SpotModel()
     T_bf0 = spot.WorldToFoot
     T_bf = copy.deepcopy(T_bf0)
 

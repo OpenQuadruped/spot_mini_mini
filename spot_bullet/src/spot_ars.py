@@ -12,6 +12,7 @@ from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
+from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
 import time
 from ars_lib.ars import ARSAgent, Normalizer, Policy, ParallelWorker
@@ -35,6 +36,10 @@ parser.add_argument("-hf",
 parser.add_argument("-nc",
                     "--NoContactSensing",
                     help="Disable Contact Sensing",
+                    action='store_true')
+parser.add_argument("-dr",
+                    "--DontRandomize",
+                    help="Do NOT Randomize State and Environment.",
                     action='store_true')
 ARGS = parser.parse_args()
 
@@ -66,6 +71,11 @@ def main():
     else:
         contacts = True
 
+    if ARGS.DontRandomize:
+        env_randomizer = None
+    else:
+        env_randomizer = SpotEnvRandomizer()
+
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
     results_path = os.path.join(my_path, "../results")
@@ -84,7 +94,8 @@ def main():
                         on_rack=False,
                         height_field=height_field,
                         draw_foot_path=False,
-                        contacts=contacts)
+                        contacts=contacts,
+                        env_randomizer=env_randomizer)
 
     # Set seeds
     env.seed(seed)

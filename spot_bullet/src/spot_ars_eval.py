@@ -12,6 +12,7 @@ from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
+from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
 import os
 
@@ -47,6 +48,10 @@ parser.add_argument("-nc",
 parser.add_argument("-a",
                     "--AgentNum",
                     help="Agent Number To Load")
+parser.add_argument("-dr",
+                    "--DontRandomize",
+                    help="Do NOT Randomize State and Environment.",
+                    action='store_true')
 ARGS = parser.parse_args()
 
 
@@ -86,6 +91,11 @@ def main():
     else:
         render = True
 
+    if ARGS.DontRandomize:
+        env_randomizer = None
+    else:
+        env_randomizer = SpotEnvRandomizer()
+
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
     results_path = os.path.join(my_path, "../results")
@@ -104,7 +114,8 @@ def main():
                         on_rack=on_rack,
                         height_field=height_field,
                         draw_foot_path=draw_foot_path,
-                        contacts=contacts)
+                        contacts=contacts,
+                        env_randomizer=env_randomizer)
 
     # Set seeds
     env.seed(seed)
