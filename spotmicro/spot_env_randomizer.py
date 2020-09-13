@@ -6,7 +6,7 @@ from . import env_randomizer_base
 spot_BASE_MASS_ERROR_RANGE = (-0.2, 0.2)  # 0.2 means 20%
 spot_LEG_MASS_ERROR_RANGE = (-0.2, 0.2)  # 0.2 means 20%
 # Absolute range.
-BATTERY_VOLTAGE_RANGE = (14.8, 16.8)  # Unit: Volt
+BATTERY_VOLTAGE_RANGE = (7.0, 8.4)  # Unit: Volt
 MOTOR_VISCOUS_DAMPING_RANGE = (0, 0.01)  # Unit: N*m*s/rad (torque/angular vel)
 spot_LEG_FRICTION = (0.8, 1.5)  # Unit: dimensionless
 
