@@ -17,6 +17,20 @@ parser = argparse.ArgumentParser(description=descr)
 parser.add_argument("-nep",
                     "--NumberOfEpisodes",
                     help="Number of Episodes to Plot Data For")
+parser.add_argument("-tr",
+                    "--TrainingData",
+                    help="Plot Training Curve instead of Survival Curve",
+                    action='store_true')
+parser.add_argument("-tot",
+                    "--TotalReward",
+                    help="Show Total Reward instead of Reward Per Timestep",
+                    action='store_true')
+parser.add_argument("-ar",
+                    "--RandAgentNum",
+                    help="Randomized Agent Number To Load")
+parser.add_argument("-anor",
+                    "--NoRandAgentNum",
+                    help="Non-Randomized Agent Number To Load")
 ARGS = parser.parse_args()
 
 
@@ -27,55 +41,90 @@ def main():
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
     results_path = os.path.join(my_path, "../results")
-    models_path = os.path.join(my_path, "../models")
 
     if not os.path.exists(results_path):
         os.makedirs(results_path)
 
-    if not os.path.exists(models_path):
-        os.makedirs(models_path)
-
-    bezier_surv = np.random.randn(1000)
+    vanilla_surv = np.random.randn(1000)
     agent_surv = np.random.randn(1000)
 
     nep = 1000
 
     if ARGS.NumberOfEpisodes:
         nep = ARGS.NumberOfEpisodes
+    if ARGS.TrainingData:
+        training = True
+    else:
+        training = False
+    rand_agt = 0
+    norand_agt = 0
+    if ARGS.RandAgentNum:
+        rand_agt = ARGS.RandAgentNum
+    if ARGS.NoRandAgentNum:
+        norand_agt = ARGS.NoRandAgentNum
 
-    # Bezier Data
-    if os.path.exists(results_path + "/" + str(file_name) + "vanilla" +
-                      '_survival_' + str(nep)):
-        with open(
-                results_path + "/" + str(file_name) + "vanilla" +
-                '_survival_' + str(nep), 'rb') as filehandle:
-            bezier_surv = pickle.load(filehandle)
+    if not training:
 
-    # Agent Data
-    if os.path.exists(results_path + "/" + str(file_name) + "agent" +
-                      '_survival_' + str(nep)):
-        with open(
-                results_path + "/" + str(file_name) + "agent" + '_survival_' +
-                str(nep), 'rb') as filehandle:
-            agent_surv = pickle.load(filehandle)
+        # Vanilla Data
+        if os.path.exists(results_path + "/" + str(file_name) + "vanilla" +
+                          '_survival_' + str(nep)):
+            with open(
+                    results_path + "/" + str(file_name) + "vanilla" +
+                    '_survival_' + str(nep), 'rb') as filehandle:
+                vanilla_surv = pickle.load(filehandle)
 
-    # convert the lists to series
-    data = {'Bezier': bezier_surv, 'GMBC': agent_surv}
+        # Rand Agent Data
+        if os.path.exists(results_path + "/" + str(file_name) + "agent_" +
+                          str(rand_agt) + '_survival_' + str(nep)):
+            with open(
+                    results_path + "/" + str(file_name) + "agent_" +
+                    str(rand_agt) + '_survival_' + str(nep), 'rb') as filehandle:
+                rand_agent_surv = pickle.load(filehandle)
 
-    colors = ['b', 'r']
+        # NoRand Agent Data
+        if os.path.exists(results_path + "/" + str(file_name) + "agent_" +
+                          str(norand_agt) + '_survival_' + str(nep)):
+            with open(
+                    results_path + "/" + str(file_name) + "agent_" +
+                    str(norand_agt) + '_survival_' + str(nep), 'rb') as filehandle:
+                norand_agent_surv = pickle.load(filehandle)
 
-    # get dataframe
-    df = pd.DataFrame(data)
-    print(df)
+        # convert the lists to series
+        data = {'Vanilla': vanilla_surv, 'GMBC Rand': rand_agent_surv, 'GMBC NoRand': norand_agent_surv}
 
-    # Plot
-    for i, col in enumerate(df.columns):
-        sns.distplot(df[[col]], color=colors[i])
+        colors = ['b', 'r', 'g']
 
-    plt.legend(labels=['Bezier', 'GMBC'])
-    plt.xlabel("Survived Timestep")
-    plt.ylabel("Kernel Density Estimate")
-    plt.show()
+        # get dataframe
+        df = pd.DataFrame(data)
+        print(df)
+
+        # Plot
+        for i, col in enumerate(df.columns):
+            sns.distplot(df[[col]], color=colors[i])
+
+        plt.legend(labels=['Bezier', 'GMBC Rand', 'GMBC NoRand'])
+        plt.xlabel("Survived Distance (x)")
+        plt.ylabel("Kernel Density Estimate")
+        plt.show()
+
+    else:
+        # Training Data Plotter
+        rand_data = np.load(results_path + "/spot_ars_rand.npy")
+        norand_data = np.load(results_path + "/spot_ars_norand.npy")
+
+        plt.plot()
+        if ARGS.TotalReward:
+            plt.plot(rand_data[:, 0], label="Randomized (Total Reward)")
+            plt.plot(norand_data[:, 0], label="Non-Randomized (Total Reward)")
+        else:
+            plt.plot(rand_data[:, 1], label="Randomized (Reward/dt)")
+            plt.plot(norand_data[:, 1], label="Non-Randomized (Reward/dt)")
+        plt.xlabel("Epoch #")
+        plt.ylabel("Reward")
+        plt.title("Training Performance")
+        plt.legend()
+        plt.show()
+
 
 
 if __name__ == '__main__':
