@@ -61,6 +61,22 @@ I'm in the middle of moving so it's difficult for me to get detailed images/inst
 
 During assembly, make sure the motors are powered and that you select `NOMINAL_PWM` mode in the `main.cpp` file that runs on the `Teensy`. **NOTE:** Be sure to consult `nominal_servo_pwm()` to input your correct servo angle and pwm ranges for a successful calibration. For example, I am using `270` degree motors with `500` min and `2500` max PWM.
 
+#### Motor Plug In Order
+```
+M01 front left shoulder
+M02 front left elbow
+M03 front left wrist
+M04 front right shoulder
+M05 front right elbow
+M06 front right wrist
+M07 back left shoulder
+M08 back left elbow
+M09 back left wrist
+M10 back right shoulder
+M11 back right elbow
+M12 back right wrist
+```
+
 #### Recommended Order
 * Main Body
 * Legs
