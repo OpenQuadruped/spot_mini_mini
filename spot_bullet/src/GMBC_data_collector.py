@@ -168,7 +168,7 @@ def main():
     # Store results
     if use_agent:
         # Store _agent
-        agt = "agent"
+        agt = "agent_" + str(agent_num)
     else:
         # Store _vanilla
         agt = "vanilla"
