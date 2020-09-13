@@ -77,7 +77,7 @@ M11 back right elbow
 M12 back right wrist
 ```
 
-#### Recommended Order
+#### Recommended Build Order
 * Main Body
 * Legs
 * Inner Hips
