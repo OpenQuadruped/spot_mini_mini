@@ -540,6 +540,9 @@ class ARSAgent():
         self.smach.ClearanceHeight = self.BaseClearanceHeight
         return sum_rewards, timesteps
 
+    def returnPose(self):
+        return self.env.spot.GetBasePosition()
+
     def train(self):
         # Sample random expl_noise deltas
         print("-------------------------------")

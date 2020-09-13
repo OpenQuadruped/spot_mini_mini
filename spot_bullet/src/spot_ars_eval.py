@@ -25,7 +25,7 @@ parser.add_argument("-hf",
                     "--HeightField",
                     help="Use HeightField",
                     action='store_true')
-parser.add_argument("-dr",
+parser.add_argument("-nr",
                     "--DontRender",
                     help="Don't Render environment",
                     action='store_true')
@@ -157,9 +157,6 @@ def main():
         agent.load(models_path + "/" + file_name + str(agent_num))
         agent.policy.episode_steps = np.inf
         policy = agent.policy
-
-    # Evaluate untrained agent and init list for storage
-    evaluations = []
 
     env.reset()
     episode_reward = 0

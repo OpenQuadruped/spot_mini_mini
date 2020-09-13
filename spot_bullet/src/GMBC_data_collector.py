@@ -12,6 +12,7 @@ from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait
 from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
+from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
 import os
 
@@ -35,6 +36,14 @@ parser.add_argument("-a", "--AgentNum", help="Agent Number To Load")
 parser.add_argument("-nep",
                     "--NumberOfEpisodes",
                     help="Number of Episodes to Collect Data For")
+parser.add_argument("-dr",
+                    "--DontRandomize",
+                    help="Do NOT Randomize State and Environment.",
+                    action='store_true')
+parser.add_argument("-nc",
+                    "--NoContactSensing",
+                    help="Disable Contact Sensing",
+                    action='store_true')
 ARGS = parser.parse_args()
 
 
@@ -49,12 +58,30 @@ def main():
     max_episodes = 1000
     if ARGS.NumberOfEpisodes:
         max_episodes = ARGS.NumberOfEpisodes
+    if ARGS.HeightField:
+        height_field = True
+    else:
+        height_field = False
+
+    if ARGS.NoContactSensing:
+        contacts = False
+    else:
+        contacts = True
+
+    if ARGS.DontRandomize:
+        env_randomizer = None
+    else:
+        env_randomizer = SpotEnvRandomizer()
+
     file_name = "spot_ars_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
     results_path = os.path.join(my_path, "../results")
-    models_path = os.path.join(my_path, "../models")
+    if contacts:
+        models_path = os.path.join(my_path, "../models/contact")
+    else:
+        models_path = os.path.join(my_path, "../models/no_contact")
 
     if not os.path.exists(results_path):
         os.makedirs(results_path)
@@ -70,7 +97,9 @@ def main():
     env = spotBezierEnv(render=False,
                         on_rack=False,
                         height_field=height_field,
-                        draw_foot_path=False)
+                        draw_foot_path=False,
+                        contacts=contacts,
+                        env_randomizer=env_randomizer)
 
     # Set seeds
     env.seed(seed)
@@ -116,19 +145,22 @@ def main():
 
     print("STARTED MINITAUR TEST SCRIPT")
 
-    # Used to create gaussian distribution of survival
-    surv_dt = []
+    # Used to create gaussian distribution of survival distance
+    surv_pos = []
 
     while episode_num < (int(max_episodes)):
 
         episode_reward, episode_timesteps = agent.deployTG()
+        # We only care about x/y pos
+        travelled_pos = agent.returnPose()[:2]
         episode_num += 1
 
         # Store dt and frequency for prob distribution
-        surv_dt.append(episode_timesteps)
+        surv_pos.append(travelled_pos)
 
         print("Episode Num: {} Episode T: {} Reward: {}".format(
             episode_num, episode_timesteps, episode_reward))
+        print("Survival Pos: {}".format(surv_pos[-1]))
 
     env.close()
     print("---------------------------------------")
@@ -144,7 +176,7 @@ def main():
     with open(
             results_path + "/" + str(file_name) + agt + '_survival_' +
             str(max_episodes), 'wb') as filehandle:
-        pickle.dump(surv_dt, filehandle)
+        pickle.dump(surv_pos, filehandle)
 
 
 if __name__ == '__main__':
