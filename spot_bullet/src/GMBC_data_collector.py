@@ -148,11 +148,17 @@ def main():
     # Used to create gaussian distribution of survival distance
     surv_pos = []
 
+    # Reset every 200 episodes (pb client doesn't like running for long)
+    reset_ep = 200
+
     while episode_num < (int(max_episodes)):
 
         episode_reward, episode_timesteps = agent.deployTG()
         # We only care about x/y pos
-        travelled_pos = agent.returnPose()[:2]
+        travelled_pos = list(agent.returnPose())
+        # NOTE: FORMAT: X, Y, TIMESTEPS -
+        # tells us if robobt was just stuck forever. didn't actually fall.
+        travelled_pos[-1] = episode_timesteps
         episode_num += 1
 
         # Store dt and frequency for prob distribution
@@ -161,6 +167,20 @@ def main():
         print("Episode Num: {} Episode T: {} Reward: {}".format(
             episode_num, episode_timesteps, episode_reward))
         print("Survival Pos: {}".format(surv_pos[-1]))
+
+        # Reset every X episodes (pb client doesn't like running for long)
+        if episode_num % reset_ep == 0:
+            env.close()
+            env = spotBezierEnv(render=False,
+                                on_rack=False,
+                                height_field=height_field,
+                                draw_foot_path=False,
+                                contacts=contacts,
+                                env_randomizer=env_randomizer)
+
+            # Set seeds
+            env.seed(seed)
+            agent.env = env
 
     env.close()
     print("---------------------------------------")
