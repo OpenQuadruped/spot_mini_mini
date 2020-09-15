@@ -39,7 +39,6 @@ parser.add_argument("-raw",
                     help="Plot Raw Data in addition to Moving Averaged Data")
 ARGS = parser.parse_args()
 
-
 MA_WINDOW = 150
 if ARGS.MovingAverageWindow:
     MA_WINDOW = ARGS.MovingAverageWindow
@@ -73,8 +72,8 @@ def main():
         training = True
     else:
         training = False
-    rand_agt = 0
-    norand_agt = 0
+    rand_agt = 579
+    norand_agt = 569
     if ARGS.RandAgentNum:
         rand_agt = ARGS.RandAgentNum
     if ARGS.NoRandAgentNum:
@@ -88,7 +87,7 @@ def main():
             with open(
                     results_path + "/" + str(file_name) + "vanilla" +
                     '_survival_' + str(nep), 'rb') as filehandle:
-                vanilla_surv = pickle.load(filehandle)
+                vanilla_surv = np.array(pickle.load(filehandle))
 
         # Rand Agent Data
         if os.path.exists(results_path + "/" + str(file_name) + "agent_" +
@@ -97,7 +96,7 @@ def main():
                     results_path + "/" + str(file_name) + "agent_" +
                     str(rand_agt) + '_survival_' + str(nep),
                     'rb') as filehandle:
-                rand_agent_surv = pickle.load(filehandle)
+                rand_agent_surv = np.array(pickle.load(filehandle))
 
         # NoRand Agent Data
         if os.path.exists(results_path + "/" + str(file_name) + "agent_" +
@@ -106,16 +105,21 @@ def main():
                     results_path + "/" + str(file_name) + "agent_" +
                     str(norand_agt) + '_survival_' + str(nep),
                     'rb') as filehandle:
-                norand_agent_surv = pickle.load(filehandle)
+                norand_agent_surv = np.array(pickle.load(filehandle))
+                # print(norand_agent_surv[:, 0])
 
+        # Extract useful values
+        vanilla_surv_x = vanilla_surv[:, 0]
+        rand_agent_surv_x = rand_agent_surv[:, 0]
+        norand_agent_x = norand_agent_surv[:, 0]
         # convert the lists to series
         data = {
-            'Vanilla': vanilla_surv,
-            'GMBC Rand': rand_agent_surv,
-            'GMBC NoRand': norand_agent_surv
+            'Vanilla': vanilla_surv_x[:1000],
+            'GMBC Rand': rand_agent_surv_x,
+            'GMBC NoRand': norand_agent_x
         }
 
-        colors = ['b', 'r', 'g']
+        colors = ['r', 'g', 'b']
 
         # get dataframe
         df = pd.DataFrame(data)
@@ -125,7 +129,7 @@ def main():
         for i, col in enumerate(df.columns):
             sns.distplot(df[[col]], color=colors[i])
 
-        plt.legend(labels=['Bezier', 'GMBC Rand', 'GMBC NoRand'])
+        plt.legend(labels=['GMBC NoRand', 'GMBC Rand', 'Vanilla'])
         plt.xlabel("Survived Distance (x)")
         plt.ylabel("Kernel Density Estimate")
         plt.show()
@@ -141,7 +145,8 @@ def main():
             MA_norand_data = moving_average(norand_data[:, 0])
             if ARGS.Raw:
                 plt.plot(rand_data[:, 0], label="Randomized (Total Reward)")
-                plt.plot(norand_data[:, 0], label="Non-Randomized (Total Reward)")
+                plt.plot(norand_data[:, 0],
+                         label="Non-Randomized (Total Reward)")
             plt.plot(MA_norand_data, label="MA: Non-Randomized (Total Reward)")
             plt.plot(MA_rand_data, label="MA: Randomized (Total Reward)")
         else:

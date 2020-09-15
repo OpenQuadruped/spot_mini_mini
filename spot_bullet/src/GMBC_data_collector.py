@@ -54,7 +54,7 @@ def main():
 
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
-    seed = 1
+    seed = 4
     max_episodes = 1000
     if ARGS.NumberOfEpisodes:
         max_episodes = ARGS.NumberOfEpisodes
