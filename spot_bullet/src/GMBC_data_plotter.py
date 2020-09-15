@@ -130,7 +130,7 @@ def main():
             sns.distplot(df[[col]], color=colors[i])
 
         plt.legend(labels=['GMBC NoRand', 'GMBC Rand', 'Vanilla'])
-        plt.xlabel("Survived Distance (x)")
+        plt.xlabel("FWD Survived Distance (m)")
         plt.ylabel("Kernel Density Estimate")
         plt.show()
 
