@@ -34,6 +34,9 @@ parser.add_argument("-ar",
 parser.add_argument("-anor",
                     "--NoRandAgentNum",
                     help="Non-Randomized Agent Number To Load")
+parser.add_argument("-raw",
+                    "--Raw",
+                    help="Plot Raw Data in addition to Moving Averaged Data")
 ARGS = parser.parse_args()
 
 
@@ -136,15 +139,17 @@ def main():
         if ARGS.TotalReward:
             MA_rand_data = moving_average(rand_data[:, 0])
             MA_norand_data = moving_average(norand_data[:, 0])
-            plt.plot(rand_data[:, 0], label="Randomized (Total Reward)")
-            plt.plot(norand_data[:, 0], label="Non-Randomized (Total Reward)")
+            if ARGS.Raw:
+                plt.plot(rand_data[:, 0], label="Randomized (Total Reward)")
+                plt.plot(norand_data[:, 0], label="Non-Randomized (Total Reward)")
             plt.plot(MA_norand_data, label="MA: Non-Randomized (Total Reward)")
             plt.plot(MA_rand_data, label="MA: Randomized (Total Reward)")
         else:
             MA_rand_data = moving_average(rand_data[:, 1])
             MA_norand_data = moving_average(norand_data[:, 1])
-            # plt.plot(rand_data[:, 1], label="Randomized (Reward/dt)")
-            # plt.plot(norand_data[:, 1], label="Non-Randomized (Reward/dt)")
+            if ARGS.Raw:
+                plt.plot(rand_data[:, 1], label="Randomized (Reward/dt)")
+                plt.plot(norand_data[:, 1], label="Non-Randomized (Reward/dt)")
             plt.plot(MA_norand_data, label="MA: Non-Randomized (Reward/dt)")
             plt.plot(MA_rand_data, label="MA: Randomized (Reward/dt)")
         plt.xlabel("Epoch #")
