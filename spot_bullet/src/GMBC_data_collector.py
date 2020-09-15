@@ -54,7 +54,7 @@ def main():
 
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
-    seed = 0
+    seed = 1
     max_episodes = 1000
     if ARGS.NumberOfEpisodes:
         max_episodes = ARGS.NumberOfEpisodes
@@ -148,8 +148,13 @@ def main():
     # Used to create gaussian distribution of survival distance
     surv_pos = []
 
-    # Reset every 200 episodes (pb client doesn't like running for long)
-    reset_ep = 200
+    # Store results
+    if use_agent:
+        # Store _agent
+        agt = "agent_" + str(agent_num)
+    else:
+        # Store _vanilla
+        agt = "vanilla"
 
     while episode_num < (int(max_episodes)):
 
@@ -167,36 +172,14 @@ def main():
         print("Episode Num: {} Episode T: {} Reward: {}".format(
             episode_num, episode_timesteps, episode_reward))
         print("Survival Pos: {}".format(surv_pos[-1]))
-
-        # Reset every X episodes (pb client doesn't like running for long)
-        if episode_num % reset_ep == 0:
-            env.close()
-            env = spotBezierEnv(render=False,
-                                on_rack=False,
-                                height_field=height_field,
-                                draw_foot_path=False,
-                                contacts=contacts,
-                                env_randomizer=env_randomizer)
-
-            # Set seeds
-            env.seed(seed)
-            agent.env = env
+        # Save/Overwrite each time
+        with open(
+                results_path + "/" + str(file_name) + agt + '_survival_' +
+                str(max_episodes), 'wb') as filehandle:
+            pickle.dump(surv_pos, filehandle)
 
     env.close()
     print("---------------------------------------")
-
-    # Store results
-    if use_agent:
-        # Store _agent
-        agt = "agent_" + str(agent_num)
-    else:
-        # Store _vanilla
-        agt = "vanilla"
-
-    with open(
-            results_path + "/" + str(file_name) + agt + '_survival_' +
-            str(max_episodes), 'wb') as filehandle:
-        pickle.dump(surv_pos, filehandle)
 
 
 if __name__ == '__main__':

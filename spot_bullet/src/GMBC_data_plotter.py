@@ -17,6 +17,9 @@ parser = argparse.ArgumentParser(description=descr)
 parser.add_argument("-nep",
                     "--NumberOfEpisodes",
                     help="Number of Episodes to Plot Data For")
+parser.add_argument("-maw",
+                    "--MovingAverageWindow",
+                    help="Moving Average Window for Plotting (Default: 150)")
 parser.add_argument("-tr",
                     "--TrainingData",
                     help="Plot Training Curve instead of Survival Curve",
@@ -32,6 +35,17 @@ parser.add_argument("-anor",
                     "--NoRandAgentNum",
                     help="Non-Randomized Agent Number To Load")
 ARGS = parser.parse_args()
+
+
+MA_WINDOW = 150
+if ARGS.MovingAverageWindow:
+    MA_WINDOW = ARGS.MovingAverageWindow
+
+
+def moving_average(a, n=MA_WINDOW):
+    MA = np.cumsum(a, dtype=float)
+    MA[n:] = MA[n:] - MA[:-n]
+    return MA[n - 1:] / n
 
 
 def main():
@@ -78,7 +92,8 @@ def main():
                           str(rand_agt) + '_survival_' + str(nep)):
             with open(
                     results_path + "/" + str(file_name) + "agent_" +
-                    str(rand_agt) + '_survival_' + str(nep), 'rb') as filehandle:
+                    str(rand_agt) + '_survival_' + str(nep),
+                    'rb') as filehandle:
                 rand_agent_surv = pickle.load(filehandle)
 
         # NoRand Agent Data
@@ -86,11 +101,16 @@ def main():
                           str(norand_agt) + '_survival_' + str(nep)):
             with open(
                     results_path + "/" + str(file_name) + "agent_" +
-                    str(norand_agt) + '_survival_' + str(nep), 'rb') as filehandle:
+                    str(norand_agt) + '_survival_' + str(nep),
+                    'rb') as filehandle:
                 norand_agent_surv = pickle.load(filehandle)
 
         # convert the lists to series
-        data = {'Vanilla': vanilla_surv, 'GMBC Rand': rand_agent_surv, 'GMBC NoRand': norand_agent_surv}
+        data = {
+            'Vanilla': vanilla_surv,
+            'GMBC Rand': rand_agent_surv,
+            'GMBC NoRand': norand_agent_surv
+        }
 
         colors = ['b', 'r', 'g']
 
@@ -114,17 +134,24 @@ def main():
 
         plt.plot()
         if ARGS.TotalReward:
+            MA_rand_data = moving_average(rand_data[:, 0])
+            MA_norand_data = moving_average(norand_data[:, 0])
             plt.plot(rand_data[:, 0], label="Randomized (Total Reward)")
             plt.plot(norand_data[:, 0], label="Non-Randomized (Total Reward)")
+            plt.plot(MA_norand_data, label="MA: Non-Randomized (Total Reward)")
+            plt.plot(MA_rand_data, label="MA: Randomized (Total Reward)")
         else:
-            plt.plot(rand_data[:, 1], label="Randomized (Reward/dt)")
-            plt.plot(norand_data[:, 1], label="Non-Randomized (Reward/dt)")
+            MA_rand_data = moving_average(rand_data[:, 1])
+            MA_norand_data = moving_average(norand_data[:, 1])
+            # plt.plot(rand_data[:, 1], label="Randomized (Reward/dt)")
+            # plt.plot(norand_data[:, 1], label="Non-Randomized (Reward/dt)")
+            plt.plot(MA_norand_data, label="MA: Non-Randomized (Reward/dt)")
+            plt.plot(MA_rand_data, label="MA: Randomized (Reward/dt)")
         plt.xlabel("Epoch #")
         plt.ylabel("Reward")
         plt.title("Training Performance")
         plt.legend()
         plt.show()
-
 
 
 if __name__ == '__main__':
