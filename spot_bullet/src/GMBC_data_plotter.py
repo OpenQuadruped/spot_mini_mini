@@ -145,6 +145,16 @@ def main():
                             str(seed) + ".npy")
         norand_data = np.load(results_path + "/spot_ars_norand_" + "seed" +
                               str(seed) + ".npy")
+        # norand_data1 = np.load(results_path + "/spot_ars_norand_" + "seed" +
+        #                        str(1) + ".npy")
+        # norand_data2 = np.load(results_path + "/spot_ars_norand_" + "seed" +
+        #                        str(2) + ".npy")
+        # norand_data3 = np.load(results_path + "/spot_ars_norand_" + "seed" +
+        #                        str(3) + ".npy")
+
+        # if norand_data.all() == norand_data1.all() == norand_data2.all(
+        # ) == norand_data3.all():
+        #     print("ALL SAME")
 
         plt.plot()
         if ARGS.TotalReward:

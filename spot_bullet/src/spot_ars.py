@@ -127,7 +127,7 @@ def main():
     normalizer = Normalizer(state_dim)
 
     # Initialize Policy
-    policy = Policy(state_dim, action_dim)
+    policy = Policy(state_dim, action_dim, seed=seed)
 
     # Initialize Agent with normalizer, policy and gym env
     agent = ARSAgent(normalizer, policy, env, bz_step, bzg, spot)
