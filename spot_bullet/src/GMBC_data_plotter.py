@@ -37,6 +37,7 @@ parser.add_argument("-anor",
 parser.add_argument("-raw",
                     "--Raw",
                     help="Plot Raw Data in addition to Moving Averaged Data")
+parser.add_argument("-s", "--Seed", help="Seed (Default: 0).")
 ARGS = parser.parse_args()
 
 MA_WINDOW = 150
@@ -53,6 +54,10 @@ def moving_average(a, n=MA_WINDOW):
 def main():
     """ The main() function. """
     file_name = "spot_ars_"
+
+    seed = 0
+    if ARGS.Seed:
+        seed = ARGS.Seed
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
@@ -136,8 +141,10 @@ def main():
 
     else:
         # Training Data Plotter
-        rand_data = np.load(results_path + "/spot_ars_rand.npy")
-        norand_data = np.load(results_path + "/spot_ars_norand.npy")
+        rand_data = np.load(results_path + "/spot_ars_rand_" + "seed" +
+                            str(seed) + ".npy")
+        norand_data = np.load(results_path + "/spot_ars_norand_" + "seed" +
+                              str(seed) + ".npy")
 
         plt.plot()
         if ARGS.TotalReward:
@@ -159,7 +166,7 @@ def main():
             plt.plot(MA_rand_data, label="MA: Randomized (Reward/dt)")
         plt.xlabel("Epoch #")
         plt.ylabel("Reward")
-        plt.title("Training Performance")
+        plt.title("Training Performance: Seed {}".format(seed))
         plt.legend()
         plt.show()
 

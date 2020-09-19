@@ -52,6 +52,9 @@ parser.add_argument("-dr",
                     "--DontRandomize",
                     help="Do NOT Randomize State and Environment.",
                     action='store_true')
+parser.add_argument("-s",
+                    "--Seed",
+                    help="Seed (Default: 0).")
 ARGS = parser.parse_args()
 
 
@@ -63,6 +66,9 @@ def main():
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
     seed = 0
+    if ARGS.Seed:
+        seed = ARGS.Seed
+
     max_timesteps = 4e6
     file_name = "spot_ars_"
 

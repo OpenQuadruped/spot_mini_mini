@@ -44,6 +44,9 @@ parser.add_argument("-nc",
                     "--NoContactSensing",
                     help="Disable Contact Sensing",
                     action='store_true')
+parser.add_argument("-s",
+                    "--Seed",
+                    help="Seed (Default: 0).")
 ARGS = parser.parse_args()
 
 
@@ -54,7 +57,9 @@ def main():
 
     # TRAINING PARAMETERS
     # env_name = "MinitaurBulletEnv-v0"
-    seed = 4
+    seed = 0
+    if ARGS.Seed:
+        seed = ARGS.Seed
     max_episodes = 1000
     if ARGS.NumberOfEpisodes:
         max_episodes = ARGS.NumberOfEpisodes

@@ -41,6 +41,7 @@ parser.add_argument("-dr",
                     "--DontRandomize",
                     help="Do NOT Randomize State and Environment.",
                     action='store_true')
+parser.add_argument("-s", "--Seed", help="Seed (Default: 0).")
 ARGS = parser.parse_args()
 
 # Messages for Pipe
@@ -56,6 +57,9 @@ def main():
 
     print("STARTING SPOT TRAINING ENV")
     seed = 0
+    if ARGS.Seed:
+        seed = int(ARGS.Seed)
+    print("SEED: {}".format(seed))
     max_timesteps = 4e6
     eval_freq = 1e1
     save_model = True
@@ -73,8 +77,10 @@ def main():
 
     if ARGS.DontRandomize:
         env_randomizer = None
+        rand_name = "norand_"
     else:
         env_randomizer = SpotEnvRandomizer()
+        rand_name = "rand_"
 
     # Find abs path to this file
     my_path = os.path.abspath(os.path.dirname(__file__))
@@ -185,7 +191,9 @@ def main():
         # Also Save Results So Far (Overwrite)
         # Results contain 2D numpy array of total reward for each ep
         # and reward per timestep for each ep
-        np.save(results_path + "/" + str(file_name), res)
+        np.save(
+            results_path + "/" + str(file_name) + rand_name + "seed" +
+            str(seed), res)
 
         # Evaluate episode
         if (episode_num + 1) % eval_freq == 0:
