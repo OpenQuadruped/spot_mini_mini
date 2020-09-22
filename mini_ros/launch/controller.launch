@@ -5,7 +5,7 @@
 
   <!-- Load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-    output="screen" ns="/spot" args="j1_pc j2_pc j3_pc j4_pc j5_pc j6_pc j7_pc j8_pc j9_pc j10_pc j11_pc j12_pc joint_state_controller"/>
+    output="screen" ns="/spot" args="joint_group_position_controller joint_states_controller"/>
 
 
   <!-- convert joint states to TF transforms for rviz, etc -->
