@@ -114,14 +114,14 @@ def main():
                 # print(norand_agent_surv[:, 0])
 
         # Extract useful values
-        vanilla_surv_x = vanilla_surv[:, 0]
+        vanilla_surv_x = vanilla_surv[:1000, 0]
         rand_agent_surv_x = rand_agent_surv[:, 0]
-        norand_agent_x = norand_agent_surv[:, 0]
+        norand_agent_surv_x = norand_agent_surv[:, 0]
         # convert the lists to series
         data = {
-            'Vanilla': vanilla_surv_x[:1000],
+            'Vanilla': vanilla_surv_x,
             'GMBC Rand': rand_agent_surv_x,
-            'GMBC NoRand': norand_agent_x
+            'GMBC NoRand': norand_agent_surv_x
         }
 
         colors = ['r', 'g', 'b']
@@ -135,9 +135,21 @@ def main():
             sns.distplot(df[[col]], color=colors[i])
 
         plt.legend(labels=['GMBC NoRand', 'GMBC Rand', 'Vanilla'])
-        plt.xlabel("FWD Survived Distance (m)")
+        plt.xlabel("Forward Survived Distance (m)")
         plt.ylabel("Kernel Density Estimate")
         plt.show()
+
+        # Print AVG and STDEV
+        norand_avg = np.average(norand_agent_surv_x)
+        norand_std = np.std(norand_agent_surv_x)
+        rand_avg = np.average(rand_agent_surv_x)
+        rand_std = np.std(rand_agent_surv_x)
+        vanilla_avg = np.average(vanilla_surv_x)
+        vanilla_std = np.std(vanilla_surv_x)
+
+        print("Vanilla: AVG [{}] | STD [{}]".format(vanilla_avg, vanilla_std))
+        print("RANDOM: AVG [{}] | STD [{}]".format(rand_avg, rand_std))
+        print("NOT RANDOM: AVG [{}] | STD [{}]".format(norand_avg, norand_std))
 
     else:
         # Training Data Plotter
@@ -145,35 +157,40 @@ def main():
                             str(seed) + ".npy")
         norand_data = np.load(results_path + "/spot_ars_norand_" + "seed" +
                               str(seed) + ".npy")
-        # norand_data1 = np.load(results_path + "/spot_ars_norand_" + "seed" +
-        #                        str(1) + ".npy")
-        # norand_data2 = np.load(results_path + "/spot_ars_norand_" + "seed" +
-        #                        str(2) + ".npy")
-        # norand_data3 = np.load(results_path + "/spot_ars_norand_" + "seed" +
-        #                        str(3) + ".npy")
-
-        # if norand_data.all() == norand_data1.all() == norand_data2.all(
-        # ) == norand_data3.all():
-        #     print("ALL SAME")
 
         plt.plot()
         if ARGS.TotalReward:
             MA_rand_data = moving_average(rand_data[:, 0])
             MA_norand_data = moving_average(norand_data[:, 0])
             if ARGS.Raw:
-                plt.plot(rand_data[:, 0], label="Randomized (Total Reward)")
+                plt.plot(rand_data[:, 0],
+                         label="Randomized (Total Reward)",
+                         color='r')
                 plt.plot(norand_data[:, 0],
-                         label="Non-Randomized (Total Reward)")
-            plt.plot(MA_norand_data, label="MA: Non-Randomized (Total Reward)")
-            plt.plot(MA_rand_data, label="MA: Randomized (Total Reward)")
+                         label="Non-Randomized (Total Reward)",
+                         color='g')
+            plt.plot(MA_norand_data,
+                     label="MA: Non-Randomized (Total Reward)",
+                     color='r')
+            plt.plot(MA_rand_data,
+                     label="MA: Randomized (Total Reward)",
+                     color='g')
         else:
             MA_rand_data = moving_average(rand_data[:, 1])
             MA_norand_data = moving_average(norand_data[:, 1])
             if ARGS.Raw:
-                plt.plot(rand_data[:, 1], label="Randomized (Reward/dt)")
-                plt.plot(norand_data[:, 1], label="Non-Randomized (Reward/dt)")
-            plt.plot(MA_norand_data, label="MA: Non-Randomized (Reward/dt)")
-            plt.plot(MA_rand_data, label="MA: Randomized (Reward/dt)")
+                plt.plot(rand_data[:, 1],
+                         label="Randomized (Reward/dt)",
+                         color='r')
+                plt.plot(norand_data[:, 1],
+                         label="Non-Randomized (Reward/dt)",
+                         color='g')
+            plt.plot(MA_norand_data,
+                     label="MA: Non-Randomized (Reward/dt)",
+                     color='r')
+            plt.plot(MA_rand_data,
+                     label="MA: Randomized (Reward/dt)",
+                     color='g')
         plt.xlabel("Epoch #")
         plt.ylabel("Reward")
         plt.title("Training Performance: Seed {}".format(seed))
