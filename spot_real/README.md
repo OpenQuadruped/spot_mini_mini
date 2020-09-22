@@ -54,3 +54,8 @@ See most recent [BOM](https://docs.google.com/spreadsheets/d/1Z4y59K8bY3r_442I70
 ![bom](media/BOM.png)
 
 Note that the actual cost of this project is reflected in the first group of items totalling `590 USD`. For users such as myself who did not own any hobbyist components before this project, I have included an expanded list of required purchases.
+
+
+### Assembly & Calibration
+
+Please consult ![this guide](https://github.com/moribots/spot_mini_mini/blob/spot/spot_real/Calibration.md) for assembly and calibration instructions.

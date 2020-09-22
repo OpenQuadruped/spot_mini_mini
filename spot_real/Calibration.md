@@ -12,7 +12,7 @@ During assembly, make sure the motors are powered and that you select `NOMINAL_P
 
 When the assembly in this mode is finished, the robot should have its legs extended and perpendicular to the body, like this:
 
-![NOM_PWM](media/STR_PWM.jpg)
+![NOM_PWM](media/STR_MODE.jpg)
 
 #### Motor Plug In Order
 ```
@@ -43,7 +43,7 @@ M12 back right wrist
 * Fasten the adapter plate onto the main plate using 16mm M3 bolts.
 * Fasten the battery to the bottom of the main plate using the battery holder and some M3 bolts.
 * Fasten the Raspberry Pi and Spot Mini Mini boards onto the adapter plate using 8mm M2 bolts.
-* Do your wiring now to avoid a hassle later. **TODO: Wiring Instructions - (simple enough to figure out in the meantime by following ![The Diagram](https://easyeda.com/adhamelarabawy/PowerDistributionBoard))**.
+* Do your wiring now to avoid a hassle later. **TODO: Wiring Instructions - (simple enough to figure out in the meantime by following [The Diagram](https://easyeda.com/adhamelarabawy/PowerDistributionBoard))**.
 
 #### Legs
 * Fasten two of your motors into each shoulder joint.
@@ -112,4 +112,4 @@ Within [main.cpp](https://github.com/moribots/spot_mini_mini/blob/spot/spot_real
 
 ![PWM Example](media/RUN_MODE.gif)
 
-Thank you ![Vincent](https://github.com/elpimous) for your feedback regarding this guide's clarity!
+Thank you [Vincent](https://github.com/elpimous) for your feedback regarding this guide's clarity!
