@@ -110,6 +110,6 @@ Within [main.cpp](https://github.com/moribots/spot_mini_mini/blob/spot/spot_real
 
 * `RUN`: Spot will start by lying down, and raise itself to its normal stance once all sensors/communications are ready. This is the default mode.
 
-![PWM Example](media/RUN_MODE.gif)
+![PWM Example](media/RUN_SEQ.gif)
 
 Thank you [Vincent](https://github.com/elpimous) for your feedback regarding this guide's clarity!
