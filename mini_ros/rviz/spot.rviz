@@ -114,15 +114,15 @@ Visualization Manager:
           Show Axes: true
           Show Trail: false
           Value: true
-        base_footprint:
+        base_inertia:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
+          Value: true
         base_link:
           Alpha: 1
           Show Axes: true
           Show Trail: false
-          Value: true
         battery:
           Alpha: 1
           Show Axes: false
@@ -198,7 +198,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: base_footprint
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -258,5 +258,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1200
-  X: 2266
-  Y: 0
+  X: 2392
+  Y: 87
