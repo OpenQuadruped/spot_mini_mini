@@ -93,7 +93,7 @@ Within [main.cpp](https://github.com/moribots/spot_mini_mini/blob/spot/spot_real
 
 ![PWM Example](media/STR_PWM.png)
 
-![PWM Example](media/STR_PWM.jpg)
+![PWM Example](media/STR_MODE.jpg)
 
 * `LIEDOWN`: Spot will stay lying down.
 
