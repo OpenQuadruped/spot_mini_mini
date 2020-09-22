@@ -1,7 +1,7 @@
 #ifndef SPOT_INCLUDE_GUARD_HPP
 #define SPOT_INCLUDE_GUARD_HPP
 /// \file
-/// \brief Spots library which contains high-level control functionality for the Spot Mini Mini.
+/// \brief Spots library which contains control functionality for Spot Mini Mini.
 #include <vector>
 #include <ros/ros.h>
 
