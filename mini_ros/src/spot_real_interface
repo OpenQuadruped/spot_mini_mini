@@ -24,33 +24,32 @@ from spotmicro.GaitGenerator.Bezier import BezierGait
 from spot_bullet.src.ars_lib.ars import ARSAgent, Normalizer, Policy
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 
+# Initialize Node
+rospy.init_node('Policies', anonymous=True)
+
 # Controller Params
-STEPLENGTH_SCALE = 0.05
-Z_SCALE_CTRL = 0.15
-RPY_SCALE = 0.785
-SV_SCALE = 0.05
-CHPD_SCALE = 0.0005
-YAW_SCALE = 1.25
+STEPLENGTH_SCALE = rospy.get_param("STEPLENGTH_SCALE")
+Z_SCALE_CTRL = rospy.get_param("Z_SCALE_CTRL")
+RPY_SCALE = rospy.get_param("RPY_SCALE")
+SV_SCALE = rospy.get_param("SV_SCALE")
+CHPD_SCALE = rospy.get_param("CHPD_SCALE")
+YAW_SCALE = rospy.get_param("YAW_SCALE")
 
 # AGENT PARAMS
-CD_SCALE = 0.05
-SLV_SCALE = 0.05
-RESIDUALS_SCALE = 0.015
-Z_SCALE = 0.035
+CD_SCALE = rospy.get_param("CD_SCALE")
+SLV_SCALE = rospy.get_param("SLV_SCALE")
+RESIDUALS_SCALE = rospy.get_param("RESIDUALS_SCALE")
+Z_SCALE = rospy.get_param("Z_SCALE")
 # Filter actions
-alpha = 0.7
+alpha = rospy.get_param("alpha")
 # Added this to avoid filtering residuals
 # -1 for all
-actions_to_filter = 14
+actions_to_filter = rospy.get_param("actions_to_filter")
 
 
 class SpotCommander():
     def __init__(self, Agent=True, contacts=False):
 
-        rospy.init_node('Policies', anonymous=True)
-        # self.movetypes = [
-        #     "Forward", "Backward", "Left", "Right", "CW", "CCW", "Stop"
-        # ]
         self.Agent = Agent
         self.agent_num = rospy.get_param("agent_num")
         self.movetypes = ["Stop"]
@@ -66,18 +65,20 @@ class SpotCommander():
         self.mini_cmd.motion = "Stop"
         self.mini_cmd.movement = "Stepping"
         # FIXED
-        self.BaseStepVelocity = 0.001
+        self.BaseStepVelocity = rospy.get_param("BaseStepVelocity")
         self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
         # Stock, use Bumpers to change
-        self.BaseSwingPeriod = 0.2
+        self.BaseSwingPeriod = rospy.get_param("Tswing")
         self.SwingPeriod = copy.deepcopy(self.BaseSwingPeriod)
+        self.SwingPeriod_LIMITS = rospy.get_param("SwingPeriod_LIMITS")
         # Stock, use arrow pads to change
-        self.BaseClearanceHeight = 0.035
-        self.BasePenetrationDepth = 0.003
+        self.BaseClearanceHeight = rospy.get_param("BaseClearanceHeight")
+        self.BasePenetrationDepth = rospy.get_param("BasePenetrationDepth")
         self.ClearanceHeight = copy.deepcopy(self.BaseClearanceHeight)
         self.PenetrationDepth = copy.deepcopy(self.BasePenetrationDepth)
-        self.ClearanceHeight_LIMITS = [0.0, 0.04]
-        self.PenetrationDepth_LIMITS = [0.0, 0.02]
+        self.ClearanceHeight_LIMITS = rospy.get_param("ClearanceHeight_LIMITS")
+        self.PenetrationDepth_LIMITS = rospy.get_param(
+            "PenetrationDepth_LIMITS")
 
         # Time
         self.time = rospy.get_time()
@@ -90,14 +91,24 @@ class SpotCommander():
         # IMU: R, P, Ax, Ay, Az, Gx, Gy, Gz
         self.imu = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        self.spot = SpotModel(height=0.2, com_offset=0.0)
+        # See spot_params.yaml in config
+        self.spot = SpotModel(
+            shoulder_length=rospy.get_param("shoulder_length"),
+            elbow_length=rospy.get_param("elbow_length"),
+            wrist_length=rospy.get_param("wrist_length"),
+            hip_x=rospy.get_param("hip_x"),
+            hip_y=rospy.get_param("hip_y"),
+            foot_x=rospy.get_param("foot_x"),
+            foot_y=rospy.get_param("foot_y"),
+            height=rospy.get_param("height"),
+            com_offset=rospy.get_param("com_offset"))
 
         self.T_bf0 = self.spot.WorldToFoot
         self.T_bf = copy.deepcopy(self.T_bf0)
 
-        self.dt = 0.001
-
-        self.bzg = BezierGait(dt=self.dt, Tswing=0.2)
+        # See spot_params.yaml in config
+        self.bzg = BezierGait(dt=rospy.get_param("dt"),
+                              Tswing=rospy.get_param("Tswing"))
 
         if self.Agent:
             self.load_spot(contacts, agent_num=self.agent_num)
@@ -211,11 +222,6 @@ class SpotCommander():
         """ Turn joystick inputs into commands
         """
 
-        x_offset = -0.00
-        z_offset = 0.00
-        # x_offset = 0.0
-        # z_offset = 0.0
-
         # Move Type
         if self.mini_cmd.movement == "Stepping":
             step_or_view = False
@@ -227,19 +233,19 @@ class SpotCommander():
             self.SwingPeriod = np.clip(
                 copy.deepcopy(self.BaseSwingPeriod) +
                 (-self.mini_cmd.faster + -self.mini_cmd.slower) * SV_SCALE,
-                0.1, 0.3)
+                self.SwingPeriod_LIMITS[0], self.SwingPeriod_LIMITS[1])
             if self.mini_cmd.movement == "Stepping":
+                # Only take 2/3 of lateral step length or it will be too great.
                 StepLength = self.mini_cmd.x_velocity + abs(
                     self.mini_cmd.y_velocity * 0.66)
                 StepLength = np.clip(StepLength, -1.0, 1.0)
                 StepLength *= STEPLENGTH_SCALE
+                # Convert lateral joystick action into poolar coordinates
+                # for lateral movement
                 LateralFraction = self.mini_cmd.y_velocity * np.pi / 2
                 YawRate = self.mini_cmd.rate * YAW_SCALE
-                # x offset
                 # NOTE: NO HEIGHT MOD DURING WALK
-                self.mini_cmd.z = 0.0
-                pos = np.array(
-                    [x_offset, 0.0, self.mini_cmd.z * Z_SCALE_CTRL + z_offset])
+                pos = np.array([0.0, 0.0, 0.0])
                 orn = np.array([0.0, 0.0, 0.0])
             else:
                 StepLength = 0.0
@@ -251,8 +257,7 @@ class SpotCommander():
                     self.BasePenetrationDepth)
                 self.StepVelocity = copy.deepcopy(self.BaseStepVelocity)
                 # x offset
-                pos = np.array(
-                    [x_offset, 0.0, self.mini_cmd.z * Z_SCALE_CTRL + z_offset])
+                pos = np.array([0.0, 0.0, self.mini_cmd.z * Z_SCALE_CTRL])
                 orn = np.array([
                     self.mini_cmd.roll * RPY_SCALE,
                     self.mini_cmd.pitch * RPY_SCALE,
@@ -267,7 +272,7 @@ class SpotCommander():
             self.PenetrationDepth = self.BasePenetrationDepth
             self.StepVelocity = self.BaseStepVelocity
             self.SwingPeriod = self.BaseSwingPeriod
-            pos = np.array([x_offset, 0.0, z_offset])
+            pos = np.array([0.0, 0.0, 0.0])
             orn = np.array([0.0, 0.0, 0.0])
 
         # TODO: integrate into controller
@@ -363,25 +368,6 @@ class SpotCommander():
         ja_msg.step_or_view = step_or_view
 
         self.ja_pub.publish(ja_msg)
-
-        # if self.Agent:
-        #     ad = AgentData()
-        #     ad.action0 = self.action[0]
-        #     ad.action1 = self.action[1]
-        #     ad.action2 = self.action[2]
-        #     ad.action3 = self.action[3]
-        #     ad.action4 = self.action[4]
-        #     ad.action5 = self.action[5]
-        #     ad.action6 = self.action[6]
-        #     ad.action7 = self.action[7]
-        #     ad.action8 = self.action[8]
-        #     ad.action9 = self.action[9]
-        #     ad.action10 = self.action[10]
-        #     ad.action11 = self.action[11]
-        #     ad.action12 = self.action[12]
-        #     ad.action13 = self.action[13]
-
-        #     self.ag_pub.publish(ad)
 
 
 def main():

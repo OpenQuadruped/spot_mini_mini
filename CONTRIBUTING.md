@@ -1,7 +1,7 @@
 # Contributing
 
 When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other direct method with me. Please be sure to follow the code of conduct.
+[email](mauricerahme2020@u.northwestern.edu), or any other direct method with me. For those of you on the [Spot Micro Slack](https://spotmicroai-inviter.herokuapp.com/), contact me there (Maurice Rahme). Please be sure to follow the code of conduct.
 
 ## Examples of Contributions
 1. New platform support (e.g. Gazebo, MuJoCo).
@@ -13,8 +13,9 @@ If in doubt, please talk to me, and I'll let you know if your idea will be helpf
 
 ## Examples of Issues
 1. Bugs.
-2. Clarifications.
-3. Platform support (e.g. something is not working in your specific environment).
+2. Feature Requests.
+3. Clarifications.
+4. Platform support (e.g. something is not working in your specific environment).
 
 
 ## Pull Request Process

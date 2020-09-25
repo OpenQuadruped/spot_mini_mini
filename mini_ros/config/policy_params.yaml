@@ -1,0 +1,14 @@
+# AGENT PARAMS - SCALING and FILTERING
+# Clearance Height and Penetration Depth
+CD_SCALE: 0.05
+# Step Length and Velocity
+SLV_SCALE: 0.05
+# Residuals
+RESIDUALS_SCALE: 0.015
+# Body Height Modulation
+Z_SCALE: 0.035
+# Exponential Filter Amplitude
+alpha: 0.7
+# Added this to avoid filtering residuals
+# -1 for all
+actions_to_filter: 14

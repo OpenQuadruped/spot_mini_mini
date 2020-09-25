@@ -1,0 +1,12 @@
+# Right Joystick (Push U/D L/R)
+STEPLENGTH_SCALE: 0.05
+# Left Joystick (Push U/D)
+Z_SCALE_CTRL: 0.15
+# Right Joystick (Push U/D L/R) | Left Joystick (Push L/R)
+RPY_SCALE: 0.785
+# Lower Bumpers (Step Velocity [Left Lowers | Right Raises])
+SV_SCALE: 0.05
+# Arrow Pad (U/D for Clearance Height | L/R for Penetration Depth)
+CHPD_SCALE: 0.0005
+# Left Joystick (L/R)
+YAW_SCALE: 1.25
