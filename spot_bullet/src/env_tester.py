@@ -176,9 +176,9 @@ def main():
 
         FL_Elbow.append(np.degrees(joint_angles[0][-1]))
 
-        # for i, (key, Tbf_in) in enumerate(T_bf.items()):
-        #     print("{}: \t Angle: {}".format(key, np.degrees(joint_angles[i])))
-        # print("-------------------------")
+        for i, (key, Tbf_in) in enumerate(T_bf.items()):
+            print("{}: \t Angle: {}".format(key, np.degrees(joint_angles[i])))
+        print("-------------------------")
 
         env.pass_joint_angles(joint_angles.reshape(-1))
         # Get External Observations
