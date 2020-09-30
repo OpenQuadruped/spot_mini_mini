@@ -222,7 +222,8 @@ def main():
                 plt.plot(norand_data_list[0][:, 0],
                          label="Non-Randomized (Total Reward)",
                          color='r')
-            plt.plot(aranged_norand, tot_norand_mean,
+            plt.plot(aranged_norand,
+                     tot_norand_mean,
                      label="MA: Non-Randomized (Total Reward)",
                      color='r')
             plt.fill_between(aranged_norand,
@@ -230,7 +231,8 @@ def main():
                              tot_norand_mean + tot_norand_std,
                              color='r',
                              alpha=0.2)
-            plt.plot(aranged_rand, tot_rand_mean,
+            plt.plot(aranged_rand,
+                     tot_rand_mean,
                      label="MA: Randomized (Total Reward)",
                      color='g')
             plt.fill_between(aranged_rand,
@@ -246,7 +248,8 @@ def main():
                 plt.plot(norand_data_list[0][:, 1],
                          label="Non-Randomized (Reward/dt)",
                          color='r')
-            plt.plot(aranged_norand, norm_norand_mean,
+            plt.plot(aranged_norand,
+                     norm_norand_mean,
                      label="MA: Non-Randomized (Reward/dt)",
                      color='r')
             plt.fill_between(aranged_norand,
@@ -254,7 +257,8 @@ def main():
                              norm_norand_mean + norm_norand_std,
                              color='r',
                              alpha=0.2)
-            plt.plot(aranged_rand, norm_rand_mean,
+            plt.plot(aranged_rand,
+                     norm_rand_mean,
                      label="MA: Randomized (Reward/dt)",
                      color='g')
             plt.fill_between(aranged_rand,
@@ -264,7 +268,8 @@ def main():
                              alpha=0.2)
         plt.xlabel("Epoch #")
         plt.ylabel("Reward")
-        plt.title("Training Performance with {} samples".format(int(seed) + 1))
+        plt.title(
+            "Training Performance with {} seed samples".format(int(seed) + 1))
         plt.legend()
         plt.show()
 
