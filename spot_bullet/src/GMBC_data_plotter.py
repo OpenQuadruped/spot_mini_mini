@@ -37,7 +37,10 @@ parser.add_argument("-anor",
 parser.add_argument("-raw",
                     "--Raw",
                     help="Plot Raw Data in addition to Moving Averaged Data")
-parser.add_argument("-s", "--Seed", help="Seed (Default: 0).")
+parser.add_argument(
+    "-s",
+    "--Seed",
+    help="Seed [UP TO, e.g. 0 | 0, 1 | 0, 1, 2 ...] (Default: 0).")
 ARGS = parser.parse_args()
 
 MA_WINDOW = 150
@@ -152,45 +155,109 @@ def main():
         print("NOT RANDOM: AVG [{}] | STD [{}]".format(norand_avg, norand_std))
 
     else:
-        # Training Data Plotter
-        rand_data = np.load(results_path + "/spot_ars_rand_" + "seed" +
-                            str(seed) + ".npy")
-        norand_data = np.load(results_path + "/spot_ars_norand_" + "seed" +
-                              str(seed) + ".npy")
+        rand_data_list = []
+        norand_data_list = []
+        rand_shortest_length = np.inf
+        norand_shortest_length = np.inf
+        for i in range(int(seed) + 1):
+            # Training Data Plotter
+            rand_data_temp = np.load(results_path + "/spot_ars_rand_" +
+                                     "seed" + str(i) + ".npy")
+            norand_data_temp = np.load(results_path + "/spot_ars_norand_" +
+                                       "seed" + str(i) + ".npy")
 
-        plt.plot()
+            rand_shortest_length = min(
+                np.shape(rand_data_temp[:, 1])[0], rand_shortest_length)
+            norand_shortest_length = min(
+                np.shape(norand_data_temp[:, 1])[0], norand_shortest_length)
+
+            rand_data_list.append(rand_data_temp)
+            norand_data_list.append(norand_data_temp)
+
+        tot_rand_data = []
+        tot_norand_data = []
+        norm_rand_data = []
+        norm_norand_data = []
+        for i in range(int(seed) + 1):
+            tot_rand_data.append(
+                moving_average(rand_data_list[i][:rand_shortest_length, 0]))
+            tot_norand_data.append(
+                moving_average(
+                    norand_data_list[i][:norand_shortest_length, 0]))
+            norm_rand_data.append(
+                moving_average(rand_data_list[i][:rand_shortest_length, 1]))
+            norm_norand_data.append(
+                moving_average(
+                    norand_data_list[i][:norand_shortest_length, 1]))
+
+        tot_rand_data = np.array(tot_rand_data)
+        tot_norand_data = np.array(tot_norand_data)
+        norm_rand_data = np.array(norm_rand_data)
+        norm_norand_data = np.array(norm_norand_data)
+
+        # column-wise
+        axis = 0
+
+        # MEAN
+        tot_rand_mean = tot_rand_data.mean(axis=axis)
+        tot_norand_mean = tot_norand_data.mean(axis=axis)
+        norm_rand_mean = norm_rand_data.mean(axis=axis)
+        norm_norand_mean = norm_norand_data.mean(axis=axis)
+
+        # STD
+        tot_rand_std = tot_rand_data.std(axis=axis)
+        tot_norand_std = tot_norand_data.std(axis=axis)
+        norm_rand_std = norm_rand_data.std(axis=axis)
+        norm_norand_std = norm_norand_data.std(axis=axis)
+
+        print("MA DATA SHAPE: {}".format(np.shape(tot_norand_data)))
+        print("MEAN SHAPE: {}".format(np.shape(tot_norand_mean)))
+        print("STD SHAPE: {}".format(np.shape(tot_norand_std)))
+
         if ARGS.TotalReward:
-            MA_rand_data = moving_average(rand_data[:, 0])
-            MA_norand_data = moving_average(norand_data[:, 0])
             if ARGS.Raw:
-                plt.plot(rand_data[:, 0],
+                plt.plot(rand_data_list[0][:, 0],
                          label="Randomized (Total Reward)",
                          color='r')
-                plt.plot(norand_data[:, 0],
+                plt.plot(norand_data_list[0][:, 0],
                          label="Non-Randomized (Total Reward)",
                          color='g')
-            plt.plot(MA_norand_data,
+            plt.plot(tot_norand_mean,
                      label="MA: Non-Randomized (Total Reward)",
                      color='r')
-            plt.plot(MA_rand_data,
+            plt.fill_between(tot_norand_mean - tot_norand_std,
+                             tot_norand_mean + tot_norand_std,
+                             color='r',
+                             alpha=0.2)
+            plt.plot(tot_rand_mean,
                      label="MA: Randomized (Total Reward)",
                      color='g')
+            plt.fill_between(tot_rand_mean - tot_rand_std,
+                             tot_rand_mean + tot_rand_std,
+                             color='g',
+                             alpha=0.2)
         else:
-            MA_rand_data = moving_average(rand_data[:, 1])
-            MA_norand_data = moving_average(norand_data[:, 1])
             if ARGS.Raw:
-                plt.plot(rand_data[:, 1],
+                plt.plot(rand_data_list[0][:, 1],
                          label="Randomized (Reward/dt)",
                          color='r')
-                plt.plot(norand_data[:, 1],
+                plt.plot(norand_data_list[0][:, 1],
                          label="Non-Randomized (Reward/dt)",
                          color='g')
-            plt.plot(MA_norand_data,
+            plt.plot(norm_norand_mean,
                      label="MA: Non-Randomized (Reward/dt)",
                      color='r')
-            plt.plot(MA_rand_data,
+            plt.fill_between(norm_norand_mean - norm_norand_std,
+                             norm_norand_mean + norm_norand_std,
+                             color='r',
+                             alpha=0.2)
+            plt.plot(norm_rand_mean,
                      label="MA: Randomized (Reward/dt)",
                      color='g')
+            plt.fill_between(norm_rand_mean - norm_rand_std,
+                             norm_rand_mean + norm_rand_std,
+                             color='g',
+                             alpha=0.2)
         plt.xlabel("Epoch #")
         plt.ylabel("Reward")
         plt.title("Training Performance: Seed {}".format(seed))
