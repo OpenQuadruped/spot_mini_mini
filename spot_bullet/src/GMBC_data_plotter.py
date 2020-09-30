@@ -210,9 +210,8 @@ def main():
         norm_rand_std = norm_rand_data.std(axis=axis)
         norm_norand_std = norm_norand_data.std(axis=axis)
 
-        print("MA DATA SHAPE: {}".format(np.shape(tot_norand_data)))
-        print("MEAN SHAPE: {}".format(np.shape(tot_norand_mean)))
-        print("STD SHAPE: {}".format(np.shape(tot_norand_std)))
+        aranged_rand = np.arange(np.shape(tot_rand_mean)[0])
+        aranged_norand = np.arange(np.shape(tot_norand_mean)[0])
 
         if ARGS.TotalReward:
             if ARGS.Raw:
@@ -222,17 +221,19 @@ def main():
                 plt.plot(norand_data_list[0][:, 0],
                          label="Non-Randomized (Total Reward)",
                          color='g')
-            plt.plot(tot_norand_mean,
+            plt.plot(aranged_norand, tot_norand_mean,
                      label="MA: Non-Randomized (Total Reward)",
                      color='r')
-            plt.fill_between(tot_norand_mean - tot_norand_std,
+            plt.fill_between(aranged_norand,
+                             tot_norand_mean - tot_norand_std,
                              tot_norand_mean + tot_norand_std,
                              color='r',
                              alpha=0.2)
-            plt.plot(tot_rand_mean,
+            plt.plot(aranged_rand, tot_rand_mean,
                      label="MA: Randomized (Total Reward)",
                      color='g')
-            plt.fill_between(tot_rand_mean - tot_rand_std,
+            plt.fill_between(aranged_rand,
+                             tot_rand_mean - tot_rand_std,
                              tot_rand_mean + tot_rand_std,
                              color='g',
                              alpha=0.2)
@@ -244,23 +245,25 @@ def main():
                 plt.plot(norand_data_list[0][:, 1],
                          label="Non-Randomized (Reward/dt)",
                          color='g')
-            plt.plot(norm_norand_mean,
+            plt.plot(aranged_norand, norm_norand_mean,
                      label="MA: Non-Randomized (Reward/dt)",
                      color='r')
-            plt.fill_between(norm_norand_mean - norm_norand_std,
+            plt.fill_between(aranged_norand,
+                             norm_norand_mean - norm_norand_std,
                              norm_norand_mean + norm_norand_std,
                              color='r',
                              alpha=0.2)
-            plt.plot(norm_rand_mean,
+            plt.plot(aranged_rand, norm_rand_mean,
                      label="MA: Randomized (Reward/dt)",
                      color='g')
-            plt.fill_between(norm_rand_mean - norm_rand_std,
+            plt.fill_between(aranged_rand,
+                             norm_rand_mean - norm_rand_std,
                              norm_rand_mean + norm_rand_std,
                              color='g',
                              alpha=0.2)
         plt.xlabel("Epoch #")
         plt.ylabel("Reward")
-        plt.title("Training Performance: Seed {}".format(seed))
+        plt.title("Training Performance with {} samples".format(int(seed) + 1))
         plt.legend()
         plt.show()
 
