@@ -44,9 +44,9 @@ parser.add_argument(
     help="Seed [UP TO, e.g. 0 | 0, 1 | 0, 1, 2 ...] (Default: 0).")
 ARGS = parser.parse_args()
 
-MA_WINDOW = 150
+MA_WINDOW = 50
 if ARGS.MovingAverageWindow:
-    MA_WINDOW = ARGS.MovingAverageWindow
+    MA_WINDOW = int(ARGS.MovingAverageWindow)
 
 
 def moving_average(a, n=MA_WINDOW):
