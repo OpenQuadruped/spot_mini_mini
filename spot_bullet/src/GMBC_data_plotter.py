@@ -36,7 +36,8 @@ parser.add_argument("-anor",
                     help="Non-Randomized Agent Number To Load")
 parser.add_argument("-raw",
                     "--Raw",
-                    help="Plot Raw Data in addition to Moving Averaged Data")
+                    help="Plot Raw Data in addition to Moving Averaged Data",
+                    action='store_true')
 parser.add_argument(
     "-s",
     "--Seed",
@@ -217,10 +218,10 @@ def main():
             if ARGS.Raw:
                 plt.plot(rand_data_list[0][:, 0],
                          label="Randomized (Total Reward)",
-                         color='r')
+                         color='g')
                 plt.plot(norand_data_list[0][:, 0],
                          label="Non-Randomized (Total Reward)",
-                         color='g')
+                         color='r')
             plt.plot(aranged_norand, tot_norand_mean,
                      label="MA: Non-Randomized (Total Reward)",
                      color='r')
@@ -241,10 +242,10 @@ def main():
             if ARGS.Raw:
                 plt.plot(rand_data_list[0][:, 1],
                          label="Randomized (Reward/dt)",
-                         color='r')
+                         color='g')
                 plt.plot(norand_data_list[0][:, 1],
                          label="Non-Randomized (Reward/dt)",
-                         color='g')
+                         color='r')
             plt.plot(aranged_norand, norm_norand_mean,
                      label="MA: Non-Randomized (Reward/dt)",
                      color='r')
