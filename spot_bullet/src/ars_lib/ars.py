@@ -378,6 +378,9 @@ class ARSAgent():
         else:
             self.g_u_i = None
 
+        self.action_history = []
+        self.true_action_history = []
+
     # Deploy Policy in one direction over one whole episode
     # DO THIS ONCE PER ROLLOUT OR DURING DEPLOYMENT
     def deploy(self, direction=None, delta=None):
@@ -419,13 +422,8 @@ class ARSAgent():
         # f = []
         T_bf = copy.deepcopy(self.spot.WorldToFoot)
         T_b0 = copy.deepcopy(self.spot.WorldToFoot)
-        sl = []
-        sv = []
-        lf = []
-        yr = []
-        ch = []
-        pd = []
-        heightmod = []
+        self.action_history = []
+        self.true_action_history = []
         action = self.env.action_space.sample()
         action[:] = 0.0
         old_act = action[:actions_to_filter]
@@ -449,14 +447,25 @@ class ARSAgent():
             # Don't normalize contacts
             state = self.normalizer.normalize(state)
             action = self.policy.evaluate(state, delta, direction)
+
+            # Action History
+            self.action_history.append(np.tanh(action))
+
+            # Action History
+            true_action = copy.deepcopy(np.tanh(action))
+            true_action[0] *= CD_SCALE
+            true_action[1] = abs(true_action[1]) * Z_SCALE
+            true_action[2:] *= RESIDUALS_SCALE
+            self.true_action_history.append(true_action)
+
             action = np.tanh(action)
+
             # EXP FILTER
             action[:actions_to_filter] = alpha * old_act + (
                 1.0 - alpha) * action[:actions_to_filter]
             old_act = action[:actions_to_filter]
 
             ClearanceHeight += action[0] * CD_SCALE
-            ch.append(action[0] * CD_SCALE)
 
             # CLIP EVERYTHING
             StepLength = np.clip(StepLength, self.smach.StepLength_LIMITS[0],
@@ -508,7 +517,6 @@ class ARSAgent():
 
             # Adjust Height!
             pos[2] += abs(action[1]) * Z_SCALE
-            heightmod.append(action[1] * Z_SCALE)
 
             joint_angles = self.spot.IK(orn, pos, T_bf_copy)
             # Pass Joint Angles
@@ -518,22 +526,7 @@ class ARSAgent():
             next_state, reward, done, _ = self.env.step(action)
             sum_rewards += reward
             timesteps += 1
-            # print("ACTION: {}".format(action))
-            # print("STATE: {}".format(state))
-            # print("POLICY: {}".format(self.policy.theta.shape))
-        # plt.plot()
-        # plt.plot(sl, label="Step Len")
-        # plt.plot(sv, label="Step Vel")
-        # plt.plot(lf, label="Lat Frac")
-        # plt.plot(yr, label="Yaw Rate")
-        # plt.plot(ch, label="Clear Height")
-        # plt.plot(heightmod, label="Z MOD")
-        # # plt.plot(pd, label="Pen Depth")
-        # plt.xlabel("dt")
-        # plt.ylabel("value")
-        # plt.title("TG Parameters by Policy")
-        # plt.legend()
-        # plt.show()
+
         self.TGP.reset()
         self.smach.reshuffle()
         self.smach.PenetrationDepth = self.BasePenetrationDepth

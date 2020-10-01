@@ -14,6 +14,10 @@ from spotmicro.OpenLoopSM.SpotOL import BezierStepper
 from spotmicro.GymEnvs.spot_bezier_env import spotBezierEnv
 from spotmicro.spot_env_randomizer import SpotEnvRandomizer
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
+
 import os
 
 import argparse
@@ -45,16 +49,20 @@ parser.add_argument("-nc",
                     "--NoContactSensing",
                     help="Disable Contact Sensing",
                     action='store_true')
-parser.add_argument("-a",
-                    "--AgentNum",
-                    help="Agent Number To Load")
+parser.add_argument("-a", "--AgentNum", help="Agent Number To Load")
 parser.add_argument("-dr",
                     "--DontRandomize",
                     help="Do NOT Randomize State and Environment.",
                     action='store_true')
-parser.add_argument("-s",
-                    "--Seed",
-                    help="Seed (Default: 0).")
+parser.add_argument("-pp",
+                    "--PlotPolicy",
+                    help="Plot Policy Output after each Episode.",
+                    action='store_true')
+parser.add_argument("-ta",
+                    "--TrueAction",
+                    help="Plot Action as seen by the Robot.",
+                    action='store_true')
+parser.add_argument("-s", "--Seed", help="Seed (Default: 0).")
 ARGS = parser.parse_args()
 
 
@@ -183,6 +191,32 @@ def main():
         print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(
             t, episode_num, episode_timesteps, episode_reward))
         episode_num += 1
+
+        # Plot Policy Output
+        if ARGS.PlotPolicy or ARGS.TrueAction:
+            if ARGS.TrueAction:
+                action = np.array(agent.true_action_history)
+            else:
+                action = np.array(agent.action_history)
+
+            ClearHeight_act = action[:, 0]
+            BodyHeight_act = action[:, 1]
+            Residuals_act = action[:, 2:]
+
+            plt.plot(ClearHeight_act, label='Clearance Height Mod')
+            plt.plot(BodyHeight_act, label='Body Height Mod')
+
+            for i in range(Residuals_act.shape[1]):
+                plt.plot(Residuals_act[:, i],
+                         label='Residual {} Mod'.
+                         format(i))
+
+            plt.xlabel("Epoch Iteration")
+            plt.ylabel("Action Value")
+            plt.title(
+                "Policy Output")
+            plt.legend()
+            plt.show()
 
     env.close()
 
