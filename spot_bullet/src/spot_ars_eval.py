@@ -203,18 +203,47 @@ def main():
             BodyHeight_act = action[:, 1]
             Residuals_act = action[:, 2:]
 
-            plt.plot(ClearHeight_act, label='Clearance Height Mod')
-            plt.plot(BodyHeight_act, label='Body Height Mod')
+            plt.plot(ClearHeight_act,
+                     label='Clearance Height Mod',
+                     color='black')
+            plt.plot(BodyHeight_act, label='Body Height Mod',
+                     color='darkviolet')
 
-            for i in range(Residuals_act.shape[1]):
-                plt.plot(Residuals_act[:, i],
-                         label='Residual {} Mod'.
-                         format(i))
+            # FL
+            plt.plot(Residuals_act[:, 0], label='Residual: FL (x)',
+                     color='limegreen')
+            plt.plot(Residuals_act[:, 1], label='Residual: FL (y)',
+                     color='lime')
+            plt.plot(Residuals_act[:, 2], label='Residual: FL (z)',
+                     color='green')
+
+            # FR
+            plt.plot(Residuals_act[:, 3], label='Residual: FR (x)',
+                     color='lightskyblue')
+            plt.plot(Residuals_act[:, 4], label='Residual: FR (y)',
+                     color='dodgerblue')
+            plt.plot(Residuals_act[:, 5], label='Residual: FR (z)',
+                     color='blue')
+
+            # BL
+            plt.plot(Residuals_act[:, 6], label='Residual: BL (x)',
+                     color='firebrick')
+            plt.plot(Residuals_act[:, 7], label='Residual: BL (y)',
+                     color='crimson')
+            plt.plot(Residuals_act[:, 8], label='Residual: BL (z)',
+                     color='red')
+
+            # BR
+            plt.plot(Residuals_act[:, 9], label='Residual: BR (x)',
+                     color='gold')
+            plt.plot(Residuals_act[:, 10], label='Residual: BR (y)',
+                     color='orange')
+            plt.plot(Residuals_act[:, 11], label='Residual: BR (z)',
+                     color='coral')
 
             plt.xlabel("Epoch Iteration")
             plt.ylabel("Action Value")
-            plt.title(
-                "Policy Output")
+            plt.title("Policy Output")
             plt.legend()
             plt.show()
 
