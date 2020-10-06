@@ -19,10 +19,14 @@ parser.add_argument("-nep",
                     help="Number of Episodes to Plot Data For")
 parser.add_argument("-maw",
                     "--MovingAverageWindow",
-                    help="Moving Average Window for Plotting (Default: 150)")
+                    help="Moving Average Window for Plotting (Default: 50)")
+parser.add_argument("-surv",
+                    "--Survival",
+                    help="Plot Survival Curve",
+                    action='store_true')
 parser.add_argument("-tr",
                     "--TrainingData",
-                    help="Plot Training Curve instead of Survival Curve",
+                    help="Plot Training Curve",
                     action='store_true')
 parser.add_argument("-tot",
                     "--TotalReward",
@@ -42,6 +46,18 @@ parser.add_argument(
     "-s",
     "--Seed",
     help="Seed [UP TO, e.g. 0 | 0, 1 | 0, 1, 2 ...] (Default: 0).")
+parser.add_argument("-pout",
+                    "--PolicyOut",
+                    help="Plot Policy Output Data",
+                    action='store_true')
+parser.add_argument("-rough",
+                    "--Rough",
+                    help="Plot Policy Output Data for Rough Terrain",
+                    action='store_true')
+parser.add_argument("-tru",
+                    "--TrueAct",
+                    help="Plot the Agent Action instead of what the robot sees",
+                    action='store_true')
 ARGS = parser.parse_args()
 
 MA_WINDOW = 50
@@ -81,6 +97,17 @@ def main():
         training = True
     else:
         training = False
+    if ARGS.Survival:
+        surv = True
+    else:
+        surv = False
+    if ARGS.PolicyOut or ARGS.Rough or ARGS.TrueAct:
+        pout = True
+    else:
+        pout = False
+
+    if not pout and not surv and not training:
+        print("Please Select which Data you would like to plot (-pout | -surv | -tr)")
     rand_agt = 579
     norand_agt = 569
     if ARGS.RandAgentNum:
@@ -88,7 +115,7 @@ def main():
     if ARGS.NoRandAgentNum:
         norand_agt = ARGS.NoRandAgentNum
 
-    if not training:
+    if surv:
 
         # Vanilla Data
         if os.path.exists(results_path + "/" + str(file_name) + "vanilla" +
@@ -155,7 +182,7 @@ def main():
         print("RANDOM: AVG [{}] | STD [{}]".format(rand_avg, rand_std))
         print("NOT RANDOM: AVG [{}] | STD [{}]".format(norand_avg, norand_std))
 
-    else:
+    elif training:
         rand_data_list = []
         norand_data_list = []
         rand_shortest_length = np.inf
@@ -270,6 +297,81 @@ def main():
         plt.ylabel("Reward")
         plt.title(
             "Training Performance with {} seed samples".format(int(seed) + 1))
+        plt.legend()
+        plt.show()
+
+    elif pout:
+
+        if ARGS.Rough:
+            terrain_name = "rough_"
+        else:
+            terrain_name = "flat_"
+
+        if ARGS.TrueAct:
+            action_name = "agent_act"
+        else:
+            action_name = "robot_act"
+
+        action = np.load(results_path + "/" + "policy_out_" + terrain_name + action_name + ".npy")
+
+        ClearHeight_act = action[:, 0]
+        BodyHeight_act = action[:, 1]
+        Residuals_act = action[:, 2:]
+
+        plt.plot(ClearHeight_act,
+                 label='Clearance Height Mod',
+                 color='black')
+        plt.plot(BodyHeight_act,
+                 label='Body Height Mod',
+                 color='darkviolet')
+
+        # FL
+        plt.plot(Residuals_act[:, 0],
+                 label='Residual: FL (x)',
+                 color='limegreen')
+        plt.plot(Residuals_act[:, 1],
+                 label='Residual: FL (y)',
+                 color='lime')
+        plt.plot(Residuals_act[:, 2],
+                 label='Residual: FL (z)',
+                 color='green')
+
+        # FR
+        plt.plot(Residuals_act[:, 3],
+                 label='Residual: FR (x)',
+                 color='lightskyblue')
+        plt.plot(Residuals_act[:, 4],
+                 label='Residual: FR (y)',
+                 color='dodgerblue')
+        plt.plot(Residuals_act[:, 5],
+                 label='Residual: FR (z)',
+                 color='blue')
+
+        # BL
+        plt.plot(Residuals_act[:, 6],
+                 label='Residual: BL (x)',
+                 color='firebrick')
+        plt.plot(Residuals_act[:, 7],
+                 label='Residual: BL (y)',
+                 color='crimson')
+        plt.plot(Residuals_act[:, 8],
+                 label='Residual: BL (z)',
+                 color='red')
+
+        # BR
+        plt.plot(Residuals_act[:, 9],
+                 label='Residual: BR (x)',
+                 color='gold')
+        plt.plot(Residuals_act[:, 10],
+                 label='Residual: BR (y)',
+                 color='orange')
+        plt.plot(Residuals_act[:, 11],
+                 label='Residual: BR (z)',
+                 color='coral')
+
+        plt.xlabel("Epoch Iteration")
+        plt.ylabel("Action Value")
+        plt.title("Policy Output")
         plt.legend()
         plt.show()
 
