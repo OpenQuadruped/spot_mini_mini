@@ -62,6 +62,11 @@ parser.add_argument("-ta",
                     "--TrueAction",
                     help="Plot Action as seen by the Robot.",
                     action='store_true')
+parser.add_argument(
+    "-save",
+    "--SaveData",
+    help="Save the Policy Output to a .npy file in the results folder.",
+    action='store_true')
 parser.add_argument("-s", "--Seed", help="Seed (Default: 0).")
 ARGS = parser.parse_args()
 
@@ -193,11 +198,23 @@ def main():
         episode_num += 1
 
         # Plot Policy Output
-        if ARGS.PlotPolicy or ARGS.TrueAction:
+        if ARGS.PlotPolicy or ARGS.TrueAction or ARGS.SaveData:
             if ARGS.TrueAction:
+                action_name = "robot_act"
                 action = np.array(agent.true_action_history)
             else:
+                action_name = "agent_act"
                 action = np.array(agent.action_history)
+
+            if ARGS.SaveData:
+                if height_field:
+                    terrain_name = "rough_"
+                else:
+                    terrain_name = "flat_"
+                np.save(
+                        results_path + "/" + "policy_out_" + terrain_name + action_name, action)
+
+                print("SAVED DATA")
 
             ClearHeight_act = action[:, 0]
             BodyHeight_act = action[:, 1]
@@ -206,39 +223,52 @@ def main():
             plt.plot(ClearHeight_act,
                      label='Clearance Height Mod',
                      color='black')
-            plt.plot(BodyHeight_act, label='Body Height Mod',
+            plt.plot(BodyHeight_act,
+                     label='Body Height Mod',
                      color='darkviolet')
 
             # FL
-            plt.plot(Residuals_act[:, 0], label='Residual: FL (x)',
+            plt.plot(Residuals_act[:, 0],
+                     label='Residual: FL (x)',
                      color='limegreen')
-            plt.plot(Residuals_act[:, 1], label='Residual: FL (y)',
+            plt.plot(Residuals_act[:, 1],
+                     label='Residual: FL (y)',
                      color='lime')
-            plt.plot(Residuals_act[:, 2], label='Residual: FL (z)',
+            plt.plot(Residuals_act[:, 2],
+                     label='Residual: FL (z)',
                      color='green')
 
             # FR
-            plt.plot(Residuals_act[:, 3], label='Residual: FR (x)',
+            plt.plot(Residuals_act[:, 3],
+                     label='Residual: FR (x)',
                      color='lightskyblue')
-            plt.plot(Residuals_act[:, 4], label='Residual: FR (y)',
+            plt.plot(Residuals_act[:, 4],
+                     label='Residual: FR (y)',
                      color='dodgerblue')
-            plt.plot(Residuals_act[:, 5], label='Residual: FR (z)',
+            plt.plot(Residuals_act[:, 5],
+                     label='Residual: FR (z)',
                      color='blue')
 
             # BL
-            plt.plot(Residuals_act[:, 6], label='Residual: BL (x)',
+            plt.plot(Residuals_act[:, 6],
+                     label='Residual: BL (x)',
                      color='firebrick')
-            plt.plot(Residuals_act[:, 7], label='Residual: BL (y)',
+            plt.plot(Residuals_act[:, 7],
+                     label='Residual: BL (y)',
                      color='crimson')
-            plt.plot(Residuals_act[:, 8], label='Residual: BL (z)',
+            plt.plot(Residuals_act[:, 8],
+                     label='Residual: BL (z)',
                      color='red')
 
             # BR
-            plt.plot(Residuals_act[:, 9], label='Residual: BR (x)',
+            plt.plot(Residuals_act[:, 9],
+                     label='Residual: BR (x)',
                      color='gold')
-            plt.plot(Residuals_act[:, 10], label='Residual: BR (y)',
+            plt.plot(Residuals_act[:, 10],
+                     label='Residual: BR (y)',
                      color='orange')
-            plt.plot(Residuals_act[:, 11], label='Residual: BR (z)',
+            plt.plot(Residuals_act[:, 11],
+                     label='Residual: BR (z)',
                      color='coral')
 
             plt.xlabel("Epoch Iteration")
