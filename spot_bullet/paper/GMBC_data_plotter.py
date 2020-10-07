@@ -8,6 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import copy
 from scipy.stats import norm
 sns.set()
 
@@ -54,10 +55,11 @@ parser.add_argument("-rough",
                     "--Rough",
                     help="Plot Policy Output Data for Rough Terrain",
                     action='store_true')
-parser.add_argument("-tru",
-                    "--TrueAct",
-                    help="Plot the Agent Action instead of what the robot sees",
-                    action='store_true')
+parser.add_argument(
+    "-tru",
+    "--TrueAct",
+    help="Plot the Agent Action instead of what the robot sees",
+    action='store_true')
 ARGS = parser.parse_args()
 
 MA_WINDOW = 50
@@ -107,7 +109,9 @@ def main():
         pout = False
 
     if not pout and not surv and not training:
-        print("Please Select which Data you would like to plot (-pout | -surv | -tr)")
+        print(
+            "Please Select which Data you would like to plot (-pout | -surv | -tr)"
+        )
     rand_agt = 579
     norand_agt = 569
     if ARGS.RandAgentNum:
@@ -118,28 +122,30 @@ def main():
     if surv:
 
         # Vanilla Data
-        if os.path.exists(results_path + "/" + str(file_name) + "vanilla" +
-                          '_survival_' + str(nep)):
+        if os.path.exists(results_path + "/" + file_name + "vanilla" +
+                          '_survival_{}'.format(nep)):
             with open(
-                    results_path + "/" + str(file_name) + "vanilla" +
-                    '_survival_' + str(nep), 'rb') as filehandle:
+                    results_path + "/" + file_name + "vanilla" +
+                    '_survival_{}'.format(nep), 'rb') as filehandle:
                 vanilla_surv = np.array(pickle.load(filehandle))
 
         # Rand Agent Data
-        if os.path.exists(results_path + "/" + str(file_name) + "agent_" +
-                          str(rand_agt) + '_survival_' + str(nep)):
+        if os.path.exists(results_path + "/" + file_name +
+                          "agent_{}".format(rand_agt) +
+                          '_survival_{}'.format(nep)):
             with open(
-                    results_path + "/" + str(file_name) + "agent_" +
-                    str(rand_agt) + '_survival_' + str(nep),
+                    results_path + "/" + file_name +
+                    "agent_{}".format(rand_agt) + '_survival_{}'.format(nep),
                     'rb') as filehandle:
                 rand_agent_surv = np.array(pickle.load(filehandle))
 
         # NoRand Agent Data
-        if os.path.exists(results_path + "/" + str(file_name) + "agent_" +
-                          str(norand_agt) + '_survival_' + str(nep)):
+        if os.path.exists(results_path + "/" + file_name +
+                          "agent_{}".format(norand_agt) +
+                          '_survival_{}'.format(nep)):
             with open(
-                    results_path + "/" + str(file_name) + "agent_" +
-                    str(norand_agt) + '_survival_' + str(nep),
+                    results_path + "/" + file_name +
+                    "agent_{}".format(norand_agt) + '_survival_{}'.format(nep),
                     'rb') as filehandle:
                 norand_agent_surv = np.array(pickle.load(filehandle))
                 # print(norand_agent_surv[:, 0])
@@ -171,16 +177,129 @@ def main():
         plt.show()
 
         # Print AVG and STDEV
-        norand_avg = np.average(norand_agent_surv_x)
-        norand_std = np.std(norand_agent_surv_x)
-        rand_avg = np.average(rand_agent_surv_x)
-        rand_std = np.std(rand_agent_surv_x)
-        vanilla_avg = np.average(vanilla_surv_x)
-        vanilla_std = np.std(vanilla_surv_x)
+        norand_avg = np.average(copy.deepcopy(norand_agent_surv_x))
+        norand_std = np.std(copy.deepcopy(norand_agent_surv_x))
+        rand_avg = np.average(copy.deepcopy(rand_agent_surv_x))
+        rand_std = np.std(copy.deepcopy(rand_agent_surv_x))
+        vanilla_avg = np.average(copy.deepcopy(vanilla_surv_x))
+        vanilla_std = np.std(copy.deepcopy(vanilla_surv_x))
 
-        print("Vanilla: AVG [{}] | STD [{}]".format(vanilla_avg, vanilla_std))
-        print("RANDOM: AVG [{}] | STD [{}]".format(rand_avg, rand_std))
-        print("NOT RANDOM: AVG [{}] | STD [{}]".format(norand_avg, norand_std))
+        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+            vanilla_avg, vanilla_std, norand_agent_surv_x.shape[0]))
+        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            rand_avg, rand_std, rand_agent_surv_x.shape[0]))
+        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            norand_avg, norand_std, vanilla_surv_x.shape[0]))
+
+        # Get Survival Data for <=50m, >50m, and >90m
+        # NO RAND
+        less50_cond = norand_agent_surv_x <= 50.0
+        norand_agent_surv_x_less_50 = np.extract(less50_cond,
+                                                 norand_agent_surv_x)
+        gtr50_cond = norand_agent_surv_x > 50.0
+        norand_agent_surv_x_gtr_50_temp = np.extract(gtr50_cond,
+                                                     norand_agent_surv_x)
+        gtr50_cond = norand_agent_surv_x_gtr_50_temp < 90.0
+        norand_agent_surv_x_gtr_50 = np.extract(
+            gtr50_cond, norand_agent_surv_x_gtr_50_temp)
+        gtr90_cond = norand_agent_surv_x >= 90.0
+        norand_agent_surv_x_gtr_90 = np.extract(gtr90_cond,
+                                                norand_agent_surv_x)
+
+        # RAND
+        less50_cond = rand_agent_surv_x <= 50.0
+        rand_agent_surv_x_less_50 = np.extract(less50_cond, rand_agent_surv_x)
+        gtr50_cond = rand_agent_surv_x > 50.0
+        rand_agent_surv_x_gtr_50_temp = np.extract(gtr50_cond,
+                                                   rand_agent_surv_x)
+        gtr50_cond = rand_agent_surv_x_gtr_50_temp < 90.0
+        rand_agent_surv_x_gtr_50 = np.extract(gtr50_cond,
+                                              rand_agent_surv_x_gtr_50_temp)
+        gtr90_cond = rand_agent_surv_x >= 90.0
+        rand_agent_surv_x_gtr_90 = np.extract(gtr90_cond, rand_agent_surv_x)
+
+        # VNL
+        less50_cond = vanilla_surv_x <= 50.0
+        vanilla_surv_x_less_50 = np.extract(less50_cond, vanilla_surv_x)
+        gtr50_cond = vanilla_surv_x > 50.0
+        vanilla_surv_x_gtr_50_temp = np.extract(gtr50_cond, vanilla_surv_x)
+        gtr50_cond = vanilla_surv_x_gtr_50_temp < 90.0
+        vanilla_surv_x_gtr_50 = np.extract(gtr50_cond,
+                                           vanilla_surv_x_gtr_50_temp)
+        gtr90_cond = vanilla_surv_x >= 90.0
+        vanilla_surv_x_gtr_90 = np.extract(gtr90_cond, vanilla_surv_x)
+
+        # <=50
+        # Make sure all arrays filled
+        if norand_agent_surv_x_less_50.size == 0:
+            norand_agent_surv_x_less_50 = np.array([0])
+        if rand_agent_surv_x_less_50.size == 0:
+            rand_agent_surv_x_less_50 = np.array([0])
+        if vanilla_surv_x_less_50.size == 0:
+            vanilla_surv_x_less_50 = np.array([0])
+
+        norand_avg = np.average(norand_agent_surv_x_less_50)
+        norand_std = np.std(norand_agent_surv_x_less_50)
+        rand_avg = np.average(rand_agent_surv_x_less_50)
+        rand_std = np.std(rand_agent_surv_x_less_50)
+        vanilla_avg = np.average(vanilla_surv_x_less_50)
+        vanilla_std = np.std(vanilla_surv_x_less_50)
+        print("<= 50m")
+        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+            vanilla_avg, vanilla_std, vanilla_surv_x_less_50.shape[0]))
+        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            rand_avg, rand_std, rand_agent_surv_x_less_50.shape[0]))
+        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            norand_avg, norand_std, norand_agent_surv_x_less_50.shape[0]))
+
+        # >50
+        # Make sure all arrays filled
+        if norand_agent_surv_x_gtr_50.size == 0:
+            norand_agent_surv_x_gtr_50 = np.array([0])
+        if rand_agent_surv_x_gtr_50.size == 0:
+            rand_agent_surv_x_gtr_50 = np.array([0])
+        if vanilla_surv_x_gtr_50.size == 0:
+            vanilla_surv_x_gtr_50 = np.array([0])
+
+        norand_avg = np.average(norand_agent_surv_x_gtr_50)
+        norand_std = np.std(norand_agent_surv_x_gtr_50)
+        rand_avg = np.average(rand_agent_surv_x_gtr_50)
+        rand_std = np.std(rand_agent_surv_x_gtr_50)
+        vanilla_avg = np.average(vanilla_surv_x_gtr_50)
+        vanilla_std = np.std(vanilla_surv_x_gtr_50)
+        print("> 50m and <90m")
+        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+            vanilla_avg, vanilla_std, vanilla_surv_x_gtr_50.shape[0]))
+        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            rand_avg, rand_std, rand_agent_surv_x_gtr_50.shape[0]))
+        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            norand_avg, norand_std, norand_agent_surv_x_gtr_50.shape[0]))
+
+        # >90
+        # norand_agent_surv_x_gtr_90 = np.array(norand_agent_surv_x_gtr_90)
+        # rand_agent_surv_x_gtr_90 = np.array(vanilla_surv_x_gtr_90)
+        # vanilla_surv_x_gtr_90 = np.array(vanilla_surv_x_gtr_90)
+        # Make sure all arrays filled
+        if norand_agent_surv_x_gtr_90.size == 0:
+            norand_agent_surv_x_gtr_90 = np.array([0])
+        if rand_agent_surv_x_gtr_90.size == 0:
+            rand_agent_surv_x_gtr_90 = np.array([0])
+        if vanilla_surv_x_gtr_90.size == 0:
+            vanilla_surv_x_gtr_90 = np.array([0])
+
+        norand_avg = np.average(norand_agent_surv_x_gtr_90)
+        norand_std = np.std(norand_agent_surv_x_gtr_90)
+        rand_avg = np.average(rand_agent_surv_x_gtr_90)
+        rand_std = np.std(rand_agent_surv_x_gtr_90)
+        vanilla_avg = np.average(vanilla_surv_x_gtr_90)
+        vanilla_std = np.std(vanilla_surv_x_gtr_90)
+        print(">= 90m")
+        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+            vanilla_avg, vanilla_std, vanilla_surv_x_gtr_90.shape[0]))
+        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            rand_avg, rand_std, rand_agent_surv_x_gtr_90.shape[0]))
+        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+            norand_avg, norand_std, norand_agent_surv_x_gtr_90.shape[0]))
 
     elif training:
         rand_data_list = []
@@ -312,29 +431,22 @@ def main():
         else:
             action_name = "robot_act"
 
-        action = np.load(results_path + "/" + "policy_out_" + terrain_name + action_name + ".npy")
+        action = np.load(results_path + "/" + "policy_out_" + terrain_name +
+                         action_name + ".npy")
 
         ClearHeight_act = action[:, 0]
         BodyHeight_act = action[:, 1]
         Residuals_act = action[:, 2:]
 
-        plt.plot(ClearHeight_act,
-                 label='Clearance Height Mod',
-                 color='black')
-        plt.plot(BodyHeight_act,
-                 label='Body Height Mod',
-                 color='darkviolet')
+        plt.plot(ClearHeight_act, label='Clearance Height Mod', color='black')
+        plt.plot(BodyHeight_act, label='Body Height Mod', color='darkviolet')
 
         # FL
         plt.plot(Residuals_act[:, 0],
                  label='Residual: FL (x)',
                  color='limegreen')
-        plt.plot(Residuals_act[:, 1],
-                 label='Residual: FL (y)',
-                 color='lime')
-        plt.plot(Residuals_act[:, 2],
-                 label='Residual: FL (z)',
-                 color='green')
+        plt.plot(Residuals_act[:, 1], label='Residual: FL (y)', color='lime')
+        plt.plot(Residuals_act[:, 2], label='Residual: FL (z)', color='green')
 
         # FR
         plt.plot(Residuals_act[:, 3],
@@ -343,9 +455,7 @@ def main():
         plt.plot(Residuals_act[:, 4],
                  label='Residual: FR (y)',
                  color='dodgerblue')
-        plt.plot(Residuals_act[:, 5],
-                 label='Residual: FR (z)',
-                 color='blue')
+        plt.plot(Residuals_act[:, 5], label='Residual: FR (z)', color='blue')
 
         # BL
         plt.plot(Residuals_act[:, 6],
@@ -354,20 +464,14 @@ def main():
         plt.plot(Residuals_act[:, 7],
                  label='Residual: BL (y)',
                  color='crimson')
-        plt.plot(Residuals_act[:, 8],
-                 label='Residual: BL (z)',
-                 color='red')
+        plt.plot(Residuals_act[:, 8], label='Residual: BL (z)', color='red')
 
         # BR
-        plt.plot(Residuals_act[:, 9],
-                 label='Residual: BR (x)',
-                 color='gold')
+        plt.plot(Residuals_act[:, 9], label='Residual: BR (x)', color='gold')
         plt.plot(Residuals_act[:, 10],
                  label='Residual: BR (y)',
                  color='orange')
-        plt.plot(Residuals_act[:, 11],
-                 label='Residual: BR (z)',
-                 color='coral')
+        plt.plot(Residuals_act[:, 11], label='Residual: BR (z)', color='coral')
 
         plt.xlabel("Epoch Iteration")
         plt.ylabel("Action Value")
