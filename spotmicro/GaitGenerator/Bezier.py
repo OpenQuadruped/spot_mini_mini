@@ -14,7 +14,7 @@ class BezierGait():
         # Phase Lag Per Leg: FL, FR, BL, BR
         # Reference Leg is FL, always 0
         self.dSref = dSref
-        self.ModulatedRotation = [0.0, 0.0, 0.0, 0.0]
+        self.Prev_fxyz = [0.0, 0.0, 0.0, 0.0]
         # Number of control points is n + 1 = 11 + 1 = 12
         self.NumControlPoints = 11
         # Timestep
@@ -46,7 +46,7 @@ class BezierGait():
     def reset(self):
         """Resets the parameters of the Bezier Gait Generator
         """
-        self.ModulatedRotation = [0.0, 0.0, 0.0, 0.0]
+        self.Prev_fxyz = [0.0, 0.0, 0.0, 0.0]
 
         # Total Elapsed Time
         self.time = 0.0
@@ -194,7 +194,8 @@ class BezierGait():
            :returns: Binomial solution
         """
         return np.math.factorial(self.NumControlPoints) / (
-            np.math.factorial(k) * np.math.factorial(self.NumControlPoints - k))
+            np.math.factorial(k) *
+            np.math.factorial(self.NumControlPoints - k))
 
     def BezierSwing(self, phase, L, LateralFraction, clearance_height=0.04):
         """Calculates the step coordinates for the Bezier (swing) period
@@ -288,6 +289,34 @@ class BezierGait():
             stepZ = 0.0
         return stepX, stepY, stepZ
 
+    def YawCircle(self, T_bf, index):
+
+        """ Calculates the required rotation of the trajectory plane
+            for yaw motion
+
+           :param T_bf: default body-to-foot Vector
+           :param index: the foot index in the container
+           :returns: phi_arc, the plane rotation angle required for yaw motion
+        """
+
+        # Foot Magnitude depending on leg type
+        DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
+
+        # Rotation Angle depending on leg type
+        DefaultBodyToFoot_Direction = np.arctan2(T_bf[1], T_bf[0])
+
+        # Previous leg coordinates relative to default coordinates
+        g_xyz = self.Prev_fxyz[index] - np.array([T_bf[0], T_bf[1], T_bf[2]])
+
+        # Modulate Magnitude to keep tracing circle
+        g_mag = np.sqrt((g_xyz[0])**2 + (g_xyz[1])**2)
+        th_mod = np.arctan2(g_mag, DefaultBodyToFoot_Magnitude)
+
+        # Angle Traced by Foot for Rotation
+        phi_arc = np.pi / 2.0 + DefaultBodyToFoot_Direction + th_mod
+
+        return phi_arc
+
     def SwingStep(self, phase, L, LateralFraction, YawRate, clearance_height,
                   T_bf, key, index):
         """Calculates the step coordinates for the Bezier (swing) period
@@ -307,35 +336,22 @@ class BezierGait():
            :returns: Foot Coordinates relative to unmodified body
         """
 
-        DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
-
-        # Rotation Angle depending on leg type
-        DefaultBodyToFoot_Direction = np.arctan2(T_bf[1], T_bf[0])
-
-        # Angle Traced by Foot for Rotation
-        FootArcAngle = np.pi / 2.0 + DefaultBodyToFoot_Direction + self.ModulatedRotation[
-            index]
+        # Yaw foot angle for tangent-to-circle motion
+        phi_arc = self.YawCircle(T_bf, index)
 
         # Get Foot Coordinates for Forward Motion
         X_delta_lin, Y_delta_lin, Z_delta_lin = self.BezierSwing(
             phase, L, LateralFraction, clearance_height)
 
         X_delta_rot, Y_delta_rot, Z_delta_rot = self.BezierSwing(
-            phase, YawRate, FootArcAngle, clearance_height)
-
-        # Modulate Magnitude to keep tracing circle
-        ModulatedBodyToFoot_Magnitude = np.sqrt((X_delta_rot +
-                                                 X_delta_lin)**2 +
-                                                (Y_delta_rot + Y_delta_lin)**2)
-        mod = np.arctan2(ModulatedBodyToFoot_Magnitude,
-                         DefaultBodyToFoot_Magnitude)
-        # LEFT
-        self.ModulatedRotation[index] = mod
+            phase, YawRate, phi_arc, clearance_height)
 
         coord = np.array([
             X_delta_lin + X_delta_rot, Y_delta_lin + Y_delta_rot,
             Z_delta_lin + Z_delta_rot
         ])
+
+        self.Prev_fxyz[index] = coord
 
         return coord
 
@@ -358,35 +374,22 @@ class BezierGait():
            :returns: Foot Coordinates relative to unmodified body
         """
 
-        DefaultBodyToFoot_Magnitude = np.sqrt(T_bf[0]**2 + T_bf[1]**2)
-
-        # Rotation Angle depending on leg type
-        DefaultBodyToFoot_Direction = np.arctan2(T_bf[1], T_bf[0])
-
-        # Angle Traced by Foot for Rotation
-        FootArcAngle = np.pi / 2.0 + DefaultBodyToFoot_Direction + self.ModulatedRotation[
-            index]
+        # Yaw foot angle for tangent-to-circle motion
+        phi_arc = self.YawCircle(T_bf, index)
 
         # Get Foot Coordinates for Forward Motion
         X_delta_lin, Y_delta_lin, Z_delta_lin = self.SineStance(
             phase, L, LateralFraction, penetration_depth)
 
         X_delta_rot, Y_delta_rot, Z_delta_rot = self.SineStance(
-            phase, YawRate, FootArcAngle, penetration_depth)
-
-        # Modulate Magnitude to keep tracing circle
-        ModulatedBodyToFoot_Magnitude = np.sqrt((X_delta_rot +
-                                                 X_delta_lin)**2 +
-                                                (Y_delta_rot + Y_delta_lin)**2)
-        mod = np.arctan2(ModulatedBodyToFoot_Magnitude,
-                         DefaultBodyToFoot_Magnitude)
-        # LEFT
-        self.ModulatedRotation[index] = mod
+            phase, YawRate, phi_arc, penetration_depth)
 
         coord = np.array([
             X_delta_lin + X_delta_rot, Y_delta_lin + Y_delta_rot,
             Z_delta_lin + Z_delta_rot
         ])
+
+        self.Prev_fxyz[index] = coord
 
         return coord
 
