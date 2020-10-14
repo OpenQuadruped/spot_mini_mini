@@ -313,7 +313,10 @@ class BezierGait():
         th_mod = np.arctan2(g_mag, DefaultBodyToFoot_Magnitude)
 
         # Angle Traced by Foot for Rotation
-        phi_arc = np.pi / 2.0 + DefaultBodyToFoot_Direction + th_mod
+        if index == 1 or index == 2:
+            phi_arc = np.pi / 2.0 + DefaultBodyToFoot_Direction + th_mod
+        else:
+            phi_arc = np.pi / 2.0 - DefaultBodyToFoot_Direction + th_mod
 
         return phi_arc
 
