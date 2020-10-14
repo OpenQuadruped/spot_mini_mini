@@ -16,7 +16,7 @@ class BezierGait():
         self.dSref = dSref
         self.ModulatedRotation = [0.0, 0.0, 0.0, 0.0]
         # Number of control points is n + 1 = 11 + 1 = 12
-        self.NumBezierPoints = 11
+        self.NumControlPoints = 11
         # Timestep
         self.dt = dt
 
@@ -173,10 +173,10 @@ class BezierGait():
             self.TD = False
             self.SwRef = 0.0
 
-    def BezierPoint(self, t, k, point):
-        """Calculate the point on the bezier curve
+    def BernSteinPoly(self, t, k, point):
+        """Calculate the point on the Berinstein Polynomial
            based on phase (0->1), point number (0-11),
-           and the value of the point itself
+           and the value of the control point itself
 
            :param t: phase
            :param k: point number
@@ -184,7 +184,7 @@ class BezierGait():
            :return: Value through Bezier Curve
         """
         return point * self.Binomial(k) * np.power(t, k) * np.power(
-            1 - t, self.NumBezierPoints - k)
+            1 - t, self.NumControlPoints - k)
 
     def Binomial(self, k):
         """Solves the binomial theorem given a Bezier point number
@@ -193,8 +193,8 @@ class BezierGait():
            :param k: Bezier point number
            :returns: Binomial solution
         """
-        return np.math.factorial(self.NumBezierPoints) / (
-            np.math.factorial(k) * np.math.factorial(self.NumBezierPoints - k))
+        return np.math.factorial(self.NumControlPoints) / (
+            np.math.factorial(k) * np.math.factorial(self.NumControlPoints - k))
 
     def BezierSwing(self, phase, L, LateralFraction, clearance_height=0.04):
         """Calculates the step coordinates for the Bezier (swing) period
@@ -257,10 +257,11 @@ class BezierGait():
         stepX = 0.
         stepY = 0.
         stepZ = 0.
+        # Bernstein Polynomial sum over control points
         for i in range(len(X)):
-            stepX += self.BezierPoint(phase, i, X[i])
-            stepY += self.BezierPoint(phase, i, Y[i])
-            stepZ += self.BezierPoint(phase, i, Z[i])
+            stepX += self.BernSteinPoly(phase, i, X[i])
+            stepY += self.BernSteinPoly(phase, i, Y[i])
+            stepZ += self.BernSteinPoly(phase, i, Z[i])
 
         return stepX, stepY, stepZ
 

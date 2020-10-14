@@ -193,87 +193,87 @@ def main():
 
         # Get Survival Data for <=50m, >50m, and >90m
         # NO RAND
-        less50_cond = norand_agent_surv_x <= 50.0
-        norand_agent_surv_x_less_50 = np.extract(less50_cond,
-                                                 norand_agent_surv_x)
-        gtr50_cond = norand_agent_surv_x > 50.0
-        norand_agent_surv_x_gtr_50_temp = np.extract(gtr50_cond,
-                                                     norand_agent_surv_x)
-        gtr50_cond = norand_agent_surv_x_gtr_50_temp < 90.0
-        norand_agent_surv_x_gtr_50 = np.extract(
-            gtr50_cond, norand_agent_surv_x_gtr_50_temp)
+        less50_cond = norand_agent_surv_x <= 5.0
+        norand_agent_surv_x_less_5 = np.extract(less50_cond,
+                                                norand_agent_surv_x)
+        gtr50_cond = norand_agent_surv_x > 5.0
+        norand_agent_surv_x_gtr_5_temp = np.extract(gtr50_cond,
+                                                    norand_agent_surv_x)
+        gtr50_cond = norand_agent_surv_x_gtr_5_temp < 90.0
+        norand_agent_surv_x_gtr_5 = np.extract(gtr50_cond,
+                                               norand_agent_surv_x_gtr_5_temp)
         gtr90_cond = norand_agent_surv_x >= 90.0
         norand_agent_surv_x_gtr_90 = np.extract(gtr90_cond,
                                                 norand_agent_surv_x)
 
         # RAND
-        less50_cond = rand_agent_surv_x <= 50.0
-        rand_agent_surv_x_less_50 = np.extract(less50_cond, rand_agent_surv_x)
-        gtr50_cond = rand_agent_surv_x > 50.0
-        rand_agent_surv_x_gtr_50_temp = np.extract(gtr50_cond,
-                                                   rand_agent_surv_x)
-        gtr50_cond = rand_agent_surv_x_gtr_50_temp < 90.0
-        rand_agent_surv_x_gtr_50 = np.extract(gtr50_cond,
-                                              rand_agent_surv_x_gtr_50_temp)
+        less50_cond = rand_agent_surv_x <= 5.0
+        rand_agent_surv_x_less_5 = np.extract(less50_cond, rand_agent_surv_x)
+        gtr50_cond = rand_agent_surv_x > 5.0
+        rand_agent_surv_x_gtr_5_temp = np.extract(gtr50_cond,
+                                                  rand_agent_surv_x)
+        gtr50_cond = rand_agent_surv_x_gtr_5_temp < 90.0
+        rand_agent_surv_x_gtr_5 = np.extract(gtr50_cond,
+                                             rand_agent_surv_x_gtr_5_temp)
         gtr90_cond = rand_agent_surv_x >= 90.0
         rand_agent_surv_x_gtr_90 = np.extract(gtr90_cond, rand_agent_surv_x)
 
         # VNL
-        less50_cond = vanilla_surv_x <= 50.0
-        vanilla_surv_x_less_50 = np.extract(less50_cond, vanilla_surv_x)
-        gtr50_cond = vanilla_surv_x > 50.0
-        vanilla_surv_x_gtr_50_temp = np.extract(gtr50_cond, vanilla_surv_x)
-        gtr50_cond = vanilla_surv_x_gtr_50_temp < 90.0
-        vanilla_surv_x_gtr_50 = np.extract(gtr50_cond,
-                                           vanilla_surv_x_gtr_50_temp)
+        less50_cond = vanilla_surv_x <= 5.0
+        vanilla_surv_x_less_5 = np.extract(less50_cond, vanilla_surv_x)
+        gtr50_cond = vanilla_surv_x > 5.0
+        vanilla_surv_x_gtr_5_temp = np.extract(gtr50_cond, vanilla_surv_x)
+        gtr50_cond = vanilla_surv_x_gtr_5_temp < 90.0
+        vanilla_surv_x_gtr_5 = np.extract(gtr50_cond,
+                                          vanilla_surv_x_gtr_5_temp)
         gtr90_cond = vanilla_surv_x >= 90.0
         vanilla_surv_x_gtr_90 = np.extract(gtr90_cond, vanilla_surv_x)
 
         # <=50
         # Make sure all arrays filled
-        if norand_agent_surv_x_less_50.size == 0:
-            norand_agent_surv_x_less_50 = np.array([0])
-        if rand_agent_surv_x_less_50.size == 0:
-            rand_agent_surv_x_less_50 = np.array([0])
-        if vanilla_surv_x_less_50.size == 0:
-            vanilla_surv_x_less_50 = np.array([0])
+        if norand_agent_surv_x_less_5.size == 0:
+            norand_agent_surv_x_less_5 = np.array([0])
+        if rand_agent_surv_x_less_5.size == 0:
+            rand_agent_surv_x_less_5 = np.array([0])
+        if vanilla_surv_x_less_5.size == 0:
+            vanilla_surv_x_less_5 = np.array([0])
 
-        norand_avg = np.average(norand_agent_surv_x_less_50)
-        norand_std = np.std(norand_agent_surv_x_less_50)
-        rand_avg = np.average(rand_agent_surv_x_less_50)
-        rand_std = np.std(rand_agent_surv_x_less_50)
-        vanilla_avg = np.average(vanilla_surv_x_less_50)
-        vanilla_std = np.std(vanilla_surv_x_less_50)
-        print("<= 50m")
+        norand_avg = np.average(norand_agent_surv_x_less_5)
+        norand_std = np.std(norand_agent_surv_x_less_5)
+        rand_avg = np.average(rand_agent_surv_x_less_5)
+        rand_std = np.std(rand_agent_surv_x_less_5)
+        vanilla_avg = np.average(vanilla_surv_x_less_5)
+        vanilla_std = np.std(vanilla_surv_x_less_5)
+        print("<= 5m")
         print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
-            vanilla_avg, vanilla_std, vanilla_surv_x_less_50.shape[0]))
+            vanilla_avg, vanilla_std, vanilla_surv_x_less_5.shape[0]))
         print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            rand_avg, rand_std, rand_agent_surv_x_less_50.shape[0]))
+            rand_avg, rand_std, rand_agent_surv_x_less_5.shape[0]))
         print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            norand_avg, norand_std, norand_agent_surv_x_less_50.shape[0]))
+            norand_avg, norand_std, norand_agent_surv_x_less_5.shape[0]))
 
         # >50
         # Make sure all arrays filled
-        if norand_agent_surv_x_gtr_50.size == 0:
-            norand_agent_surv_x_gtr_50 = np.array([0])
-        if rand_agent_surv_x_gtr_50.size == 0:
-            rand_agent_surv_x_gtr_50 = np.array([0])
-        if vanilla_surv_x_gtr_50.size == 0:
-            vanilla_surv_x_gtr_50 = np.array([0])
+        if norand_agent_surv_x_gtr_5.size == 0:
+            norand_agent_surv_x_gtr_5 = np.array([0])
+        if rand_agent_surv_x_gtr_5.size == 0:
+            rand_agent_surv_x_gtr_5 = np.array([0])
+        if vanilla_surv_x_gtr_5.size == 0:
+            vanilla_surv_x_gtr_5 = np.array([0])
 
-        norand_avg = np.average(norand_agent_surv_x_gtr_50)
-        norand_std = np.std(norand_agent_surv_x_gtr_50)
-        rand_avg = np.average(rand_agent_surv_x_gtr_50)
-        rand_std = np.std(rand_agent_surv_x_gtr_50)
-        vanilla_avg = np.average(vanilla_surv_x_gtr_50)
-        vanilla_std = np.std(vanilla_surv_x_gtr_50)
-        print("> 50m and <90m")
+        norand_avg = np.average(norand_agent_surv_x_gtr_5)
+        norand_std = np.std(norand_agent_surv_x_gtr_5)
+        rand_avg = np.average(rand_agent_surv_x_gtr_5)
+        rand_std = np.std(rand_agent_surv_x_gtr_5)
+        vanilla_avg = np.average(vanilla_surv_x_gtr_5)
+        vanilla_std = np.std(vanilla_surv_x_gtr_5)
+        print("> 5m and <90m")
         print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
-            vanilla_avg, vanilla_std, vanilla_surv_x_gtr_50.shape[0]))
+            vanilla_avg, vanilla_std, vanilla_surv_x_gtr_5.shape[0]))
         print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            rand_avg, rand_std, rand_agent_surv_x_gtr_50.shape[0]))
+            rand_avg, rand_std, rand_agent_surv_x_gtr_5.shape[0]))
         print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            norand_avg, norand_std, norand_agent_surv_x_gtr_50.shape[0]))
+            norand_avg, norand_std, norand_agent_surv_x_gtr_5.shape[0]))
 
         # >90
         # norand_agent_surv_x_gtr_90 = np.array(norand_agent_surv_x_gtr_90)
@@ -300,6 +300,9 @@ def main():
             rand_avg, rand_std, rand_agent_surv_x_gtr_90.shape[0]))
         print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, norand_agent_surv_x_gtr_90.shape[0]))
+
+        # Save to excel
+        df.to_excel(results_path + "/SurvData.xlsx", index=False)
 
     elif training:
         rand_data_list = []

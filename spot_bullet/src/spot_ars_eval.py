@@ -33,7 +33,7 @@ parser.add_argument("-nr",
                     "--DontRender",
                     help="Don't Render environment",
                     action='store_true')
-parser.add_argument("-ren",
+parser.add_argument("-r",
                     "--DebugRack",
                     help="Put Spot on an Elevated Rack",
                     action='store_true')

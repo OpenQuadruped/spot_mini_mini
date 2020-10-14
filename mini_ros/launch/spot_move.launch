@@ -8,7 +8,7 @@
   <node respawn="true" pkg="joy"
         type="joy_node" name="spot_joy" >
     <param name="dev" type="string" value="/dev/input/js0" />
-    <param name="deadzone" value="0.005" />
+    <param name="deadzone" value="0.05" />
   </node>
 
  <!-- Teleop Node -->
