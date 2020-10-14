@@ -156,9 +156,9 @@ def main():
         norand_agent_surv_x = norand_agent_surv[:, 0]
         # convert the lists to series
         data = {
-            'Vanilla': vanilla_surv_x,
-            'GMBC Rand': rand_agent_surv_x,
-            'GMBC NoRand': norand_agent_surv_x
+            'Open Loop': vanilla_surv_x,
+            'GMBC': rand_agent_surv_x,
+            'D^2-GMBC': norand_agent_surv_x
         }
 
         colors = ['r', 'g', 'b']
@@ -167,11 +167,24 @@ def main():
         df = pd.DataFrame(data)
         print(df)
 
+        # get dataframe2
+        # Extract useful values
+        vanilla_surv_dt = vanilla_surv[:1000, -1]
+        rand_agent_surv_dt = rand_agent_surv[:, -1]
+        norand_agent_surv_dt = norand_agent_surv[:, -1]
+        # convert the lists to series
+        data2 = {
+            'Open Loop': vanilla_surv_dt,
+            'GMBC': rand_agent_surv_dt,
+            'D^2-GMBC': norand_agent_surv_dt
+        }
+        df2 = pd.DataFrame(data2)
+
         # Plot
         for i, col in enumerate(df.columns):
             sns.distplot(df[[col]], color=colors[i])
 
-        plt.legend(labels=['GMBC NoRand', 'GMBC Rand', 'Vanilla'])
+        plt.legend(labels=['D^2-GMBC', 'GMBC', 'Open Loop'])
         plt.xlabel("Forward Survived Distance (m)")
         plt.ylabel("Kernel Density Estimate")
         plt.show()
@@ -184,11 +197,11 @@ def main():
         vanilla_avg = np.average(copy.deepcopy(vanilla_surv_x))
         vanilla_std = np.std(copy.deepcopy(vanilla_surv_x))
 
-        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+        print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
             vanilla_avg, vanilla_std, norand_agent_surv_x.shape[0]))
-        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             rand_avg, rand_std, rand_agent_surv_x.shape[0]))
-        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, vanilla_surv_x.shape[0]))
 
         # Get Survival Data for <=50m, >50m, and >90m
@@ -245,11 +258,11 @@ def main():
         vanilla_avg = np.average(vanilla_surv_x_less_5)
         vanilla_std = np.std(vanilla_surv_x_less_5)
         print("<= 5m")
-        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+        print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
             vanilla_avg, vanilla_std, vanilla_surv_x_less_5.shape[0]))
-        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             rand_avg, rand_std, rand_agent_surv_x_less_5.shape[0]))
-        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, norand_agent_surv_x_less_5.shape[0]))
 
         # >50
@@ -268,11 +281,11 @@ def main():
         vanilla_avg = np.average(vanilla_surv_x_gtr_5)
         vanilla_std = np.std(vanilla_surv_x_gtr_5)
         print("> 5m and <90m")
-        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+        print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
             vanilla_avg, vanilla_std, vanilla_surv_x_gtr_5.shape[0]))
-        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             rand_avg, rand_std, rand_agent_surv_x_gtr_5.shape[0]))
-        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, norand_agent_surv_x_gtr_5.shape[0]))
 
         # >90
@@ -294,15 +307,16 @@ def main():
         vanilla_avg = np.average(vanilla_surv_x_gtr_90)
         vanilla_std = np.std(vanilla_surv_x_gtr_90)
         print(">= 90m")
-        print("Vanilla: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
+        print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
             vanilla_avg, vanilla_std, vanilla_surv_x_gtr_90.shape[0]))
-        print("RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             rand_avg, rand_std, rand_agent_surv_x_gtr_90.shape[0]))
-        print("NOT RANDOM: AVG [{}] | STD [{}] AMOUNT [{}]".format(
+        print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, norand_agent_surv_x_gtr_90.shape[0]))
 
         # Save to excel
-        df.to_excel(results_path + "/SurvData.xlsx", index=False)
+        df.to_excel(results_path + "/SurvDist.xlsx", index=False)
+        df2.to_excel(results_path + "/SurvDT.xlsx", index=False)
 
     elif training:
         rand_data_list = []
