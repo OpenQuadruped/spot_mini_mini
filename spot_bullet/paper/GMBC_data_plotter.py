@@ -73,32 +73,31 @@ def moving_average(a, n=MA_WINDOW):
     return MA[n - 1:] / n
 
 
-def extract_data_bounds(min=0, max=5, data=None):
+def extract_data_bounds(min=0, max=5, dist_data=None, dt_data=None):
     """ 3 bounds: lower, mid, highest
     """
 
-    if data is not None:
+    if dist_data is not None:
 
         # Get Survival Data, dt
         # Lowest Bound: x <= max
         if min == 0:
-            less_max_cond = data <= max
-            data_less_max = np.extract(less_max_cond, data)
+            less_max_cond = dist_data <= max
+            data_less_max_idx = np.where(less_max_cond)
+            data_less_max = dist_data[data_less_max_idx]
             data_bounded = data_less_max
         else:
             # Highest Bound: min <= x
             if max == np.inf:
-                gtr_min_cond = data >= min
-                data_gtr_min = np.extract(gtr_min_cond, data)
+                gtr_min_cond = dist_data >= min
+                data_gtr_min = np.extract(gtr_min_cond, dist_data)
                 data_bounded = data_gtr_min
             # Mid Bound: min < x < max
             else:
-                gtr_min_cond = data > min
-                data_gtr_min = np.extract(gtr_min_cond, data)
-                less_max_cond = data_gtr_min < max
-                data_less_max = np.extract(less_max_cond, data_gtr_min)
-
-                data_bounded = data_less_max
+                less_max_gtr_min_cond = np.logical_and(dist_data > min,
+                                                       dist_data < max)
+                data_less_max_gtr_min_idx = np.where(less_max_gtr_min_cond)
+                data_bounded = dist_data[data_less_max_gtr_min_idx]
 
         return data_bounded
     else:
@@ -239,10 +238,8 @@ def main():
         # collect data
         norand_agent_surv_x_less_5 = extract_data_bounds(
             0, 5, norand_agent_surv_x)
-        rand_agent_surv_x_less_5 = extract_data_bounds(
-            0, 5, rand_agent_surv_x)
-        vanilla_surv_x_less_5 = extract_data_bounds(
-            0, 5, vanilla_surv_x)
+        rand_agent_surv_x_less_5 = extract_data_bounds(0, 5, rand_agent_surv_x)
+        vanilla_surv_x_less_5 = extract_data_bounds(0, 5, vanilla_surv_x)
 
         # <=5
         # Make sure all arrays filled
@@ -270,10 +267,8 @@ def main():
         # collect data
         norand_agent_surv_x_gtr_5 = extract_data_bounds(
             5, 90, norand_agent_surv_x)
-        rand_agent_surv_x_gtr_5 = extract_data_bounds(
-            5, 90, rand_agent_surv_x)
-        vanilla_surv_x_gtr_5 = extract_data_bounds(
-            5, 90, vanilla_surv_x)
+        rand_agent_surv_x_gtr_5 = extract_data_bounds(5, 90, rand_agent_surv_x)
+        vanilla_surv_x_gtr_5 = extract_data_bounds(5, 90, vanilla_surv_x)
 
         # >5 <90
         # Make sure all arrays filled
@@ -301,10 +296,9 @@ def main():
         # collect data
         norand_agent_surv_x_gtr_90 = extract_data_bounds(
             90, np.inf, norand_agent_surv_x)
-        rand_agent_surv_x_gtr_90 = extract_data_bounds(
-            90, np.inf, rand_agent_surv_x)
-        vanilla_surv_x_gtr_90 = extract_data_bounds(
-            90, np.inf, vanilla_surv_x)
+        rand_agent_surv_x_gtr_90 = extract_data_bounds(90, np.inf,
+                                                       rand_agent_surv_x)
+        vanilla_surv_x_gtr_90 = extract_data_bounds(90, np.inf, vanilla_surv_x)
 
         # >90
         # Make sure all arrays filled
