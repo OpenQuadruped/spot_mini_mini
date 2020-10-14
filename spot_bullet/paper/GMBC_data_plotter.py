@@ -73,6 +73,38 @@ def moving_average(a, n=MA_WINDOW):
     return MA[n - 1:] / n
 
 
+def extract_data_bounds(min=0, max=5, data=None):
+    """ 3 bounds: lower, mid, highest
+    """
+
+    if data is not None:
+
+        # Get Survival Data, dt
+        # Lowest Bound: x <= max
+        if min == 0:
+            less_max_cond = data <= max
+            data_less_max = np.extract(less_max_cond, data)
+            data_bounded = data_less_max
+        else:
+            # Highest Bound: min <= x
+            if max == np.inf:
+                gtr_min_cond = data >= min
+                data_gtr_min = np.extract(gtr_min_cond, data)
+                data_bounded = data_gtr_min
+            # Mid Bound: min < x < max
+            else:
+                gtr_min_cond = data > min
+                data_gtr_min = np.extract(gtr_min_cond, data)
+                less_max_cond = data_gtr_min < max
+                data_less_max = np.extract(less_max_cond, data_gtr_min)
+
+                data_bounded = data_less_max
+
+        return data_bounded
+    else:
+        return None
+
+
 def main():
     """ The main() function. """
     file_name = "spot_ars_"
@@ -204,45 +236,15 @@ def main():
         print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, vanilla_surv_x.shape[0]))
 
-        # Get Survival Data for <=50m, >50m, and >90m
-        # NO RAND
-        less50_cond = norand_agent_surv_x <= 5.0
-        norand_agent_surv_x_less_5 = np.extract(less50_cond,
-                                                norand_agent_surv_x)
-        gtr50_cond = norand_agent_surv_x > 5.0
-        norand_agent_surv_x_gtr_5_temp = np.extract(gtr50_cond,
-                                                    norand_agent_surv_x)
-        gtr50_cond = norand_agent_surv_x_gtr_5_temp < 90.0
-        norand_agent_surv_x_gtr_5 = np.extract(gtr50_cond,
-                                               norand_agent_surv_x_gtr_5_temp)
-        gtr90_cond = norand_agent_surv_x >= 90.0
-        norand_agent_surv_x_gtr_90 = np.extract(gtr90_cond,
-                                                norand_agent_surv_x)
+        # collect data
+        norand_agent_surv_x_less_5 = extract_data_bounds(
+            0, 5, norand_agent_surv_x)
+        rand_agent_surv_x_less_5 = extract_data_bounds(
+            0, 5, rand_agent_surv_x)
+        vanilla_surv_x_less_5 = extract_data_bounds(
+            0, 5, vanilla_surv_x)
 
-        # RAND
-        less50_cond = rand_agent_surv_x <= 5.0
-        rand_agent_surv_x_less_5 = np.extract(less50_cond, rand_agent_surv_x)
-        gtr50_cond = rand_agent_surv_x > 5.0
-        rand_agent_surv_x_gtr_5_temp = np.extract(gtr50_cond,
-                                                  rand_agent_surv_x)
-        gtr50_cond = rand_agent_surv_x_gtr_5_temp < 90.0
-        rand_agent_surv_x_gtr_5 = np.extract(gtr50_cond,
-                                             rand_agent_surv_x_gtr_5_temp)
-        gtr90_cond = rand_agent_surv_x >= 90.0
-        rand_agent_surv_x_gtr_90 = np.extract(gtr90_cond, rand_agent_surv_x)
-
-        # VNL
-        less50_cond = vanilla_surv_x <= 5.0
-        vanilla_surv_x_less_5 = np.extract(less50_cond, vanilla_surv_x)
-        gtr50_cond = vanilla_surv_x > 5.0
-        vanilla_surv_x_gtr_5_temp = np.extract(gtr50_cond, vanilla_surv_x)
-        gtr50_cond = vanilla_surv_x_gtr_5_temp < 90.0
-        vanilla_surv_x_gtr_5 = np.extract(gtr50_cond,
-                                          vanilla_surv_x_gtr_5_temp)
-        gtr90_cond = vanilla_surv_x >= 90.0
-        vanilla_surv_x_gtr_90 = np.extract(gtr90_cond, vanilla_surv_x)
-
-        # <=50
+        # <=5
         # Make sure all arrays filled
         if norand_agent_surv_x_less_5.size == 0:
             norand_agent_surv_x_less_5 = np.array([0])
@@ -265,7 +267,15 @@ def main():
         print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, norand_agent_surv_x_less_5.shape[0]))
 
-        # >50
+        # collect data
+        norand_agent_surv_x_gtr_5 = extract_data_bounds(
+            5, 90, norand_agent_surv_x)
+        rand_agent_surv_x_gtr_5 = extract_data_bounds(
+            5, 90, rand_agent_surv_x)
+        vanilla_surv_x_gtr_5 = extract_data_bounds(
+            5, 90, vanilla_surv_x)
+
+        # >5 <90
         # Make sure all arrays filled
         if norand_agent_surv_x_gtr_5.size == 0:
             norand_agent_surv_x_gtr_5 = np.array([0])
@@ -288,10 +298,15 @@ def main():
         print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, norand_agent_surv_x_gtr_5.shape[0]))
 
+        # collect data
+        norand_agent_surv_x_gtr_90 = extract_data_bounds(
+            90, np.inf, norand_agent_surv_x)
+        rand_agent_surv_x_gtr_90 = extract_data_bounds(
+            90, np.inf, rand_agent_surv_x)
+        vanilla_surv_x_gtr_90 = extract_data_bounds(
+            90, np.inf, vanilla_surv_x)
+
         # >90
-        # norand_agent_surv_x_gtr_90 = np.array(norand_agent_surv_x_gtr_90)
-        # rand_agent_surv_x_gtr_90 = np.array(vanilla_surv_x_gtr_90)
-        # vanilla_surv_x_gtr_90 = np.array(vanilla_surv_x_gtr_90)
         # Make sure all arrays filled
         if norand_agent_surv_x_gtr_90.size == 0:
             norand_agent_surv_x_gtr_90 = np.array([0])
