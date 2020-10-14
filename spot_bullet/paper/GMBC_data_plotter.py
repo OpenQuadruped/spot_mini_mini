@@ -81,25 +81,28 @@ def extract_data_bounds(min=0, max=5, dist_data=None, dt_data=None):
 
         # Get Survival Data, dt
         # Lowest Bound: x <= max
+        bound = np.array([0])
         if min == 0:
             less_max_cond = dist_data <= max
-            data_less_max_idx = np.where(less_max_cond)
-            data_less_max = dist_data[data_less_max_idx]
-            data_bounded = data_less_max
+            bound = np.where(less_max_cond)
         else:
             # Highest Bound: min <= x
             if max == np.inf:
                 gtr_min_cond = dist_data >= min
-                data_gtr_min = np.extract(gtr_min_cond, dist_data)
-                data_bounded = data_gtr_min
+                bound = np.where(gtr_min_cond)
             # Mid Bound: min < x < max
             else:
                 less_max_gtr_min_cond = np.logical_and(dist_data > min,
                                                        dist_data < max)
-                data_less_max_gtr_min_idx = np.where(less_max_gtr_min_cond)
-                data_bounded = dist_data[data_less_max_gtr_min_idx]
+                bound = np.where(less_max_gtr_min_cond)
 
-        return data_bounded
+        if dt_data is not None:
+            dt_bounded = dt_data[bound]
+            num_surv = np.array(np.where(dt_bounded == 50000))[0].shape[0]
+        else:
+            num_surv = None
+
+        return dist_data[bound], num_surv
     else:
         return None
 
@@ -168,7 +171,7 @@ def main():
                     results_path + "/" + file_name +
                     "agent_{}".format(rand_agt) + '_survival_{}'.format(nep),
                     'rb') as filehandle:
-                rand_agent_surv = np.array(pickle.load(filehandle))
+                d2gmbc_surv = np.array(pickle.load(filehandle))
 
         # NoRand Agent Data
         if os.path.exists(results_path + "/" + file_name +
@@ -178,18 +181,18 @@ def main():
                     results_path + "/" + file_name +
                     "agent_{}".format(norand_agt) + '_survival_{}'.format(nep),
                     'rb') as filehandle:
-                norand_agent_surv = np.array(pickle.load(filehandle))
-                # print(norand_agent_surv[:, 0])
+                gmbc_surv = np.array(pickle.load(filehandle))
+                # print(gmbc_surv[:, 0])
 
         # Extract useful values
         vanilla_surv_x = vanilla_surv[:1000, 0]
-        rand_agent_surv_x = rand_agent_surv[:, 0]
-        norand_agent_surv_x = norand_agent_surv[:, 0]
+        d2gmbc_surv_x = d2gmbc_surv[:, 0]
+        gmbc_surv_x = gmbc_surv[:, 0]
         # convert the lists to series
         data = {
             'Open Loop': vanilla_surv_x,
-            'GMBC': rand_agent_surv_x,
-            'D^2-GMBC': norand_agent_surv_x
+            'GMBC': d2gmbc_surv_x,
+            'D^2-GMBC': gmbc_surv_x
         }
 
         colors = ['r', 'g', 'b']
@@ -201,13 +204,13 @@ def main():
         # get dataframe2
         # Extract useful values
         vanilla_surv_dt = vanilla_surv[:1000, -1]
-        rand_agent_surv_dt = rand_agent_surv[:, -1]
-        norand_agent_surv_dt = norand_agent_surv[:, -1]
+        d2gmbc_surv_dt = d2gmbc_surv[:, -1]
+        gmbc_surv_dt = gmbc_surv[:, -1]
         # convert the lists to series
         data2 = {
             'Open Loop': vanilla_surv_dt,
-            'GMBC': rand_agent_surv_dt,
-            'D^2-GMBC': norand_agent_surv_dt
+            'GMBC': d2gmbc_surv_dt,
+            'D^2-GMBC': gmbc_surv_dt
         }
         df2 = pd.DataFrame(data2)
 
@@ -221,107 +224,136 @@ def main():
         plt.show()
 
         # Print AVG and STDEV
-        norand_avg = np.average(copy.deepcopy(norand_agent_surv_x))
-        norand_std = np.std(copy.deepcopy(norand_agent_surv_x))
-        rand_avg = np.average(copy.deepcopy(rand_agent_surv_x))
-        rand_std = np.std(copy.deepcopy(rand_agent_surv_x))
+        norand_avg = np.average(copy.deepcopy(gmbc_surv_x))
+        norand_std = np.std(copy.deepcopy(gmbc_surv_x))
+        rand_avg = np.average(copy.deepcopy(d2gmbc_surv_x))
+        rand_std = np.std(copy.deepcopy(d2gmbc_surv_x))
         vanilla_avg = np.average(copy.deepcopy(vanilla_surv_x))
         vanilla_std = np.std(copy.deepcopy(vanilla_surv_x))
 
         print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
-            vanilla_avg, vanilla_std, norand_agent_surv_x.shape[0]))
+            vanilla_avg, vanilla_std, gmbc_surv_x.shape[0]))
         print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            rand_avg, rand_std, rand_agent_surv_x.shape[0]))
+            rand_avg, rand_std, d2gmbc_surv_x.shape[0]))
         print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
             norand_avg, norand_std, vanilla_surv_x.shape[0]))
 
         # collect data
-        norand_agent_surv_x_less_5 = extract_data_bounds(
-            0, 5, norand_agent_surv_x)
-        rand_agent_surv_x_less_5 = extract_data_bounds(0, 5, rand_agent_surv_x)
-        vanilla_surv_x_less_5 = extract_data_bounds(0, 5, vanilla_surv_x)
+        gmbc_surv_x_less_5, gmbc_surv_num_less_5 = extract_data_bounds(
+            0, 5, gmbc_surv_x, gmbc_surv_dt)
+        d2gmbc_surv_x_less_5, d2gmbc_surv_num_less_5 = extract_data_bounds(
+            0, 5, d2gmbc_surv_x, d2gmbc_surv_dt)
+        vanilla_surv_x_less_5, vanilla_surv_num_less_5 = extract_data_bounds(
+            0, 5, vanilla_surv_x, vanilla_surv_dt)
 
         # <=5
         # Make sure all arrays filled
-        if norand_agent_surv_x_less_5.size == 0:
-            norand_agent_surv_x_less_5 = np.array([0])
-        if rand_agent_surv_x_less_5.size == 0:
-            rand_agent_surv_x_less_5 = np.array([0])
+        if gmbc_surv_x_less_5.size == 0:
+            gmbc_surv_x_less_5 = np.array([0])
+        if d2gmbc_surv_x_less_5.size == 0:
+            d2gmbc_surv_x_less_5 = np.array([0])
         if vanilla_surv_x_less_5.size == 0:
             vanilla_surv_x_less_5 = np.array([0])
 
-        norand_avg = np.average(norand_agent_surv_x_less_5)
-        norand_std = np.std(norand_agent_surv_x_less_5)
-        rand_avg = np.average(rand_agent_surv_x_less_5)
-        rand_std = np.std(rand_agent_surv_x_less_5)
+        norand_avg = np.average(gmbc_surv_x_less_5)
+        norand_std = np.std(gmbc_surv_x_less_5)
+        rand_avg = np.average(d2gmbc_surv_x_less_5)
+        rand_std = np.std(d2gmbc_surv_x_less_5)
         vanilla_avg = np.average(vanilla_surv_x_less_5)
         vanilla_std = np.std(vanilla_surv_x_less_5)
         print("<= 5m")
-        print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
-            vanilla_avg, vanilla_std, vanilla_surv_x_less_5.shape[0]))
-        print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            rand_avg, rand_std, rand_agent_surv_x_less_5.shape[0]))
-        print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            norand_avg, norand_std, norand_agent_surv_x_less_5.shape[0]))
+        print(
+            "Open Loop: AVG [{}] | STD [{}] | AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]"
+            .format(vanilla_avg, vanilla_std,
+                    vanilla_surv_x_less_5.shape[0] - vanilla_surv_num_less_5,
+                    vanilla_surv_num_less_5))
+        print(
+            "D^2-GMBC: AVG [{}] | STD [{}] AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]"
+            .format(rand_avg, rand_std,
+                    d2gmbc_surv_x_less_5.shape[0] - d2gmbc_surv_num_less_5,
+                    d2gmbc_surv_num_less_5))
+        print("GMBC: AVG [{}] | STD [{}] AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]".
+              format(norand_avg, norand_std,
+                     gmbc_surv_x_less_5.shape[0] - gmbc_surv_num_less_5,
+                     gmbc_surv_num_less_5))
 
         # collect data
-        norand_agent_surv_x_gtr_5 = extract_data_bounds(
-            5, 90, norand_agent_surv_x)
-        rand_agent_surv_x_gtr_5 = extract_data_bounds(5, 90, rand_agent_surv_x)
-        vanilla_surv_x_gtr_5 = extract_data_bounds(5, 90, vanilla_surv_x)
+        gmbc_surv_x_gtr_5, gmbc_surv_num_gtr_5 = extract_data_bounds(
+            5, 90, gmbc_surv_x, gmbc_surv_dt)
+        d2gmbc_surv_x_gtr_5, d2gmbc_surv_num_gtr_5 = extract_data_bounds(
+            5, 90, d2gmbc_surv_x, d2gmbc_surv_dt)
+        vanilla_surv_x_gtr_5, vanilla_surv_num_gtr_5 = extract_data_bounds(
+            5, 90, vanilla_surv_x, vanilla_surv_dt)
 
         # >5 <90
         # Make sure all arrays filled
-        if norand_agent_surv_x_gtr_5.size == 0:
-            norand_agent_surv_x_gtr_5 = np.array([0])
-        if rand_agent_surv_x_gtr_5.size == 0:
-            rand_agent_surv_x_gtr_5 = np.array([0])
+        if gmbc_surv_x_gtr_5.size == 0:
+            gmbc_surv_x_gtr_5 = np.array([0])
+        if d2gmbc_surv_x_gtr_5.size == 0:
+            d2gmbc_surv_x_gtr_5 = np.array([0])
         if vanilla_surv_x_gtr_5.size == 0:
             vanilla_surv_x_gtr_5 = np.array([0])
 
-        norand_avg = np.average(norand_agent_surv_x_gtr_5)
-        norand_std = np.std(norand_agent_surv_x_gtr_5)
-        rand_avg = np.average(rand_agent_surv_x_gtr_5)
-        rand_std = np.std(rand_agent_surv_x_gtr_5)
+        norand_avg = np.average(gmbc_surv_x_gtr_5)
+        norand_std = np.std(gmbc_surv_x_gtr_5)
+        rand_avg = np.average(d2gmbc_surv_x_gtr_5)
+        rand_std = np.std(d2gmbc_surv_x_gtr_5)
         vanilla_avg = np.average(vanilla_surv_x_gtr_5)
         vanilla_std = np.std(vanilla_surv_x_gtr_5)
         print("> 5m and <90m")
-        print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
-            vanilla_avg, vanilla_std, vanilla_surv_x_gtr_5.shape[0]))
-        print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            rand_avg, rand_std, rand_agent_surv_x_gtr_5.shape[0]))
-        print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            norand_avg, norand_std, norand_agent_surv_x_gtr_5.shape[0]))
+        print(
+            "Open Loop: AVG [{}] | STD [{}] | AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]"
+            .format(vanilla_avg, vanilla_std,
+                    vanilla_surv_x_gtr_5.shape[0] - vanilla_surv_num_gtr_5,
+                    vanilla_surv_num_gtr_5))
+        print(
+            "D^2-GMBC: AVG [{}] | STD [{}] AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]"
+            .format(rand_avg, rand_std,
+                    d2gmbc_surv_x_gtr_5.shape[0] - d2gmbc_surv_num_gtr_5,
+                    d2gmbc_surv_num_gtr_5))
+        print("GMBC: AVG [{}] | STD [{}] AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]".
+              format(norand_avg, norand_std,
+                     gmbc_surv_x_gtr_5.shape[0] - gmbc_surv_num_gtr_5,
+                     gmbc_surv_num_gtr_5))
 
         # collect data
-        norand_agent_surv_x_gtr_90 = extract_data_bounds(
-            90, np.inf, norand_agent_surv_x)
-        rand_agent_surv_x_gtr_90 = extract_data_bounds(90, np.inf,
-                                                       rand_agent_surv_x)
-        vanilla_surv_x_gtr_90 = extract_data_bounds(90, np.inf, vanilla_surv_x)
+        gmbc_surv_x_gtr_90, gmbc_surv_num_gtr_90 = extract_data_bounds(
+            90, np.inf, gmbc_surv_x, gmbc_surv_dt)
+        d2gmbc_surv_x_gtr_90, d2gmbc_surv_num_gtr_90 = extract_data_bounds(
+            90, np.inf, d2gmbc_surv_x, d2gmbc_surv_dt)
+        vanilla_surv_x_gtr_90, vanilla_surv_num_gtr_90 = extract_data_bounds(
+            90, np.inf, vanilla_surv_x, vanilla_surv_dt)
 
         # >90
         # Make sure all arrays filled
-        if norand_agent_surv_x_gtr_90.size == 0:
-            norand_agent_surv_x_gtr_90 = np.array([0])
-        if rand_agent_surv_x_gtr_90.size == 0:
-            rand_agent_surv_x_gtr_90 = np.array([0])
+        if gmbc_surv_x_gtr_90.size == 0:
+            gmbc_surv_x_gtr_90 = np.array([0])
+        if d2gmbc_surv_x_gtr_90.size == 0:
+            d2gmbc_surv_x_gtr_90 = np.array([0])
         if vanilla_surv_x_gtr_90.size == 0:
             vanilla_surv_x_gtr_90 = np.array([0])
 
-        norand_avg = np.average(norand_agent_surv_x_gtr_90)
-        norand_std = np.std(norand_agent_surv_x_gtr_90)
-        rand_avg = np.average(rand_agent_surv_x_gtr_90)
-        rand_std = np.std(rand_agent_surv_x_gtr_90)
+        norand_avg = np.average(gmbc_surv_x_gtr_90)
+        norand_std = np.std(gmbc_surv_x_gtr_90)
+        rand_avg = np.average(d2gmbc_surv_x_gtr_90)
+        rand_std = np.std(d2gmbc_surv_x_gtr_90)
         vanilla_avg = np.average(vanilla_surv_x_gtr_90)
         vanilla_std = np.std(vanilla_surv_x_gtr_90)
         print(">= 90m")
-        print("Open Loop: AVG [{}] | STD [{}] | AMOUNT [{}]".format(
-            vanilla_avg, vanilla_std, vanilla_surv_x_gtr_90.shape[0]))
-        print("D^2-GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            rand_avg, rand_std, rand_agent_surv_x_gtr_90.shape[0]))
-        print("GMBC: AVG [{}] | STD [{}] AMOUNT [{}]".format(
-            norand_avg, norand_std, norand_agent_surv_x_gtr_90.shape[0]))
+        print(
+            "Open Loop: AVG [{}] | STD [{}] | AAMOUNT DEAD [{}] | AMOUNT ALIVE [{}]"
+            .format(vanilla_avg, vanilla_std,
+                    vanilla_surv_x_gtr_90.shape[0] - vanilla_surv_num_gtr_90,
+                    vanilla_surv_num_gtr_90))
+        print(
+            "D^2-GMBC: AVG [{}] | STD [{}] AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]"
+            .format(rand_avg, rand_std,
+                    d2gmbc_surv_x_gtr_90.shape[0] - d2gmbc_surv_num_gtr_90,
+                    d2gmbc_surv_num_gtr_90))
+        print("GMBC: AVG [{}] | STD [{}] AMOUNT DEAD [{}] | AMOUNT ALIVE [{}]".
+              format(norand_avg, norand_std,
+                     gmbc_surv_x_gtr_90.shape[0] - gmbc_surv_num_gtr_90,
+                     gmbc_surv_num_gtr_90))
 
         # Save to excel
         df.to_excel(results_path + "/SurvDist.xlsx", index=False)
