@@ -290,7 +290,6 @@ class BezierGait():
         return stepX, stepY, stepZ
 
     def YawCircle(self, T_bf, index):
-
         """ Calculates the required rotation of the trajectory plane
             for yaw motion
 
@@ -313,10 +312,15 @@ class BezierGait():
         th_mod = np.arctan2(g_mag, DefaultBodyToFoot_Magnitude)
 
         # Angle Traced by Foot for Rotation
+        # FR and BL
         if index == 1 or index == 2:
             phi_arc = np.pi / 2.0 + DefaultBodyToFoot_Direction + th_mod
+        # FL and BR
         else:
             phi_arc = np.pi / 2.0 - DefaultBodyToFoot_Direction + th_mod
+
+        # print("INDEX {}: \t Angle: {}".format(
+        #     index, np.degrees(DefaultBodyToFoot_Direction)))
 
         return phi_arc
 
