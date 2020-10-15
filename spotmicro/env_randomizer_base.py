@@ -1,4 +1,7 @@
-"""Abstract base class for environment randomizer."""
+"""Abstract base class for environment randomizer.
+Source: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/minitaur/envs/env_randomizer_base.py
+"""
+
 
 import abc
 

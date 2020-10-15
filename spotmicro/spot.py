@@ -1,5 +1,14 @@
-"""This file models a spot using pybullet.
+"""
+CODE BASED ON EXAMPLE FROM:
+@misc{coumans2017pybullet,
+  title={Pybullet, a python module for physics simulation in robotics, games and machine learning},
+  author={Coumans, Erwin and Bai, Yunfei},
+  url={www.pybullet.org},
+  year={2017},
+}
 
+Example: minitaur.py
+https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py
 """
 
 import collections

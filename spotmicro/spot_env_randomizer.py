@@ -1,4 +1,15 @@
-"""Randomize the spot_gym_env when reset() is called."""
+"""
+CODE BASED ON EXAMPLE FROM:
+@misc{coumans2017pybullet,
+  title={Pybullet, a python module for physics simulation in robotics, games and machine learning},
+  author={Coumans, Erwin and Bai, Yunfei},
+  url={www.pybullet.org},
+  year={2017},
+}
+
+Example: minitaur_env_randomizer.py
+https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/minitaur/envs/env_randomizers/minitaur_env_randomizer.py
+"""
 import numpy as np
 from . import env_randomizer_base
 

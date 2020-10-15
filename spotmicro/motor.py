@@ -1,4 +1,6 @@
-"""This file implements an accurate motor model."""
+"""This file implements an accurate motor model.
+Source: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/minitaur/envs/motor.py
+"""
 import numpy as np
 
 VOLTAGE_CLIPPING = 8.4
