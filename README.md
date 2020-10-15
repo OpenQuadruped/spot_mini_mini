@@ -39,8 +39,8 @@ Table of Contents
 -----------------
   * [Motivation](#motivation)
   * [Kinematics](#kinematics)
-  * [Reinforcement Learning](#reinforcement-learning)
-    * [Stability on Difficult Terrain](#stability-on-difficult-terrain)
+  * [D^2 Gait Modulation with Bezier Curves](#d^2-gait-modulation-with-bezier-curves)
+    * [Training](#Training)
     * [Real World Validation](#real-world-validation)
   * [Gait](#gait)
   * [How To Run](#how-to-run)
@@ -62,16 +62,16 @@ Body manipulation with [leg IK](https://www.researchgate.net/publication/3203077
 <img src="spot_bullet/media/spot_rpy.gif" alt="SIK" width="500"/>
 <img src="spot_real/media/rpy.gif" alt="SRIK" width="500"/>
 
-### Reinforcement Learning
+### D^2 Gait Modulation with Bezier Curves
 
-I'm using this platform to validate a novel Reinforcement Learning method for locomotion by myself and my co-authors Matthew Elwin & Ian Abraham. Instead of learning a gait from scratch, we propose using an existing scheme as a baseline over which we optimize via training. The method is called `Gait Modulation with Bezier Curves`, and we are currently validating our experimental results. Here's a sneak peak of what you can expect:
+I'm using this platform to validate a novel Reinforcement Learning method for locomotion by myself and my co-authors Matthew Elwin & Ian Abraham. Instead of learning a gait from scratch, we propose using an existing scheme as a baseline over which we optimize via training. The method is called `D^2 Gait Modulation with Bezier Curves`. To learn more, visit our [website](https://sites.google.com/view/d2gmbc)
 
 <p float="left">
   <img src="spot_real/media/V_descent.gif" width="335" />
   <img src="spot_real/media/A_descent.gif" width="335" />
 </p>
 
-#### Stability on Difficult Terrain
+#### Training
 During training, simple Proportional controller was employed to deliver yaw correction as would be the case if the robot were teleoperated or able to localize itself. For increased policy robustness, the terrain, link masses and foot frictions are randomized on each environment reset.
 
 Here, the action space is 14-dimensional, consisting of `Clearance Height` (1), `Body Height` (1), and `Foot XYZ Residual` modulations (12). `Clearance Height` is treated through an exponential filter (`alpha = 0.7`), but all other actions are processed directly. These results were trained with only 149 epochs.
@@ -92,19 +92,6 @@ Here's an example of the new URDF being teleoperated with a trained agent on 2x 
 
 ![UNIVERSAL2](spot_bullet/media/spot_new_universal.gif)
 
-<!-- #### Drift Correction
-I've found that the Bezier Curve gait lends itself well to optimization via RL if I intentionally select sub-optimal gait parameters. Notice that the open-loop forward command drifts significantly over time (rougly 1m per 2m forward):
-
-![DRIFT](spot_bullet/media/spot_drift.gif)
-
-With a one-dimensional action space [`Yaw Rate`], and a 16-dimensional observation space [`IMU Inputs` (8), `Leg Phases` (4), `Leg Contacts` (4)], an `Augmented Random Search` agent (linear) was able to correct the trajectory after 299 epochs:
-
-![NODRIFT](spot_bullet/media/spot_no_drift.gif)
-
-Here is the policy output for this demo. It's clearly biased on one end to account for Spot's drift:
-
-![NODRIFTPOL](spot_bullet/media/spot_no_drift_action.png) -->
-
 #### Real World Validation
 Here are some experimental results where the agent is on the right.
 
@@ -120,13 +107,11 @@ Open-Loop Gait using 12-Point Bezier Curves based on [MIT Cheetah Paper](https:/
 Forward and Lateral Motion:
 
 ![SLAT0](spot_bullet/media/spot_lat_logic.gif)
-<!-- ![SLAT1](spot_bullet/media/spot_lat_demo.gif) -->
 
 
 Yaw logic based on [4-wheel steering car](http://www.inase.org/library/2014/santorini/bypaper/ROBCIRC/ROBCIRC-54.pdf):
 
 ![SYAW0](spot_bullet/media/spot_yaw_logic.gif)
-<!-- ![SYAW1](spot_bullet/media/spot_yaw_demo.gif) -->
 
 
 ## How To Run
@@ -243,7 +228,7 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 ```
 @software{spotminimini2020github,
   author = {Maurice Rahme and Ian Abraham and Matthew Elwin and Todd Murphey},
-  title = {{SpotMiniMini}: Pybullet Gym Environment for Gait Modulation with Bezier Curves,
+  title = {SpotMiniMini: Pybullet Gym Environment for Gait Modulation with Bezier Curves},
   url = {https://github.com/moribots/spot_mini_mini},
   version = {2.1.0},
   year = {2020},
@@ -252,10 +237,10 @@ With this terrain type, I programmed in a randomizer that triggers upon reset. T
 
 ## Credits
 
-* Original idea and CAD files: [Spot Micro AI Community](https://spotmicroai.readthedocs.io/en/latest/)
+* Original Spot Design and CAD files: [Spot Micro AI Community](https://spotmicroai.readthedocs.io/en/latest/)
 
 * Collaborator on `OpenQuadruped` design, including mechanical parts, custom PCB, and Teensy interface: [Adham Elarabawy](https://github.com/adham-elarabawy/OpenQuadruped)
 
-* OpenAI Gym Interface: [Minitaur Environment](https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py)
+* OpenAI Gym and Heightfield Interface: [Minitaur Environment](https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/bullet/minitaur.py)
 
-* Deprecated URDF: [Rex Gym](https://github.com/nicrusso7/rex-gym)
+* Deprecated URDF for earlier development: [Rex Gym](https://github.com/nicrusso7/rex-gym)
