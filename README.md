@@ -39,7 +39,7 @@ Table of Contents
 -----------------
   * [Motivation](#motivation)
   * [Kinematics](#kinematics)
-  * [D^2 Gait Modulation with Bezier Curves](#d^2-gait-modulation-with-bezier-curves)
+  * [D^2 Gait Modulation with Bezier Curves](#d2-gait-modulation-with-bezier-curves)
     * [Training](#Training)
     * [Real World Validation](#real-world-validation)
   * [Gait](#gait)
