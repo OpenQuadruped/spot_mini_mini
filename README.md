@@ -64,7 +64,7 @@ Body manipulation with [leg IK](https://www.researchgate.net/publication/3203077
 
 ### D^2 Gait Modulation with Bezier Curves
 
-I'm using this platform to validate a novel Reinforcement Learning method for locomotion by myself and my co-authors Matthew Elwin & Ian Abraham. Instead of learning a gait from scratch, we propose using an existing scheme as a baseline over which we optimize via training. The method is called `D^2 Gait Modulation with Bezier Curves`. To learn more, visit our [website](https://sites.google.com/view/d2gmbc)
+I'm using this platform to validate a novel Reinforcement Learning method for locomotion by myself and my co-authors Matthew L. Elwin, Ian Abraham, and Todd D. Murphey. Instead of learning a gait from scratch, we propose using an existing scheme as a baseline over which we optimize via training. The method is called `D^2 Gait Modulation with Bezier Curves`. To learn more, visit our [website](https://sites.google.com/view/d2gmbc)
 
 <p float="left">
   <img src="spot_real/media/V_descent.gif" width="335" />
