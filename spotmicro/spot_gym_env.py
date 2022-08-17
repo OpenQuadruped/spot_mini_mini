@@ -548,7 +548,7 @@ class spotGymEnv(gym.Env):
         local_up = rot_mat[6:]
         pos = self.spot.GetBasePosition()
         #  or pos[2] < 0.13
-        return (np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.55)
+        return np.dot(np.asarray([0, 0, 1]), np.asarray(local_up)) < 0.55
 
     def _termination(self):
         position = self.spot.GetBasePosition()

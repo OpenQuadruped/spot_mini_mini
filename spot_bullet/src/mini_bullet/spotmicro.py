@@ -56,7 +56,7 @@ class PoissonDisc2D(object):
         self._min_radius = min_radius
         self._max_sample_size = max_sample_size
 
-        # Flattern the 2D grid as an 1D array. The grid is used for fast nearest
+        # Flatten the 2D grid as an 1D array. The grid is used for fast nearest
         # point searching.
         self._grid = [None] * self._grid_size_x * self._grid_size_y
 

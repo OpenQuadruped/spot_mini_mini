@@ -132,6 +132,7 @@ def main():
 
     print("STARTED SPOT TEST ENV")
     t = 0
+    episode_reward = 0
     while t < (int(max_timesteps)):
 
         bz_step.ramp_up()
@@ -185,6 +186,11 @@ def main():
         env.spot.GetExternalObservations(bzg, bz_step)
         # Step
         state, reward, done, _ = env.step(action)
+        episode_reward += reward
+        if t % 100 == 0:
+            print(f"Step: {t} Total: {episode_reward:.2f} Rew: {reward:.2f}"
+                  f"Act: {action.min():.7f} ~ {action.max():.7f} ")
+
         # print("IMU Roll: {}".format(state[0]))
         # print("IMU Pitch: {}".format(state[1]))
         # print("IMU GX: {}".format(state[2]))
