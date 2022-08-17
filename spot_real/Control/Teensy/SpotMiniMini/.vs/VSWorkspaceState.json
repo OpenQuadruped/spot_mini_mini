@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "\\include",
+    "\\lib",
+    "\\lib\\ContactSensor",
+    "\\lib\\IMU",
+    "\\lib\\IMU\\BNO055_Calibration",
+    "\\lib\\Kinematics",
+    "\\src",
+    "\\test"
+  ],
+  "PreviewInSolutionExplorer": false
+}
