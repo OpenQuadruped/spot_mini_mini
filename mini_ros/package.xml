@@ -59,13 +59,13 @@
   <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>message_generation</build_export_depend>
   <build_export_depend>message_runtime</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend>
+  <!--build_export_depend>roscpp</build_export_depend-->
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>visualization_msgs</build_export_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
-  <exec_depend>roscpp</exec_depend>
+  <!--exec_depend>roscpp</exec_depend-->
   <exec_depend>rospy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>

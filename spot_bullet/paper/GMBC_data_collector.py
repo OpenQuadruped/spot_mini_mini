@@ -6,7 +6,7 @@ import sys
 
 sys.path.append('../../')
 
-from ars_lib.ars import ARSAgent, Normalizer, Policy
+from spot_bullet.src.ars_lib.ars import ARSAgent, Normalizer, Policy
 from spotmicro.util.gui import GUI
 from spotmicro.Kinematics.SpotKinematics import SpotModel
 from spotmicro.GaitGenerator.Bezier import BezierGait

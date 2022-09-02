@@ -194,7 +194,7 @@ class SpotModel:
         HipToFoot = self.HipToFoot(orn, pos, T_bf)
 
         for i, (key, p_hf) in enumerate(HipToFoot.items()):
-            # ORDER: FL, FR, FR, BL, BR
+            # ORDER: FL, FR, BL, BR
 
             # print("LEG: {} \t HipToFoot: {}".format(key, p_hf))
 

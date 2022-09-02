@@ -33,6 +33,9 @@ Pos, Orn = p.getBasePositionAndOrientation(boxId)
 print(Pos, Orn)
 print("Number of joints {}".format(numj))
 print("Number of links {}".format(numb))
+
+for joint in range(numj):
+    print(p.getJointInfo(boxId, joint))
 joint = []
 movingJoints = [
     6,

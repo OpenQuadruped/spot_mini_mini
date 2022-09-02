@@ -37,7 +37,7 @@ actions_to_filter = 14
 # For auto yaw control
 P_yaw = 5.0
 
-# Cummulative timestep exponential reward
+# Cumulative timestep exponential reward
 # cum_dt_exp = 1.1
 cum_dt_exp = 0.0
 
@@ -216,7 +216,7 @@ def ParallelWorker(childPipe, env, nb_states):
     childPipe.close()
 
 
-class Policy():
+class Policy:
     """ state --> action
     """
     def __init__(
@@ -344,7 +344,7 @@ class Normalizer():
         return (states - state_mean) / state_std
 
 
-class ARSAgent():
+class ARSAgent:
     def __init__(self,
                  normalizer,
                  policy,

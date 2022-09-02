@@ -24,7 +24,7 @@ class LegIK():
         """
         Calculates the leg's Domain and caps it in case of a breach
 
-        :param x,y,z: hip-to-foot distances in each dimension
+        :param x, y, z: hip-to-foot distances in each dimension
         :return: Leg Domain D
         """
         D = (y**2 + (-z)**2 - self.shoulder_length**2 +
