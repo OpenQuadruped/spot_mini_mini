@@ -1,3 +1,3 @@
 pybullet==2.6.4
-numpy==1.18.4
+numpy==1.22.0
 gym==0.17.2
